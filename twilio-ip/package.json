@@ -1,0 +1,22 @@
+{
+  "name": "twilo-ip-integration",
+  "version": "0.0.1",
+  "description": "A server that connects a bot in twilo-IP to Google's dialogflow",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.16.4",
+    "dialogflow": "0.9.1",
+    "twilio": "3.32.0",
+    "twilio-chat": "^3.2.3"
+  },
+  "engines": {
+    "node": "8.x"
+  },
+  "repository": {
+    "url": "insert URL here"
+  },
+  "license": "Apache-2.0"
+}

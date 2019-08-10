@@ -1,0 +1,25 @@
+{
+  "name": "skype-integration",
+  "version": "0.0.1",
+  "description": "A skype bot with dialogflow integration.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "mocha"
+  },
+  "dependencies": {
+    "botbuilder": "^4.4.0",
+    "dialogflow": "0.6.0",
+    "express": "^4.16.4"
+  },
+  "devDependencies": {
+    "mocha": "6.1.4"
+  },
+  "engines": {
+    "node": "8.x"
+  },
+  "repository": {
+    "url": "insert url here"
+  },
+  "license": "Apache-2.0"
+}

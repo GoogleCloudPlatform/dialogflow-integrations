@@ -1,0 +1,15 @@
+{
+  "name": "botlib",
+  "version": "0.0.1",
+  "description": "Common Functions for Bots",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "dialogflow": "0.8.0"
+  },
+  "devDependencies": {
+    "mocha": "^2.5.3"
+  },
+  "scripts": {
+    "test": "mocha"
+  }
+}

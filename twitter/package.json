@@ -1,0 +1,23 @@
+{
+  "name": "twitter-integration",
+  "version": "0.0.1",
+  "description": "A server that connects Google's dialogflow to twitter",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.16.4",
+    "request": "^2.88.0",
+    "dialogflow": "0.9.1",
+    "crypto": "^1.0.1",
+    "twitter-text": "^3.0.0"
+  },
+  "engines": {
+    "node": "8.x"
+  },
+  "repository": {
+    "url": "insert URL here"
+  },
+  "license": "Apache-2.0"
+}
