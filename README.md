@@ -1,107 +1,91 @@
 # Dialogflow Integration
 
-This repository contains seven integrations for Dialogflow. These integrations
-connect a bot created in Dialogflow to chat services in third party platforms.
-Although any platform could be used to host your Dialogflow integration, for
-this repo we will instruct you how to set yours up on Google's Cloud Run.
+## Introduction
 
-## Authenticating dialogflow
+The purpose of this documentation is to set up an integration deployment to connect your existing Dialogflow agent to various third party chat service platforms.
 
-In order to use the integrations, it is necessary to create a Service Account
-and download its JSON key file. Save the key file to the directory of the
-integration you want to use. Set the environmental variable
-GOOGLE_APPLICATION_CREDENTIALS to the key file's location in the directory. See
-[this guide](https://dialogflow.com/docs/reference/v2-auth-setup) for details.
-For setup in cloud run, just add the key into the repository you will clone in
-your cloud run project.
+If you do not have an existing Dialogflow agent, you can set one up by reading the documentation [here](https://cloud.google.com/dialogflow/docs/).
 
-## Cloud Run Setup
+Although it is possible to set up this integration deployment on any hosting platform, these instructions will use [Google's Cloud Run](https://cloud.google.com/run/).
 
-### Initial Setup
+## Initial Setup
 
-1. Create a Google Cloud account and proceed to
-[Cloud Console](https://console.cloud.google.com/home/dashboard).
-2. Create a Google Cloud project and enable billing using the link
-[here](https://console.cloud.google.com/projectcreate).
-3. For the project, enable Cloud Build and Cloud Run API
+### Setting up gcloud CLI
+
+The deployment process for GCP Cloud Run via this README utilizes gcloud CLI commands. Follow the steps below to set up gcloud CLI locally for this deployment.
+
+1. On the gcloud CLI [documentation page](https://cloud.google.com/sdk/docs/quickstarts), select your OS and follow the instructions for the installation. 
+2. Run ``gcloud config get-value project`` to check the GCP Project configured. 
+3. Go into the Dialogflow agent’s settings and check the Project ID associated with the agent. The GCP Project configured in the gcloud CLI should match the agent’s Project ID.
+4. If the project IDs do not match, run ``gcloud config set project PROJECT-ID``, replacing PROJECT-ID with the Project ID from step 3. 
+
+### Service Account Setup (GCP)
+
+For the integration to function properly, it is necessary to create a Service Account in your agent’s GCP Project. See [this page](https://cloud.google.com/dialogflow/docs/quick/setup#sa-create) of the documentation for more details. 
+
+Follow the steps below to create a Service Account and set up the integration. 
+
+1. Go into the Dialogflow agent’s settings and click on the Project ID link to open its associated GCP Project.
+2. Click on the navigation menu in the GCP console, hover over "IAM & admin", and click "Service accounts". 
+3. Click on "+ CREATE SERVICE ACCOUNT", fill in the details, and give it the "Dialogflow Service Agent" role.
+4. Click on "+ Create Key" and download the resulting JSON key file. 
+5. Save the JSON key file in the desired platform subdirectory. 
+
+If deploying this integration outside of GCP Cloud Run, it may be necessary to set the GOOGLE_APPLICATION_CREDENTIALS environmental variable on the deployment environment to the absolute path of Service Account JSON key file. See [this guide](https://cloud.google.com/dialogflow/docs/quick/setup#auth) for details.
+
+## Deploying the Integration
+
+### Setup
+
+1. Go into the Dialogflow agent’s settings and click on the Project ID link to open its associated GCP Project.
+2. Click on the navigation menu in the GCP console and click "Billing". Set up and enable billing for the project. 
+3. Enable Cloud Build and Cloud Run API for the project
 [here](https://console.cloud.google.com/flows/enableapi?apiid=cloudbuild.googleapis.com,run.googleapis.com).
-4. In your [Cloud Console](https://console.cloud.google.com/home/dashboard)
-click the Cloud Shell button. In Cloud Shell you should see the GCP project id of
-the project you just created.
-5.  Use the following command to clone this git repository
-``
-git clone [repository url]
-``
-6. Open the repository you cloned
+4. Clone this git repository onto your local machine or development environment:
+`git clone [repository url]`
+5. Open the root directory of the repository on your local machine or development environment.
 
-### Credentials and Authentication
+### Dockerfile and Creating the Build
 
-Each integration has its own credentials you need to obtain in order to work. To
-determine how to obtain these credentials. Go into the folder of the integration
-you want to setup and look at its README.md file. Once you have the credentials
-you need add them to that integration's server.js file. Replace the 'place
-[credential] here' with your credentials. In addition, you will need to obtain
-the Project Id of your Dialogflow project. To do this, go to the
-[Dialogflow Console](https://dialogflow.cloud.google.com), and click the gear
-icon by the agent name. The Project Id should be in the GOOGLE PROJECT section.
-Take this id and add it to the server.js file in the integration you want to
-use. To do this, set the constant projectId to the value.
+Open the [Dockerfile](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/Dockerfile#L9) in the root directory of the repository, and change YOUR_INTEGRATION in the following line to the name of the desired platform subdirectory.
 
-### Creating the Build
-
-Open the Dockerfile that is in your cloned repository, and change
-YOUR_INTEGRATION to the integration you want to use.
 ```Dockerfile
-# Use the official Node.js 10 image.
-   # https://hub.docker.com/_/node
-   FROM node:10
-
-   # Create and change to the app directory.
-   WORKDIR /usr/src/app
-
    # Set this environmental variable to the integration you want to use
    ENV INTEGRATION=YOUR_INTEGRATION
-
-   # Copy application dependency manifests to the container image.
-   # A wildcard is used to ensure both package.json AND package-lock.json are copied.
-   # Copying this separately prevents re-running npm install on every code change.
-   COPY ${INTEGRATION}/package*.json ./
-
-   # Install production dependencies.
-   RUN npm install --only=production
-
-   # Copy local code to the container image.
-   COPY . .
-
-   # Run the web service on container startup.
-   WORKDIR ${INTEGRATION}
-   CMD [ "npm", "start" ]
    ```
-If you have not done so already, add your key file to this repository in the
-directory of the integration you want to use.
 
-To make your build run the following command into the console, but replace
-PROJECT-ID with your GCP project Id. You can view your project ID using
-``gcloud config get-value project``
+If you have not done so already, copy your Service Account JSON key file to the desired platform subdirectory. 
+
+### Platform-specific Instructions
+
+The integration requires platform credentials from the intended platform to function properly. Follow the steps in the README file in the relevant platform subdirectory to obtain the credentials and setup the server.js file to deploy and start the integration. 
+
+## Post-deployment
+
+### Shutting Down an Integration
+
+In order to shut down an integration set up via the steps in this README, only deleting the Cloud Run service is required.
+
+In your local terminal, run the following command and select the previously chosen target platform to list active deployments:
+
 ```shell
-gcloud builds submit --tag gcr.io/PROJECT-ID/dialogflow
+gcloud beta run services list
 ```
-For more information on how to build the container, there is additional
-documentation [here](https://cloud.google.com/run/docs/building/containers).
 
-### Deploying on Cloud Run
+Then run the following command, replacing SERVICE-NAME with the name of the service you want to shut down, and select the same settings chosen when deploying in order to shut down the deployment. 
 
-Deploy using the following command, but replace PROJECT-ID with your GCP project
-Id and YOUR_KEY_FILE with the name of your JSON key file. Make sure to replace
-Project-ID  with your GCP project ID.
 ```shell
-gcloud beta run deploy --image gcr.io/PROJECT-ID/dialogflow --update-env-vars GOOGLE_APPLICATION_CREDENTIALS=YOUR_KEY_FILE --memory 1Gi
+gcloud beta run services delete SERVICE-NAME
 ```
- - When prompted for a region, select a region (for example ``us-central1``).
- - When prompted for a service name hit enter to accept the default
- - When prompted to allow unauthenticated invocations press ``y``
- - Copy the URL given to you, and use it according to the README file in the
- given integration's folder.
 
- More information can be found in Cloud Run
- [documentation](https://cloud.google.com/run/docs/deploying).
+If following the instructions closely, SERVICE-NAME should be in the format of dialogflow-PLATFORM
+
+### Multiple Integrations
+
+To set up multiple integration deployments simultaneously, repeat all of the instructions for each deployment. While it is possible to make changes to the existing deployment repository and re-deploy it under a different name, it would make it difficult to retroactively make changes to previous deployments.
+
+### Changing Integration Behavior
+
+The behavior of an integration can be customized via the addition of your own developer code or by editing the server.js file in the platform subdirectory.
+
+After making changes, redeploy the deployment by re-running the commands as specified in the "Deploy the Integration Using Cloud Run" section of the platform-specific integration READMEs.
