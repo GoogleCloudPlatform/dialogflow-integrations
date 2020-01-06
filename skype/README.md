@@ -5,19 +5,22 @@
 ### Prerequisites
 
 - Follow the instructions on the [main README file](https://github.com/GoogleCloudPlatform/dialogflow-integrations#readme) in the root directory of this repository.
-- Create a [Microsoft Azure account](http://developer.twitter.com/en/apply/user)
-- Replace the value of __projectId__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/skype/server.js#L33) with your Dialogflow agent’s Project ID
+- Create a [Microsoft Azure account](http://developer.twitter.com/en/apply/user).
+- Replace the value of __projectId__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/skype/server.js#L33) with your Dialogflow agent’s Project ID.
 
-### Creating the Bot
+### Creating a Skype Bot
 
-Login to Azure and go to your [portal](https://portal.azure.com/#home). Click on "Create new resource", then select "AI + Machine Learning" and then "Web App Bot". Fill out the following form to create your bot.
+- Log in to Azure and go to your [portal](https://portal.azure.com/#home). 
+- Click on "Create new resource", then select "AI + Machine Learning" and then "Web App Bot". 
+- Fill out the following form to create your bot.
 
 ![alt text](images/skype-creating-the-bot.png)
 
 ### Getting Credentials
 
-Go to the "All Resources" tab and click on your newly created bot. Go to the configuration page.  Take the values for __MicrosoftAppId__ and __MicrosoftAppPassword__ and replace the values for __appId__ and __appPassword__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/skype/server.js#L34-L35) respectively.
-
+- Go to the "All Resources" tab and click on your newly created bot.
+- Go to the configuration page.
+- Take the values for __MicrosoftAppId__ and __MicrosoftAppPassword__ and replace the values for __appId__ and __appPassword__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/skype/server.js#L34-L35) respectively.
 
 ### Deploying the Integration Using Cloud Run
 
