@@ -58,7 +58,17 @@ If you have not done so already, copy your Service Account JSON key file to the 
 
 ### Platform-specific Instructions
 
-The integration requires platform credentials from the intended platform to function properly. Follow the steps in the README file in the relevant platform subdirectory to obtain the credentials and setup the server.js file to deploy and start the integration. 
+The integration requires platform credentials from the intended platform to function properly. 
+
+Follow the steps in the README file in the relevant platform subdirectory to obtain the credentials and setup the server.js file to deploy and start the integration:
+
+- [Kik](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/kik#readme)
+- [Skype](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/skype#readme)
+- [Spark](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/spark#readme)
+- [Twilio IP Messaging](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/twilio-ip#readme)
+- [Twilio (Text Messaging)](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/twilio#readme)
+- [Twitter](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/twitter#readme)
+- [Viber](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/viber#readme)
 
 ## Post-deployment
 
