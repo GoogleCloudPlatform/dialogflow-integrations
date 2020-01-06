@@ -10,12 +10,12 @@
 
 ### Creating a Spark Bot
 
-Log in to Spark and go to the [New Bot page](https://developer.webex.com/my-apps/new/bot). Fill in the required fields and then click the "Add Bot" button. 
+- Log in to Spark and go to the [New Bot page](https://developer.webex.com/my-apps/new/bot).
+- Fill in the required fields and click the "Add Bot" button. 
 
 ![alt text](images/spark-create-the-spark-bot.png)
 
-On the next screen, take the value for your bot’s __access Token__ and replace the value for __sparkAccessToken__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/spark/server.js#L34).
-
+- On the next screen, take the value for your bot’s __access Token__ and replace the value for __sparkAccessToken__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/spark/server.js#L34).
 
 ### Deploying the Integration Using Cloud Run
 
