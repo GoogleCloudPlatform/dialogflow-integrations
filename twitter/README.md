@@ -4,32 +4,43 @@
 
 ### Prerequisites
 
-- Follow the instructions on the main README file in the root directory of this repository.
-- Create a [Twitter Developer account](http://developer.twitter.com/en/apply/user)
-- Replace the value of __projectId__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/twitter/server.js#L40) with your Dialogflow agent’s Project ID
+- Follow the instructions on the [main README file](https://github.com/GoogleCloudPlatform/dialogflow-integrations#readme) in the root directory of this repository.
+- Create a [Twitter Developer account](http://developer.twitter.com/en/apply/user).
+- Replace the value of __projectId__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/twitter/server.js#L40) with your Dialogflow agent’s Project ID.
 
-### Create an App in Twitter
+### Creating an App in Twitter
 
-Log in to your Twitter Developer account and proceed to the [Twitter App Management Console](https://developer.twitter.com/en/apps) by clicking on your username to open the dropdown menu and then clicking on  "Apps". Click on the  "Create New App" button. Fill out the required fields, and click  "Create".
+- Log in to your Twitter Developer account and proceed to the [Twitter App Management Console](https://developer.twitter.com/en/apps) by clicking on your username to open the dropdown menu and then clicking on "Apps".
+- Click on the "Create New App" button. 
+- Fill out the required fields and click "Create".
 
-### Obtain Twitter Credentials
+### Obtaining Twitter Credentials
 
-In the [Twitter App Management Console](https://developer.twitter.com/en/apps), 
-click the  "Details" button on the new project. Click on the  "Permissions" tab and click the  "Edit" button. Set  "Access permission" to  "Read, write and Direct Messages" and click  "Save".
+- In the [Twitter App Management Console](https://developer.twitter.com/en/apps), 
+click the  "Details" button on the new project. 
+- Go to the "Permissions" tab and click the "Edit" button. 
+- Set "Access permission" to "Read, write and Direct Messages" and click "Save".
+
 ![alt text](images/twitter-obtain-twitter-credentials-1.png)
 
-Go to the  "Keys and tokens" tab in your App details. Click  "Create" under  "Access token & access token secret". Take the values for __API key__, __API secret key__, and __Access token__, __Access token secret__ and replace the values for __twitterAPIKey__, __twitterSecretAPIKey__, __twitterAccessToken__, and __twitterSecretAccessToken__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/twitter/server.js#L35-L38) respectively.
+- Go to the "Keys and tokens" tab in your App details. 
+- Click "Create" under "Access token & access token secret". 
+- Take the values for __API key__, __API secret key__, __Access token__, and __Access token secret__ and replace the values for __twitterAPIKey__, __twitterSecretAPIKey__, __twitterAccessToken__, and __twitterSecretAccessToken__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/twitter/server.js#L35-L38) respectively.
+
 ![alt text](images/twitter-obtain-twitter-credentials-2.png)
 
-Confirm that the  "Access level" for the  "Access token & access token secret" is  "Read, write, and Direct Messages". 
+- Confirm that the "Access level" for the "Access token & access token secret" is "Read, write, and Direct Messages". 
 
 ### Creating a Dev Environment
 
-Log in to your Twitter developer account and go to the [Dev environments page](https://developer.twitter.com/en/account/environments) by clicking on your username to open the dropdown menu and then clicking on  "Dev environments". In the  "Account Activity API / Sandbox" section, click the  "Set up dev environment" button. Fill out the appropriate details, click  "Complete setup", then take the value of __Dev environment label__ and replace the value for __environmentName__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/twitter/server.js#L41).
+- Log in to your Twitter developer account and go to the [Dev environments page](https://developer.twitter.com/en/account/environments) by clicking on your username to open the dropdown menu and then clicking on "Dev environments". 
+- In the "Account Activity API / Sandbox" section, click the "Set up dev environment" button. 
+- Fill out the appropriate details and click "Complete setup".
+- Take the value of __Dev environment label__ and replace the value for __environmentName__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/twitter/server.js#L41).
 
 ![alt text](images/twitter-creating-a-dev-environment.png)
 
-### Deploy the Integration Using Cloud Run
+### Deploying the Integration Using Cloud Run
 
 In your local terminal, change the active directory to the repository’s root directory.
 
