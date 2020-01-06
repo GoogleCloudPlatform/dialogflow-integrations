@@ -18,7 +18,7 @@ const {ActivityTypes,
   MessageFactory,
   BotFrameworkAdapter} = require('botbuilder');
 const protoToJson = require('../botlib/proto_to_json.js');
-const dialgoflowSessionClient =
+const dialogflowSessionClient =
     require('../botlib/dialogflow_session_client.js');
 const filterResponses = require('../botlib/filter_responses.js');
 const express = require('express');
@@ -34,7 +34,7 @@ const projectId = 'Place dialogflow project id here';
 const appId = 'Place Microsoft app id here';
 const appPassword = 'Place Microsoft password here';
 
-const sessionClient = new dialgoflowSessionClient(projectId);
+const sessionClient = new dialogflowSessionClient(projectId);
 
 // Create bot adapter, which defines how the bot sends and receives messages.
 let adapter = new BotFrameworkAdapter({
