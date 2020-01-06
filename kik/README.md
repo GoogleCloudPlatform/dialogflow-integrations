@@ -4,30 +4,36 @@
 
 ### Prerequisites
 
-- Follow the instructions on the main README file in the root directory of this repository.
-- Download the Kik app onto your mobile device
-- Set up your Kik account on that device
-- Replace the value of __projectId__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/kik/server.js#L33)  with your Dialogflow agent’s Project ID
+- Follow the instructions on the [main README file](https://github.com/GoogleCloudPlatform/dialogflow-integrations#readme) in the root directory of this repository.
+- Download the Kik app onto your mobile device.
+- Set up your Kik account on that device.
+- Replace the value of __projectId__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/kik/server.js#L33)  with your Dialogflow agent’s Project ID.
 
-### Creating the Bot
+### Creating a Kik Bot
 
-Open the Kik Bot Dashboard at [dev.kik.com](https://dev.kik.com). Open the Kik app on your mobile device. If using an iOS device, click the plus button in the top right corner. If using an Android device, tap the plus button in the bottom right corner. Tap "Scan a Kik Code" to scan the Kik code shown in the [Kik Bot Dashboard](https://dev.kik.com). 
+- Open the Kik Bot Dashboard at [dev.kik.com](https://dev.kik.com). 
+- Open the Kik app on your mobile device.
+- Open the menu:
+  - If using an iOS device, click the plus button in the top right corner. 
+  - If using an Android device, tap the plus button in the bottom right corner. 
+- Tap "Scan a Kik Code" to scan the Kik code shown om the [Kik Bot Dashboard](https://dev.kik.com). 
 
 ![Kik Bot Dashboard Kik Code](./images/KikBotDashboard-KikCode.png)
 
-In the Kik app, in the chat with Botsworth, enter a name for your bot and tap the "Yes" button to confirm.
+- In the Kik app, in the chat with Botsworth, enter a name for your bot and tap the "Yes" button to confirm.
 
-### Obtain Kik Credentials
+### Obtaining Kik Credentials
 
-Login to the [Kik Bot Dashboard](https://dev.kik.com). At the top of the page, click "Configuration".
+- Log in to the [Kik Bot Dashboard](https://dev.kik.com). 
+- At the top of the page, click "Configuration".
 
 ![Kik Bot Dashboard Click Configuration](./images/KikBotDashboard-ClickConfiguration.png)
 
-In the configuration screen, take the value for __Display Name__ and __API Key__ and replace the values for __botName__ and __kikApiKey__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/kik/server.js#L30-L31) respectively.
+- In the configuration screen, take the value for __Display Name__ and __API Key__ and replace the values for __botName__ and __kikApiKey__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/kik/server.js#L30-L31) respectively.
 
 ![Display Name and API Key](./images/DisplayNameAndApiKey.png)
 
-### Deploy the Integration Using Cloud Run
+### Deploying the Integration Using Cloud Run
 
 In your local terminal, change the active directory to the repository’s root directory.
 
