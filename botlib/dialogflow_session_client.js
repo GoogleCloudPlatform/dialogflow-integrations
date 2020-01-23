@@ -17,6 +17,7 @@
  * @fileoverview Contacts dialogflow and returns response.
  */
 const dialogflow = require('dialogflow');
+const jsonToProto = require('./json_to_proto')
 module.exports = class DialogflowSessionClient {
 
   constructor(projectId){
@@ -34,7 +35,7 @@ module.exports = class DialogflowSessionClient {
         }
       },
       queryParams: {
-        payload: payload
+        payload: jsonToProto.jsonToStructProto(payload)
       }
     };
   }
