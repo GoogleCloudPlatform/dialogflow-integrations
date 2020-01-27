@@ -1,0 +1,38 @@
+{
+  "name": "salesforce-connector",
+  "version": "1.0.0",
+  "description": "Salesforce API Library for NodeJS",
+  "main": "../test/",
+  "scripts": {
+    "eslint": "eslint .",
+    "test": "nyc mocha \"test/*.test.js\" --timeout 15000 --recursive --exit",
+    "private-docs": "documentation build lib/** -f html -o private-docs -a private",
+    "public-docs": "documentation build lib/** -f html -o public-docs -a public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/salesforce3/salesforce-connector.git"
+  },
+  "keywords": [
+    "salesforce",
+    "salesforce.com",
+    "sfdc",
+    "nodejs"
+  ],
+  "author": "Quantiphi, Inc",
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "3.17.1",
+    "mocha": "^6.2.1",
+    "nyc": "^14.1.1"
+  },
+  "dependencies": {
+    "documentation": "^12.1.2",
+    "lodash": "^4.17.15",
+    "pluralize": "^8.0.0",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.4",
+    "xml2js": "^0.4.22"
+  }
+}
