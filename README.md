@@ -99,5 +99,3 @@ To set up multiple integration deployments simultaneously, repeat all of the ins
 The behavior of an integration can be customized via the addition of your own developer code or by editing the server.js file in the platform subdirectory.
 
 After making changes, redeploy the deployment by re-running the commands as specified in the "Deploy the Integration Using Cloud Run" section of the platform-specific integration READMEs.
-
-Test Commit
