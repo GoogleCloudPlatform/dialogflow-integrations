@@ -62,6 +62,7 @@ The integration requires platform credentials from the intended platform to func
 
 Follow the steps in the README file in the relevant platform subdirectory to obtain the credentials and setup the server.js file to deploy and start the integration:
 
+- [CM.com (SMS and WhatsApp Business)](./cm/README.md)
 - [Kik](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/kik#readme)
 - [Skype](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/skype#readme)
 - [Spark](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/spark#readme)
