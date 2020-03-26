@@ -41,7 +41,7 @@ In this section, we will cover the installation of the **salesforce-connector** 
 For installing the library, open the command line terminal and navigate to your project location.  After this run the following command for installing the library package. Note that the name of the package here is salesforce-connector.
 
 ```
-npm install https://gitlab.com/salesforce3/salesforce-connector
+npm install https://github.com/GoogleCloudPlatform/dialogflow-integrations.git
 ```
 ## Using the client library
 
@@ -378,7 +378,7 @@ const select2 = await conn.collection("Account").select(["Id, Name"]).sortBy("Na
 - **Parameters**
 <br>conditions ((Object | String)): Conditions in JSON object or SOQL ORDER BY clause string.
 
-    We can pass an object with the salesforce field name as key and also &#39;1 or -1&#39; for sorting it in ascending or descending respectively. By default sortBy() sorts in ascending order.
+    We can pass an object with the Salesforce field name as key and also &#39;1 or -1&#39; for sorting it in ascending or descending respectively. By default sortBy() sorts in ascending order.
 
 - **Returns**
 
@@ -744,7 +744,7 @@ const result = await conn.chatter().resource("feed-elements/0D52v00*****AF4RCAW/
     ```
 
 - **Parameters**
-<br>payload (Object):Request payload to be sent to the API. (Same as mentioned in [SalesForce](https://developer.salesforce.com/docs/atlas.en-us.chatterapi.meta/chatterapi/quickreference.htm))
+<br>payload (Object):Request payload to be sent to the API. (Same as mentioned in [Salesforce](https://developer.salesforce.com/docs/atlas.en-us.chatterapi.meta/chatterapi/quickreference.htm))
 
 - **Returns**
 <br>Promise : Returns create request promise.
@@ -857,7 +857,7 @@ await new Connection({ logLevel: 'INFO' }).logout();
 
 Sales Rep Requests Deal Support from Solution Engineering Team over Google Assistant using chat.
 
-**Chat based linked** : [https://gitlab.com/salesforce3/virtual-agent-internal.git](https://gitlab.com/salesforce3/virtual-agent-internal.git)
+**Chat based linked** : [https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/salesforce/dialogflow-examples/virtual-agent-internal](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/salesforce/dialogflow-examples/virtual-agent-internal)
 
 |  |  |
 |--|--|
@@ -883,7 +883,7 @@ Sales Rep Requests Deal Support from Solution Engineering Team over Google Assis
 
 Customer requesting an update on the status of their case/support ticket over voice. [External B2C Customer- Facing Problem]
 
-**Chat based linked:** [https://gitlab.com/salesforce3/virtual-agent-external.git](https://gitlab.com/salesforce3/virtual-agent-external.git)
+**Chat based linked:** [https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/salesforce/dialogflow-examples/virtual-agent-external](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/salesforce/dialogflow-examples/virtual-agent-external)
 
 |  |  |
 |--|--|
