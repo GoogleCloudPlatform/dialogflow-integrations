@@ -33,6 +33,8 @@ const projectId = 'Place your dialogflow projectId here';
 const phoneNumber = "Place your twilio phone number here";
 const accountSid = 'Place your accountSid here';
 const authToken = 'Place your authToken here';
+const chatbaseApiKey = ''; // (Optional) To enable Chatbase logging, provide your bot's API Key from https://chatbase.com/bots/main-page
+if (chatbaseApiKey) chatbase = require('@google/chatbase'); // Chatbase is Google's chatbot analytics service. Docs here: https://github.com/google/chatbase-node
 
 const client = require('twilio')(accountSid, authToken);
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
@@ -44,13 +46,50 @@ const listener = app.listen(process.env.PORT, function() {
 });
 
 app.post('/', async function(req, res) {
+  const userMsgTimestamp = Date.now().toString(); // Used for Chatbase message timing
   const body = req.body;
   const text = body.Body;
   const id = body.From;
-  const dialogflowResponse = (await sessionClient.detectIntent(
-      text, id, body)).fulfillmentText;
+  const dialogflowResponse = (await sessionClient.detectIntent(text, id, body));
   const twiml = new  MessagingResponse();
-  const message = twiml.message(dialogflowResponse);
+  const message = twiml.message(dialogflowResponse.fulfillmentText);
+  
+  // Enable Chatbase functionality if API key is set & module is loaded
+  if(chatbaseApiKey && chatbase) {
+      // Create a new message set to encompass both the user's request and Dialogflow's response
+      const msgSet = chatbase.newMessageSet()
+          .setApiKey(chatbaseApiKey)
+          .setPlatform('SMS') // Can be anything
+          .setUserId(id); // This is the "From" phone number from Twilio, used to track users & sessions in Chatbase
+
+      const userMsg = msgSet.newMessage()
+          .setAsTypeUser()
+          .setMessage(text)
+          .setTimestamp(userMsgTimestamp) // If we don't explicitly set this, Chatbase mixes up message order
+          .setIntent(dialogflowResponse.intent.displayName);
+
+      const agentMsg = msgSet.newMessage()
+          .setAsTypeAgent()
+          .setMessage(dialogflowResponse.fulfillmentText)
+          .setTimestamp(Date.now().toString()); // Make sure it's later than userMsgTimeStamp
+
+      if (dialogflowResponse.intent.isFallback === false && dialogflowResponse.intent.displayName !== "") {
+          userMsg.setAsHandled();
+      } else {
+          userMsg.setAsNotHandled();
+      }
+
+      msgSet.sendMessageSet() // Send both query and response to Chatbase in a single bundle
+          .then(set => {
+              // The API accepted our request!
+              // console.log('Successfully sent to Chatbase: ', set.getCreateResponse());
+          })
+          .catch(error => {
+              // Something went wrong!
+              console.error('Chatbase Error: ', error);
+          })
+  }
+  
   res.send(twiml.toString());
 });
 
