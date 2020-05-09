@@ -42,7 +42,6 @@ const listener = app.listen(process.env.PORT, function () {
 
 app.post('/', async function (req, res) {
   const body = req.body;
-  //console.debug("request", JSON.stringify(body));
   const text = body.message.text ||
     (!!body.message.media.mediaUri
       ? (body.message.media.title + '\n media:' + body.message.media.mediaUri)
@@ -56,7 +55,6 @@ app.post('/', async function (req, res) {
 
 app.post('/dialog', async function (req, res) {
   const body = req.body;
-  //console.dir({"dialog request": body}, { depth: null });
   return res.send();
 });
 
@@ -84,8 +82,6 @@ function sendMessage(intent, source) {
       console.warn(JSON.stringify({ unsupportedMedia: r }));
     }
   });
-
-  //console.debug(JSON.stringify({ content }));
 
   const response = cmMessagingApi.createMessage()
     .setMessage([source.from.number], source.to.number, intent.fulfillmentText)
