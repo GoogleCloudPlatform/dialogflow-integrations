@@ -5,7 +5,9 @@
 As this integration is created and maintained by CM.com, the most direct way to find support is via [their fork of the project](https://github.com/CMTelecom/dialogflow-integrations).
 In that same project, you can [open issues](https://github.com/CMTelecom/dialogflow-integrations/issues) that will be read by the CM.com team of developers.
 
-If you are in need of more direct support, you can always reach out via [email](mailto:support@cm.com) or [WhatsApp](https://wa.me/31765727000).
+Updates and fixes in the CM.com fork will be propagated to the mail Dialogflow branch upon approval by the Dialogflow team.
+
+If you are in need of more direct support, you can always reach out directly to CM.com via [email](mailto:support@cm.com) or [WhatsApp](https://wa.me/31765727000).
 
 ## Setup
 
