@@ -1,0 +1,22 @@
+{
+  "name": "cm-integration",
+  "version": "0.0.1",
+  "description": "A server that connects Google's Dialogflow to the CM.com platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dialogflow": "0.9.1",
+    "express": "^4.16.4",
+    "request": "^2.88.0",
+    "@cmdotcom/text-sdk": "^1.2.0"
+  },
+  "engines": {
+    "node": "8.x"
+  },
+  "repository": {
+    "url": "https://github.com/CMTelecom/dialogflow-integrations"
+  },
+  "license": "Apache-2.0"
+}
