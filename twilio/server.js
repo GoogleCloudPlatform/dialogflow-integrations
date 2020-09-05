@@ -16,9 +16,13 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+const { v4: uuidv4 } = require('uuid');
 
 const dialogflowSessionClient =
   require('../botlib/dialogflow_session_client.js');
@@ -31,6 +35,7 @@ const dialogflowSessionClient =
 
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const sessionClient = new dialogflowSessionClient(process.env.PROJECT_ID);
+const sessionDuration = Number(process.env.TWILIO_SESSION_LENGHT);
 
 const listener = app.listen(process.env.PORT, function () {
   console.log('Your Twilio integration server is listening on port '
@@ -41,13 +46,18 @@ app.post('/', async function (req, res) {
   const {
     body, body: {
       Body: text,
-      From: id,
-    }
-  } = req
-  const dialogflowResponse = (await sessionClient.detectIntent(
-    text, id, body)).fulfillmentText;
+      From: incomingPhoneNumber,
+    },
+    cookies: {
+      sessionId = uuidv4(),
+    },
+  } = req;
+  const dialogflowResponse = (await sessionClient
+    .detectIntent(text, sessionDuration ? sessionId : incomingPhoneNumber, body))
+    .fulfillmentText;
   const twiml = new MessagingResponse();
   twiml.message(dialogflowResponse);
+  if (sessionDuration) res.cookie('sessionId', sessionId, { maxAge: sessionDuration * 60 * 1000 })
   res.send(twiml.toString());
 });
 

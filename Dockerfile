@@ -7,7 +7,8 @@ WORKDIR /usr/src/app
 
 # Set this environmental variable to the integration you want to use
 ENV INTEGRATION=YOUR_INTEGRATION
-ENV PROJECT_ID=YOUR_GCP_PROJECT_ID
+ENV PROJECT_ID= # YOUR_GCP_PROJECT_ID
+ENV TWILIO_SESSION_LENGHT= # YOUR TWILIO SESSION DURATION IN MINUTES
 
 # Copy application dependency manifests to the container image.
 # A wildcard is used to ensure both package.json AND package-lock.json are copied.
