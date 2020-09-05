@@ -17,7 +17,7 @@ const express = require('express');
 const app = express();
 const Bot = require('@kikinteractive/kik');
 const dialogflowSessionClient =
-    require('../botlib/dialogflow_session_client.js');
+  require('../botlib/dialogflow_session_client.js');
 const filterResponses = require('../botlib/filter_responses.js');
 const protoToJson = require('../botlib/proto_to_json.js');
 
@@ -30,8 +30,7 @@ const protoToJson = require('../botlib/proto_to_json.js');
 const botName = 'Place kik bot name here';
 const kikApiKey = 'Place kik api key here';
 const webhookUrl = 'Place webhook url here';
-const projectId = 'Place dialogflow project id here';
-const sessionClient = new dialogflowSessionClient(projectId);
+const sessionClient = new dialogflowSessionClient(process.env.PROJECT_ID);
 
 let kikBot = new Bot({
   username: botName,
@@ -43,17 +42,17 @@ const port = process.env.PORT;
 
 const listener = app.listen(port, () => {
   console.log('Your Kik integration server is listening on port ' +
-      listener.address().port);
+    listener.address().port);
   init();
 });
 
-kikBot.onTextMessage(async(originalMessage) => {
+kikBot.onTextMessage(async (originalMessage) => {
   try {
     let result = await sessionClient.detectIntent(
-        originalMessage.body, originalMessage.from, originalMessage);
+      originalMessage.body, originalMessage.from, originalMessage);
     let kikMessages = await convertToKikMessages(result.fulfillmentMessages);
     await sendKikMessages(originalMessage, kikMessages);
-  } catch(e) {
+  } catch (e) {
     console.error(e);
     originalMessage.reply('Error');
   }
@@ -61,9 +60,9 @@ kikBot.onTextMessage(async(originalMessage) => {
 
 kikBot.onStartChattingMessage(async (originalMessage) => {
   let result = await sessionClient.detectIntentWithEvent(
-      'KIK_WELCOME', projectId);
+    'KIK_WELCOME', projectId);
   const kikWelcomeMessages = await convertToKikMessages(
-      result.fulfillmentMessages);
+    result.fulfillmentMessages);
   await sendKikMessages(originalMessage, kikWelcomeMessages);
 });
 
@@ -80,12 +79,12 @@ kikBot.onVideoMessage((message) => {
   sendMessageTypeNotSupported(message);
 });
 
-function init () {
+function init() {
   kikBot.updateBotConfiguration();
   app.use(kikBot.incoming());
 }
 
-function sendMessageTypeNotSupported(message){
+function sendMessageTypeNotSupported(message) {
   message.reply('Sorry, this format is not supported');
 }
 
@@ -93,9 +92,9 @@ async function convertToKikMessages(result) {
   const filteredResponses = filterResponses.filterResponses(result, 'KIK');
   let kikMessages = [];
   let quickReplyFlag;
-  for(let response of filteredResponses) {
+  for (let response of filteredResponses) {
     let kikMessage;
-    switch(true) {
+    switch (true) {
       case response.hasOwnProperty('text'): {
         kikMessage = convertTextReplyToKikMessage(response.text);
       }
@@ -123,7 +122,7 @@ async function convertToKikMessages(result) {
       kikMessages.push.apply(kikMessages, kikMessage);
     }
   }
-  if(quickReplyFlag) {
+  if (quickReplyFlag) {
     kikMessages = makeQuickReplyLast(kikMessages);
   }
   return kikMessages;
@@ -140,13 +139,13 @@ const convertPayloadToKikMessage = (message) =>
 function convertQuickReplyToKikMessage(message) {
   let quickReplies = message.quickReplies;
   let replies = [];
-  for(let quickReply of quickReplies) {
-    replies.push({type: 'text', body: quickReply});
+  for (let quickReply of quickReplies) {
+    replies.push({ type: 'text', body: quickReply });
   }
-  let kikMessage = {type: 'text'};
+  let kikMessage = { type: 'text' };
   kikMessage.body = message.title
-      ? message.title : 'Choose an item';
-  kikMessage.keyboards = [{type: 'suggested', responses: replies}];
+    ? message.title : 'Choose an item';
+  kikMessage.keyboards = [{ type: 'suggested', responses: replies }];
   return [kikMessage];
 }
 
@@ -154,9 +153,9 @@ function convertImageReplyToKikMessage(message) {
   let imageUrl = loadPictureUrl(message);
   let kikMessage;
   if (imageUrl.endsWith('.gif')) {
-    kikMessage = {type: 'video', videoUrl: imageUrl, loop: true, autoplay: true};
+    kikMessage = { type: 'video', videoUrl: imageUrl, loop: true, autoplay: true };
   } else {
-    kikMessage = {type: 'picture', picUrl: imageUrl};
+    kikMessage = { type: 'picture', picUrl: imageUrl };
   }
   return [kikMessage];
 }
@@ -169,15 +168,15 @@ function convertCardReplyToKikMessage(message) {
   let kikMessages = [];
 
   if (message.buttons.length > 0) {
-    for(let button of message.buttons) {
+    for (let button of message.buttons) {
       let text = button.text;
       let postback = button.postback;
 
       if (text) {
         if (postback && postback.startsWith('http')) {
-          linkMessages.push({type: 'link', title: text, url: postback});
+          linkMessages.push({ type: 'link', title: text, url: postback });
         } else {
-          replies.push({type: 'text', body: text});
+          replies.push({ type: 'text', body: text });
         }
       }
     }
@@ -216,18 +215,18 @@ function convertCardReplyToKikMessage(message) {
 function addImageToCardReply(message, replies) {
   let pictureMessage = convertImageReplyToKikMessage(message)[0];
   if (replies.length > 0) {
-    pictureMessage.keyboards = [{type: 'suggested', responses: replies}];
+    pictureMessage.keyboards = [{ type: 'suggested', responses: replies }];
   }
   if (message.title) {
-    pictureMessage.attribution = {name: message.title};
+    pictureMessage.attribution = { name: message.title };
   }
   return pictureMessage;
 }
 
 function addDescriptionToCardReply(message, replies) {
-  let descriptionMessage = {type: 'text', body: ''};
+  let descriptionMessage = { type: 'text', body: '' };
   if (replies.length > 0) {
-    descriptionMessage.keyboards = [{type: 'suggested', responses: replies}];
+    descriptionMessage.keyboards = [{ type: 'suggested', responses: replies }];
   }
   if (message.subtitle) {
     descriptionMessage.body = message.subtitle;
@@ -241,11 +240,11 @@ const sendKikMessages = async (originalMessage, kikMessages) =>
 //Quick Reply does not show on kik app unless it's the last message sent
 function makeQuickReplyLast(kikMessages) {
   let index = kikMessages.findIndex((kikMessage) =>
-      kikMessage.hasOwnProperty('keyboards'));
+    kikMessage.hasOwnProperty('keyboards'));
   let temp = kikMessages[index];
   kikMessages[index] = kikMessages[kikMessages.length - 1];
-  kikMessages[kikMessages.length -1] = temp;
+  kikMessages[kikMessages.length - 1] = temp;
   return kikMessages;
 }
 
-module.exports = {convertToKikMessages};
+module.exports = { convertToKikMessages };

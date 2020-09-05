@@ -17,7 +17,7 @@ const express = require('express');
 const request = require('request');
 const app = express();
 const dialogflowSessionClient =
-    require('../botlib/dialogflow_session_client.js');
+  require('../botlib/dialogflow_session_client.js');
 
 app.use(express.json());
 
@@ -31,36 +31,35 @@ app.use(express.json());
 //Upon closure the webhook is removed from spark
 
 //Insert your values here
-const sparkAccessToken ="Place your spark personal access token here";
+const sparkAccessToken = "Place your spark personal access token here";
 const targetUrl = 'Place you servers URL here';
-const projectId = 'Place your dialogflow projectId here';
 
-const sessionClient = new dialogflowSessionClient(projectId);
+const sessionClient = new dialogflowSessionClient(process.env.PROJECT_ID);
 
-const listener = app.listen(process.env.PORT, async function() {
+const listener = app.listen(process.env.PORT, async function () {
   await init();
   console.log('Your Spark integration server is listening on port '
-      + listener.address().port);
+    + listener.address().port);
 });
 
-app.post('/', async function(req, res) {
+app.post('/', async function (req, res) {
   const message = await retrieveMessage(req.body.data.id);
   if (message) {
     const dialogflowResponse = (await sessionClient.detectIntent(
-        message.text, message.email, message.payload)).fulfillmentText;
+      message.text, message.email, message.payload)).fulfillmentText;
     sendMessage(dialogflowResponse, message.email);
   }
 });
 
 process.on('SIGTERM', () => {
-  listener.close(async ()=>{
+  listener.close(async () => {
     console.log('Closing http server.');
     await deleteWebhooks();
     process.exit(0);
   });
 });
 
-async function init(){
+async function init() {
   await deleteWebhooks();
   registerWebhook();
 }
@@ -100,7 +99,7 @@ function registerWebhook() {
 }
 
 function deleteWebhooks() {
-  return new Promise((resolve, reject) =>{
+  return new Promise((resolve, reject) => {
     request.get('https://api.ciscospark.com/v1/webhooks?max=100', {
       auth: {
         bearer: sparkAccessToken
@@ -112,21 +111,21 @@ function deleteWebhooks() {
       }
       var webhooks = JSON.parse(resp.body).items;
       if (Array.isArray(webhooks)) {
-        webhooks = webhooks.filter((value, index, arr)=> {
-          return value.targetUrl===targetUrl;
+        webhooks = webhooks.filter((value, index, arr) => {
+          return value.targetUrl === targetUrl;
         });
         webhooks.forEach((webhook) => {
           request.delete(
-              'https://api.ciscospark.com/v1/webhooks/' +
-              webhook.id, {
-                auth: {
-                  bearer: sparkAccessToken
-                }
-              }, (err, resp, body) => {
-                if (err) {
-                  console.error('Failed to delete webhook :' + err);
-                }
-              });
+            'https://api.ciscospark.com/v1/webhooks/' +
+            webhook.id, {
+            auth: {
+              bearer: sparkAccessToken
+            }
+          }, (err, resp, body) => {
+            if (err) {
+              console.error('Failed to delete webhook :' + err);
+            }
+          });
         });
       }
       resolve();
@@ -135,7 +134,7 @@ function deleteWebhooks() {
 }
 
 function retrieveMessage(messageId) {
-  return new Promise((resolve, reject) =>{
+  return new Promise((resolve, reject) => {
     request.get('https://api.ciscospark.com/v1/messages/' + messageId, {
       auth: {
         bearer: sparkAccessToken
@@ -148,9 +147,9 @@ function retrieveMessage(messageId) {
       //checks to make sure the message is not from itself
       if (!((JSON.parse(resp.body).personEmail).includes('webex.bot'))) {
         const personEmail = JSON.parse(resp.body).personEmail;
-        const messageText= JSON.parse(resp.body).text;
+        const messageText = JSON.parse(resp.body).text;
         const payload = JSON.parse(resp.body);
-        resolve({text: messageText, email: personEmail, payload:payload});
+        resolve({ text: messageText, email: personEmail, payload: payload });
       } else {
         resolve(null);
       }

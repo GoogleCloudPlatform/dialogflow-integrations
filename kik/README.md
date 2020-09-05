@@ -7,7 +7,7 @@
 - Follow the instructions on the [main README file](https://github.com/GoogleCloudPlatform/dialogflow-integrations#readme) in the root directory of this repository.
 - Download the Kik app onto your mobile device.
 - Set up your Kik account on that device.
-- Replace the value of __projectId__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/kik/server.js#L33)  with your Dialogflow agent’s Project ID.
+- Replace the value of __PROJECT_ID__ in the [Dockerfile](../Dockerfile#L10)  with your Dialogflow agent’s Project ID.
 
 ### Creating a Kik Bot
 
