@@ -27,8 +27,8 @@ const Chat = require('twilio-chat');
 //See https://dialogflow.com/docs/reference/v2-auth-setup and
 // https://cloud.google.com/dialogflow/docs/setup for details.
 
-const projectId = 'Place your dialogflow projectId here';
-const accountSid = 'Place your accont SID here';
+const projectId = whatsapp;
+const accountSid = AC4ec8470861062b7bfb6ef144ec2c427b;
 const apiKey = 'Place your API key here';
 const apiSecret = 'Place your secret API key here';
 const serviceSid = 'Place your service SID here';
