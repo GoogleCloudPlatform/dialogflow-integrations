@@ -16,14 +16,14 @@
 
 (function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {        
 
-var writer = response.getStreamWriter();
-hdrs = {};
-var requestData=request.body.data;
-var state='';
-var assigned_to='';
-var context='';
-var message='';
-data={};
+  var writer = response.getStreamWriter();
+  hdrs = {};
+  var requestData=request.body.data;
+  var state='';
+  var assigned_to='';
+  var context='';
+  var message='';
+  data={};
 
 //create a new ticket
   if(requestData.queryResult.intent.displayName=='incident.create.details') {                                
