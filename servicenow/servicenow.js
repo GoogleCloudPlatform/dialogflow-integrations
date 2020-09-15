@@ -57,11 +57,11 @@
              context='success';
           }
     }
-hdrs['Content-Type'] = 'application/json';
-response.setStatus(200);
-response.setHeaders(hdrs);
+  hdrs['Content-Type'] = 'application/json';
+  response.setStatus(200);
+  response.setHeaders(hdrs);
 
-var response_body = {
+  var response_body = {
     "fulfillmentText": message,
       "payload":{
         "google": {
@@ -76,7 +76,7 @@ var response_body = {
             ]
          }
       }
-    }                                        
+   }                                        
 };
 
 writer.writeString(global.JSON.stringify(response_body));
