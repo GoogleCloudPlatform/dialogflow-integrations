@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Google Inc. All Rights Reserved.
+ * Copyright 2020 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,52 +18,42 @@
 
 var writer = response.getStreamWriter();
 hdrs = {};
-
-var x=request.body.data;
-var inc='';
-var priority='';
+var requestData=request.body.data;
 var state='';
 var assigned_to='';
 var context='';
-var command='';
 var message='';
-var status ='';
-var desc='';
-var caller='';
-var content='';
-var summary='';
-var comments='';
-
 data={};
 
 //create a new ticket
-  if(x.queryResult.intent.displayName=='incident.create.details') {                                
-     var username=x.queryResult.parameters.username + "";
-     var description=x.queryResult.parameters.description + "";
-     var ci = new GlideRecord("incident");
-     ci.initialize();
-     ci.short_description = description; 
-     ci.caller_id.setDisplayValue(username); 
-     ci.insert();
+  if(requestData.queryResult.intent.displayName=='incident.create.details') {                                
+     var username=requestData.queryResult.parameters.username + "";
+     var description=requestData.queryResult.parameters.description + "";
+     var incidentData = new GlideRecord("incident");
+     incidentData.initialize();
+     incidentData.short_description = description; 
+     incidentData.caller_id.setDisplayValue(username); 
+     incidentData.insert();
                                         
-     message="Ticket number "+ci.number+" has been created.";
-     //summary={}
+     message="Ticket number "+incidentData.number+" has been created.";
+     
      context='success';
   }
   
    //get status of ticket
-   if(x.queryResult.intent.displayName=='incident.status.number'){                                
-      var numbers=x.queryResult.parameters.number + "";
-      var ci = new GlideRecord("incident");
-      ci.addQuery("number",'ENDSWITH', numbers);
-      ci.query();
-         if (ci.next()) {
-             if(ci.assigned_to!='')
-                assigned_to=ci.getDisplayValue('assigned_to');
-             else
+   if(requestData.queryResult.intent.displayName=='incident.status.number'){                                
+      var numbers=requestData.queryResult.parameters.number + "";
+      var incidentData = new GlideRecord("incident");
+      incidentData.addQuery("number",'ENDSWITH', numbers);
+      incidentData.query();
+         if (incidentData.next()) {
+             if(incidentData.assigned_to!='') {
+                assigned_to=incidentData.getDisplayValue('assigned_to');
+             } else {
                 assigned_to="no one";
-             message="Incident "+ci.number+" is currently assigned to "+assigned_to+". Current state of the incident is ''"+ci.getDisplayValue('state')+"''. This incident was last updated by "+ci.sys_updated_by+" on "+ci.sys_updated_on+". If you would like, you can ask for the update from "+assigned_to+" by updating additional comments.";
-             //summary={}
+              }
+             message="Incident "+incidentData.number+" is currently assigned to "+assigned_to+". Current state of the incident is ''"+incidentData.getDisplayValue('state')+"''. This incident was last updated by "+incidentData.sys_updated_by+" on "+incidentData.sys_updated_on+". If you would like, you can ask for the update from "+assigned_to+" by updating additional comments.";
+         
              context='success';
           }
     }
@@ -90,5 +80,5 @@ var response_body = {
 };
 
 writer.writeString(global.JSON.stringify(response_body));
-//return response_body;
+
 })(request,response);
