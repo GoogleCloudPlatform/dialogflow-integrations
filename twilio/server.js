@@ -47,10 +47,13 @@ app.post('/', async function(req, res) {
   const body = req.body;
   const text = body.Body;
   const id = body.From;
-  const dialogflowResponse = (await sessionClient.detectIntent(
-      text, id, body)).fulfillmentText;
+
+  const dialogflowResponse = (await sessionClient.detectIntent(text, id, body)).fulfillmentMessages;
+  const tw = dialogflowResponse.find((m) => m.platform === 'PLATFORM_UNSPECIFIED');
+  const msg = tw.text.text[0];
+
   const twiml = new  MessagingResponse();
-  const message = twiml.message(dialogflowResponse);
+  const message = twiml.message(msg);
   res.send(twiml.toString());
 });
 
