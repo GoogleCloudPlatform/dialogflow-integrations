@@ -29,7 +29,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 //See https://dialogflow.com/docs/reference/v2-auth-setup and
 // https://cloud.google.com/dialogflow/docs/setup for details.
 
-const projectId = 'Place your dialogflow projectId here';
+const projectId = 'whatsappchatbot-cmfh';
 const phoneNumber = "+14155238886";
 const accountSid = 'AC32cf0ad0005c9aac5d7b73f0e68a8c96';
 const authToken = '5e1792b809f40a967a1cacaac8b39bfa';
