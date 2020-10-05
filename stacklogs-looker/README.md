@@ -221,7 +221,7 @@ Marketplace installations are created with a ["bare repo"](https://docs.looker.c
 
 To access Git integration options, you must have Development Mode turned on.
 
-**This is not an officially supported Google product**
+***This is not an officially supported Google product***
  
 
 
