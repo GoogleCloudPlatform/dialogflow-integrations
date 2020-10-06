@@ -158,7 +158,7 @@ Once we have our connection to BigQuery established, we can easily install the D
 To navigate to the marketplace, we'll click on the "shop" icon on the top right of the navbar.
 
 
-![Marketplace Icon](/images/looker_marketplace/marketplaceicon.png)
+![Marketplace Icon](images/looker_marketplace/marketplaceicon.png)
 
 
 Here in the marketplace you can find additional visualizations, models, and extensions for your Looker instance including custom web applications like the [Data Dictionary](https://docs.looker.com/data-modeling/extension-framework/data-dictionary) and popular blocks for [Google Marketing Platform](https://looker.com/platform/blocks/source/looker-for-google-marketing-platform). 
@@ -166,20 +166,19 @@ Here in the marketplace you can find additional visualizations, models, and exte
 We'll find the Dialogflow Parser Block under "Models". 
 
  
-![Marketplace Splash](/images/looker_marketplace/marketplacesplash.png)
+![Marketplace Splash](images/looker_marketplace/marketplacesplash.png)
 
 
 Once in "Models", we'll locate the Dialogflow Parser Block.
 
-<img src="/images/looker_marketplace/listingicon.png" width="450">
 
-![Marketplace Listing](/images/looker_marketplace/listingpage.png)
+![Marketplace Listing](images/looker_marketplace/listingpage.png)
 
 
 After hitting the "Install" button, we'll enter our BigQuery connection and dataset and finalize the installation.
 
+![Marketplace Listing](images/looker_marketplace/connectionconstant.png.png)
 
-<img src="/images/looker_marketplace/connectionconstant.png" width="600">
 
 
 
