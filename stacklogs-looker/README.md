@@ -13,7 +13,7 @@ High Level Overview
 
 
 
-How Stackdriver exports work
+How Stackdriver exports work:
 
 The following diagram illustrates how Cloud Logging treats exported log entries:
 https://cloud.google.com/logging/docs/export#overview
