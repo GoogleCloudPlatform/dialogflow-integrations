@@ -177,7 +177,7 @@ Once in "Models", we'll locate the Dialogflow Parser Block.
 
 After hitting the "Install" button, we'll enter our BigQuery connection and dataset and finalize the installation.
 
-![Marketplace Listing](images/looker_marketplace/connectionconstant.png.png)
+![Marketplace Install](images/looker_marketplace/connectionconstant.png)
 
 
 
