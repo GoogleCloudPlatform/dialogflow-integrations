@@ -1,4 +1,4 @@
-# dialogflow-looker
+# stacklogs-looker
 Exporting Dialogflow Log Files to BigQuery and Visualizing Conversations with Looker
 
 
