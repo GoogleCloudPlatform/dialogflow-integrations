@@ -9,7 +9,7 @@ navigate to *VPC Network -> External IP addresses* to create new static external
 Please note the IP address once it has been reserved. We will use the IP address to formulate our domain in this example.   
   
     
-### Create a Node.js VM on Compute Engine
+### Create a VM
 
 Create a Node JS VM with the following steps:
 
@@ -95,7 +95,7 @@ Navigate to *Network Services -> Load Balancing* to create your new Load Balance
 
 ![alt_text](images/LB.png "lb")  
 
-Give your LB a name, select the [VM](#Create_a_Node.js_VM_on_Compute_Engine) created previously as *Backend Configuration*  
+Give your LB a name, select the [VM](#Create_a_VM) created previously as *Backend Configuration*  
 
 For front end configuration. make sure to change protocol to *HTTPS* and create a Google Manage certificate for domain (<external_ip>.nip.io) for your LB.   
 
