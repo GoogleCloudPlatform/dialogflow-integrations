@@ -4,7 +4,7 @@ Often a secure connection is needed to interact with some fulfillment logic that
 ### Allocate external IP
 We first need to allocate an external IP for this secure communication. In this example, we will need to know the IP address to complete the domain registration for   
 ```<static_ip>.nip.io```  
-navigate to *VPC Network -> External IP addresses* to create new static external IP address. for this example, we will use a standard tier IP address that is regional. If you are implementing a solution for production, it's recommended that you use the premier tier external IP.   
+navigate to *VPC Network -> External IP addresses* to create a new static external IP address. For this example, we will use a Standard tier IP address that is regional. If you are implementing a solution for production, it's recommended that you use the Premium tier external IP.   
 ![externalip](images/external_ip.png "external ip")  
 Please note the IP address once it has been reserved. We will use the IP address to formulate our domain in this example.   
   
@@ -97,11 +97,11 @@ Navigate to *Network Services -> Load Balancing* to create your new Load Balance
 
 Give your LB a name, select the [VM](#Create-a-VM) created previously as *Backend Configuration*  
 
-For front end configuration. make sure to change protocol to *HTTPS* and create a Google Manage certificate for domain (<external_ip>.nip.io) for your LB.   
+For front end configuration. make sure to change protocol to *HTTPS* and create a Google-managed certificate for domain (<external_ip>.nip.io) for your LB.   
 
 ![alt_text](images/front_end_config.png "front end config")  
 
-once complete, you should see your newly created LB with a green check mark indicating that it's ready to take on traffic.   
+Once complete, you should see your newly created LB with a green check mark indicating that it's ready to take on traffic.   
 
 ![alt_text](images/LB_list.png "front end config")  
 
