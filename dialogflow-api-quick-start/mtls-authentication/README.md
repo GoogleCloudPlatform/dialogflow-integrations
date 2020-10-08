@@ -91,11 +91,11 @@ sudo /etc/init.d/apache2 restart
   
 
 ### Create HTTPS load balancer and attach VM as backend
-Navigate to *Network Services -> Load Balancing* to create your new Load Balancer (LB). For this example, we will create a HTTP(s) LB that uses the static [IP](#Allocate_external_IP)  address created previously.   
+Navigate to *Network Services -> Load Balancing* to create your new Load Balancer (LB). For this example, we will create a HTTP(s) LB that uses the static [IP](#Allocate-external-IP)  address created previously.   
 
 ![alt_text](images/LB.png "lb")  
 
-Give your LB a name, select the [VM](#Create_a_VM) created previously as *Backend Configuration*  
+Give your LB a name, select the [VM](#Create-a-VM) created previously as *Backend Configuration*  
 
 For front end configuration. make sure to change protocol to *HTTPS* and create a Google Manage certificate for domain (<external_ip>.nip.io) for your LB.   
 
