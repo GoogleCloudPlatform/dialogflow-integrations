@@ -4,7 +4,7 @@ Exporting Dialogflow Log Files to BigQuery and Visualizing Conversations with Lo
 
 High Level Overview
 1. Create Dialogflow Agent
-2. Create BigQuery DataSet to hold Dialogflow Stackdriver Logs and Looker Persistent Derived Table
+2. Create BigQuery dataSet to hold Dialogflow Stackdriver Logs and Looker Persistent Derived Table
 3. Create StackDriver Sink Export to BigQuery
 4. Confirm BigQuery Logs being loaded using SQL Test
 5. Define Looker Connection to BigQuery, Create Looker Service Account, and make sure to configure Persistent Derived Table
