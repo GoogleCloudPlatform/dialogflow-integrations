@@ -73,7 +73,7 @@ You can see that there are two log files related to Dialogflow. We would like to
 
 ![Creating the Sink Screenshot](images/image16.png)
 
-You can use the sink creation wizard, where you provide the sink name, the destination - BigQuery, and you can either select a BigQuery DataSet, or create a BigQuery DataSet. The Dataset is going to receive the dialogflow logs.
+You can use the sink creation wizard, where you provide the sink name, the destination - BigQuery, and you can either select a BigQuery dataSet, or create a BigQuery dataSet. The dataset is going to receive the dialogflow logs.
 
 ![Creating the Sink Screenshot](images/image10.png)
 
@@ -134,7 +134,7 @@ Notice the BigQuery Connector and the broad support for other databases.
 Looker supports a wide range of SQL database dialects and will continue to improve the feature implementations for existing dialect options as well as add new dialects. Because our modeling layer, LookML, builds on top of the in-database features available, some dialects allow for a more powerful implementation than others. More Info - https://docs.looker.com/setup-and-management/database-config
 
 
-Here are the instructions on how to connect Looker to your BigQuery DataSet: 
+Here are the instructions on how to connect Looker to your BigQuery dataSet: 
 https://docs.looker.com/setup-and-management/database-config/google-bigquery
 
 The general steps for setting up a Google BigQuery Standard SQL or Google BigQuery Legacy SQL connection are:
