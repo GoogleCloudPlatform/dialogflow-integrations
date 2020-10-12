@@ -1,0 +1,77 @@
+substitutions:
+    _APP_NAME: nodeapp # change this value for your custom app
+    _REGION: us-central1 # change this value if you need your static IP to be of a different tier or region
+    _ZONE: us-central1-a # change this value for the VM instance
+    _DOCKER_IMAGE: gcr.io/control-plane-275516/nodeapp # change this value for container image location
+    _VM_INSTANCE_NAME: node-vm # change this value for vm instance name
+    _VM_INSTANCE_GROUP: node-group # change this value for vm instance group name
+    _BACKEND_SERVICE_NAME: node-backend-service # change this value for backend service group name
+options:
+  substitution_option: 'ALLOW_LOOSE'
+steps:
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-image'
+  entrypoint: 'bash'
+  args:
+  - '-uo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying container image resources ********" \
+    && gcloud container images delete ${_DOCKER_IMAGE} --force-delete-tags --quiet || echo true \
+    && echo "****** End destroying container image resource delete ********" 
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-vm-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying vm resources ********" \
+    && gcloud --quiet compute instances delete ${_VM_INSTANCE_NAME} --zone ${_ZONE} || echo true 
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-fw-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying vm resources ********" \
+    && gcloud -q compute firewall-rules delete fw-allow-health-check || echo true
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-backend-service-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying backend services resources ********" \
+    && gcloud -q compute backend-services delete ${_BACKEND_SERVICE_NAME} --global || echo true
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-vm-instance-group-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying instance group resources ********" \
+    && gcloud --quiet compute instance-groups unmanaged delete ${_VM_INSTANCE_GROUP} --zone ${_ZONE} || echo true 
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-public-ip-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying public ip resources ********" \
+    && gcloud --quiet compute addresses delete ${_APP_NAME} --region ${_REGION} || echo true
