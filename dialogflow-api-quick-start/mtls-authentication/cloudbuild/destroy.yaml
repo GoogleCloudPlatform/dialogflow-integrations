@@ -44,6 +44,50 @@ steps:
     && gcloud -q compute firewall-rules delete fw-allow-health-check || echo true
 
 - name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-web-map-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying web map resources ********" \
+    && gcloud -q compute url-maps delete web-map-https || echo true
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-target-https-proxies-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying target-https-proxies resources ********" \
+    && gcloud -q compute target-https-proxies delete https-lb-proxy || echo true
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-forwarding-rules-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying forwarding-rules resources ********" \
+    && gcloud -q compute forwarding-rules delete https-content-rule --global || echo true
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-ssl-certificates-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying ssl-certificates resources ********" \
+    && gcloud -q compute ssl-certificates delete ${_APP_NAME}-cert --global || echo true
+
+- name: 'gcr.io/cloud-builders/gcloud'
   id: 'destroy-backend-service-resources'
   entrypoint: 'bash'
   args:
@@ -74,4 +118,6 @@ steps:
   - '-c'
   - |-
     echo "****** Starting to destroying public ip resources ********" \
-    && gcloud --quiet compute addresses delete ${_APP_NAME} --region ${_REGION} || echo true
+    && gcloud --quiet compute addresses delete ${_APP_NAME} --global || echo true
+
+
