@@ -6,7 +6,7 @@ substitutions:
     _VM_INSTANCE_NAME: node-vm # change this value for vm instance name
     _VM_INSTANCE_GROUP: node-group # change this value for vm instance group name
     _BACKEND_SERVICE_NAME: node-backend-service # change this value for backend service group name
-# images: ['gcr.io/control-plane-275516/nodeapp']
+images: ['gcr.io/control-plane-275516/nodeapp']
 options:
   substitution_option: 'ALLOW_LOOSE'
 
@@ -15,7 +15,11 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/control-plane-275516/nodeapp', '.']
   id: 'container-create'
-  
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/control-plane-275516/nodeapp']
+  id: 'container-push'
+  waitFor: ['container-create']
+
 # Create the static public facing IP
 - name: 'gcr.io/cloud-builders/gcloud'
   id: 'public-ip-create'

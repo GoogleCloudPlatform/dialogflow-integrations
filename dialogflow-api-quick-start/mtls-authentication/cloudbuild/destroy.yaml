@@ -53,6 +53,8 @@ steps:
   - |-
     echo "****** Starting to destroying web map resources ********" \
     && gcloud -q compute url-maps delete web-map-https || echo true
+  waitFor: ['destroy-fw-resources']
+
 
 - name: 'gcr.io/cloud-builders/gcloud'
   id: 'destroy-target-https-proxies-resources'
@@ -64,7 +66,8 @@ steps:
   - |-
     echo "****** Starting to destroying target-https-proxies resources ********" \
     && gcloud -q compute target-https-proxies delete https-lb-proxy || echo true
-
+  waitFor: ['destroy-web-map-resources']
+  
 - name: 'gcr.io/cloud-builders/gcloud'
   id: 'destroy-forwarding-rules-resources'
   entrypoint: 'bash'
@@ -108,6 +111,7 @@ steps:
   - |-
     echo "****** Starting to destroying instance group resources ********" \
     && gcloud --quiet compute instance-groups unmanaged delete ${_VM_INSTANCE_GROUP} --zone ${_ZONE} || echo true 
+  waitFor: ['destroy-backend-service-resources']
 
 - name: 'gcr.io/cloud-builders/gcloud'
   id: 'destroy-public-ip-resources'
@@ -119,5 +123,6 @@ steps:
   - |-
     echo "****** Starting to destroying public ip resources ********" \
     && gcloud --quiet compute addresses delete ${_APP_NAME} --global || echo true
+  waitFor: ['destroy-vm-instance-group-resources']
 
 
