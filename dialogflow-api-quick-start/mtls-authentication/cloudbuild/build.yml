@@ -36,7 +36,7 @@ steps:
     && export ext_ip=$(gcloud compute addresses describe ${_APP_NAME} --global| sed -n 's/^address://p') \
     && echo $ext_ip'.nip.io' \
     && echo "****** End External IP Allocation ********"  \
-  waitFor: ['container-create']
+  waitFor: ['container-push']
 
 # Crate a VM that runs the node docker image
 - name: 'gcr.io/cloud-builders/gcloud'
@@ -54,7 +54,7 @@ steps:
         --no-address \
         --tags http-server,https-server,ssh,nodeapp,allow-health-check \
     && echo "****** End VM Creation ********"  \
-  waitFor: ['container-create']
+  waitFor: ['container-push']
 
 # Crate a instance group that runs the includes the VM instance
 - name: 'gcr.io/cloud-builders/gcloud'
@@ -75,7 +75,7 @@ steps:
         --named-ports http:8080 \
         --zone ${_ZONE} \
     && echo "****** End instance group creation ********" 
-  waitFor: ['container-create', 'vm-create']
+  waitFor: ['container-create','container-push','vm-create']
 
 # Crate a FW rules for the VM instance
 - name: 'gcr.io/cloud-builders/gcloud'
@@ -95,7 +95,8 @@ steps:
         --target-tags=nodeapp \
         --rules=tcp \
     && echo "****** End instance group creation ********" 
-  waitFor: ['container-create', 'vm-create']
+  waitFor: ['container-create','container-push','vm-create']
+
 
 
 # create SSL Cert 
