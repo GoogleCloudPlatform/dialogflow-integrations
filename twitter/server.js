@@ -105,8 +105,7 @@ function sendStatus(text, tweetId) {
       }
     });
   } else {
-    console.error('Failed to send status because it is longer than 280 characters: ' +
-        err);
+    console.error('Failed to send status because it is longer than 280 characters: ');
   }
 }
 
