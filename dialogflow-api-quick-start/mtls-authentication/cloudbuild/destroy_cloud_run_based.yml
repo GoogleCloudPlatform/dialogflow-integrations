@@ -100,7 +100,7 @@ steps:
   - |-
     echo "****** Starting to destroying backend services resources ********" \
     && gcloud -q compute backend-services delete ${_BACKEND_SERVICE_NAME} --global || echo true
-  waitFor: ['destroy-forwarding-rules-resources']
+  waitFor: ['destroy-web-map-resources']
 
 - name: 'gcr.io/cloud-builders/gcloud'
   id: 'destroy-network-instance-group-resources'
