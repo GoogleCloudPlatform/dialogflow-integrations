@@ -30,7 +30,7 @@ steps:
   - '-c'
   - |-
     echo "****** Starting to destroying vm resources ********" \
-    &&  gcloud -q run services delete ${_SERVICE_NAME} || echo true 
+    &&  gcloud -q run services delete ${_SERVICE_NAME} --platform managed --region ${_REGION}  || echo true 
 
 - name: 'gcr.io/cloud-builders/gcloud'
   id: 'destroy-fw-resources'
@@ -112,7 +112,7 @@ steps:
   - |-
     echo "****** Starting to destroying instance group resources ********" \
     && gcloud -q compute network-endpoint-groups delete ${_NETWORK_ENDPOINT_GROUP} --region ${_REGION} || echo true 
-  # waitFor: ['destroy-backend-service-resources']
+  waitFor: ['destroy-backend-service-resources']
 
 - name: 'gcr.io/cloud-builders/gcloud'
   id: 'destroy-public-ip-resources'
