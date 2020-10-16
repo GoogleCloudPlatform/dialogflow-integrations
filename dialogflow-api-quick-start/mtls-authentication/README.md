@@ -1,6 +1,37 @@
 ## **Mutual TLS authentication with Dialogflow**
 Often a secure connection is needed to interact with some fulfillment logic that needs to be encrypted in flight. This guide attempts to show a sample implementation that addresses this need. The GCP products we will use in this sample implementation are [Load Balancer (LB)](https://cloud.google.com/load-balancing) as the front end with optional VM or Cloud Run as backend services. We want to utilize GCP's Load Balancer since it offers the most flexibility for certificate management. We also like the flexibility that comes with using a LB since it allows for us to switch or scale backend services without end user impact. For this example, we will use *nip.io* for our sample domain.   
-  
+
+![arch](images/lb-serverless-run.svg "arch")  
+
+
+### Automated Deployment with Cloud Build
+This repo provides some [Cloud Build](https://cloud.google.com/cloud-build) yamls that steps through two deployment process via either [Cloud Run](https://cloud.google.com/run) or VM based. If you do not want to do this manually, use Cloud Build to deploy the local [repo](./cloudbuild/build_cloud_run.yml) for reference.  If you wish to manually step through the setup, jump to the [Allocate IP Section](#Allocate-external-IP).  
+
+#### pre-req
+Ensure Cloud Build account has proper permissions to access your project resources. You can step through this [Guide](https://cloud.google.com/cloud-build/docs/quickstart-deploy) for reference.  
+
+Ensure you have the latest GCloud SDK installed on your local machine. You can follow this [Guide](https://cloud.google.com/sdk/docs/install) for reference.  
+
+#### start a build
+To kick off a cloud build pipeline, execute the following command:  
+
+```     gcloud builds submit --config build_cloud_run.yml ../```  
+
+the pipeline will deploy the following resources:  
+1. Create Docker image from Dockerfile and push to [GCP container registry](https://cloud.google.com/container-registry/)  
+2. Deploy cloudrun service from Docker image created from previous step
+3. Allocate Static IP for Load Balancer
+4. Create GCP managed SSL cert for the <Static IP >.nip.io domain (please change this to your own domain or provide your own certificates)  
+5. Create Load Balancer and map app as backend service.   
+
+#### clean up
+To clean up, run the following command:  
+
+```     gcloud builds submit --config destroy_cloud_run_based.yml```  
+
+
+once all the resources are created. open up your browser to https://<External IP>.nip.io to validate. Finally Jump to [DialogFlow set up](#Setup-Dialogflow) to complete. 
+
 ### Allocate external IP
 We first need to allocate an external IP for this secure communication. In this example, we will need to know the IP address to complete the domain registration for   
 ```<static_ip>.nip.io```  
@@ -106,7 +137,7 @@ Once complete, you should see your newly created LB with a green check mark indi
 ![alt_text](images/LB_list.png "front end config")  
 
   
-### **Setup Dialogflow**
+### Setup Dialogflow
 
 First, make sure that in Dialogflow, you are pointing to your new VM, from the **fulfillments** screen.
 
