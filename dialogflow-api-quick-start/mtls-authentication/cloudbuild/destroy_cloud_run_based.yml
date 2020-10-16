@@ -3,8 +3,8 @@ substitutions:
     _REGION: us-central1 # change this value if you need your static IP to be of a different tier or region
     _ZONE: us-central1-a # change this value for the VM instance
     _DOCKER_IMAGE: gcr.io/control-plane-275516/nodeapp # change this value for container image location
-    _VM_INSTANCE_NAME: node-vm # change this value for vm instance name
-    _VM_INSTANCE_GROUP: node-group # change this value for vm instance group name
+    _SERVICE_NAME: node-service
+    _NETWORK_ENDPOINT_GROUP: node-neg 
     _BACKEND_SERVICE_NAME: node-backend-service # change this value for backend service group name
 options:
   substitution_option: 'ALLOW_LOOSE'
@@ -22,7 +22,7 @@ steps:
     && echo "****** End destroying container image resource delete ********" 
 
 - name: 'gcr.io/cloud-builders/gcloud'
-  id: 'destroy-vm-resources'
+  id: 'destroy-cloudrun-resources'
   entrypoint: 'bash'
   args:
   - '-eEuo'
@@ -30,7 +30,7 @@ steps:
   - '-c'
   - |-
     echo "****** Starting to destroying vm resources ********" \
-    && gcloud --quiet compute instances delete ${_VM_INSTANCE_NAME} --zone ${_ZONE} || echo true 
+    &&  gcloud -q run services delete ${_SERVICE_NAME} || echo true 
 
 - name: 'gcr.io/cloud-builders/gcloud'
   id: 'destroy-fw-resources'
@@ -80,17 +80,6 @@ steps:
     && gcloud -q compute forwarding-rules delete https-content-rule --global || echo true
 
 - name: 'gcr.io/cloud-builders/gcloud'
-  id: 'destroy-ssl-certificates-resources'
-  entrypoint: 'bash'
-  args:
-  - '-eEuo'
-  - 'pipefail'
-  - '-c'
-  - |-
-    echo "****** Starting to destroying ssl-certificates resources ********" \
-    && gcloud -q compute ssl-certificates delete ${_APP_NAME}-cert --global || echo true
-
-- name: 'gcr.io/cloud-builders/gcloud'
   id: 'destroy-http-basic-check-resources'
   entrypoint: 'bash'
   args:
@@ -99,7 +88,7 @@ steps:
   - '-c'
   - |-
     echo "****** Starting to destroying ssl-certificates resources ********" \
-    && gcloud -q gcloud compute health-checks delete  http-basic-check || echo true
+    && gcloud -q compute health-checks delete http-basic-check || echo true
 
 - name: 'gcr.io/cloud-builders/gcloud'
   id: 'destroy-backend-service-resources'
@@ -114,7 +103,7 @@ steps:
   waitFor: ['destroy-forwarding-rules-resources']
 
 - name: 'gcr.io/cloud-builders/gcloud'
-  id: 'destroy-vm-instance-group-resources'
+  id: 'destroy-network-instance-group-resources'
   entrypoint: 'bash'
   args:
   - '-eEuo'
@@ -122,8 +111,8 @@ steps:
   - '-c'
   - |-
     echo "****** Starting to destroying instance group resources ********" \
-    && gcloud --quiet compute instance-groups unmanaged delete ${_VM_INSTANCE_GROUP} --zone ${_ZONE} || echo true 
-  waitFor: ['destroy-backend-service-resources']
+    && gcloud -q compute network-endpoint-groups delete ${_NETWORK_ENDPOINT_GROUP} --region ${_REGION} || echo true 
+  # waitFor: ['destroy-backend-service-resources']
 
 - name: 'gcr.io/cloud-builders/gcloud'
   id: 'destroy-public-ip-resources'
@@ -135,5 +124,16 @@ steps:
   - |-
     echo "****** Starting to destroying public ip resources ********" \
     && gcloud --quiet compute addresses delete ${_APP_NAME} --global || echo true
-  waitFor: ['destroy-vm-instance-group-resources']
+  waitFor: ['destroy-network-instance-group-resources']
 
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-ssl-certificates-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying ssl-certificates resources ********" \
+    && gcloud -q compute ssl-certificates delete ${_APP_NAME}-cert --global || echo true
+  waitFor: ['destroy-network-instance-group-resources']
