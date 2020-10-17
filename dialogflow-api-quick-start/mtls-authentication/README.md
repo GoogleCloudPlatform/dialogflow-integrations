@@ -1,11 +1,16 @@
 ## **Mutual TLS authentication with Dialogflow**
-Often a secure connection is needed to interact with some fulfillment logic that needs to be encrypted in flight. This guide attempts to show a sample implementation that addresses this need. The GCP products we will use in this sample implementation are [Load Balancer (LB)](https://cloud.google.com/load-balancing) as the front end with optional VM or Cloud Run as backend services. We want to utilize GCP's Load Balancer since it offers the most flexibility for certificate management. We also like the flexibility that comes with using a LB since it allows for us to switch or scale backend services without end user impact. For this example, we will use *nip.io* for our sample domain.   
+Often a secure connection is needed to interact with some fulfillment logic that needs to be encrypted in flight. This guide attempts to show a sample implementation that addresses this need. The GCP products we will use in this sample implementation are [Load Balancer (LB)](https://cloud.google.com/load-balancing) as the front end with optional VM or Cloud Run as backend services. We want to utilize GCP's Load Balancer since it offers the most flexibility for certificate management. We also like the flexibility that comes with using a LB since it allows for us to switch or scale backend services without end user impact. For this example, we will use *nip.io* as our sample domain.   
 
 ![arch](images/lb-serverless-run.svg "arch")  
 
 
+## Deployment Methods
+
+This repo provides [Cloud Build](https://cloud.google.com/cloud-build) yamls for automated deployment. You can also deploy manually if you follow the steps starting with [Allocate IP Section](#Allocate-external-IP). 
+
 ### Automated Deployment with Cloud Build
-This repo provides some [Cloud Build](https://cloud.google.com/cloud-build) yamls that steps through two deployment process via either [Cloud Run](https://cloud.google.com/run) or VM based. If you do not want to do this manually, use Cloud Build to deploy the local [repo](./cloudbuild/build_cloud_run.yml) for reference.  If you wish to manually step through the setup, jump to the [Allocate IP Section](#Allocate-external-IP).  
+This repo provides a [Cloud Build](https://cloud.google.com/cloud-build) yamls that steps through a deployment process via either [Cloud Run](https://cloud.google.com/run).  
+ 
 
 #### pre-req
 Ensure Cloud Build account has proper permissions to access your project resources. You can step through this [Guide](https://cloud.google.com/cloud-build/docs/quickstart-deploy) for reference.  
