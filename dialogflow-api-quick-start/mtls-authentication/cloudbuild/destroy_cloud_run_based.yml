@@ -1,0 +1,139 @@
+substitutions:
+    _APP_NAME: nodeapp # change this value for your custom app
+    _REGION: us-central1 # change this value if you need your static IP to be of a different tier or region
+    _ZONE: us-central1-a # change this value for the VM instance
+    _DOCKER_IMAGE: gcr.io/control-plane-275516/nodeapp # change this value for container image location
+    _SERVICE_NAME: node-service
+    _NETWORK_ENDPOINT_GROUP: node-neg 
+    _BACKEND_SERVICE_NAME: node-backend-service # change this value for backend service group name
+options:
+  substitution_option: 'ALLOW_LOOSE'
+steps:
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-image'
+  entrypoint: 'bash'
+  args:
+  - '-uo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying container image resources ********" \
+    && gcloud container images delete ${_DOCKER_IMAGE} --force-delete-tags --quiet || echo true \
+    && echo "****** End destroying container image resource delete ********" 
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-cloudrun-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying vm resources ********" \
+    &&  gcloud -q run services delete ${_SERVICE_NAME} --platform managed --region ${_REGION}  || echo true 
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-fw-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying vm resources ********" \
+    && gcloud -q compute firewall-rules delete fw-allow-health-check || echo true
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-web-map-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying web map resources ********" \
+    && gcloud -q compute url-maps delete web-map-https || echo true
+  waitFor: ['destroy-fw-resources']
+
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-target-https-proxies-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying target-https-proxies resources ********" \
+    && gcloud -q compute target-https-proxies delete https-lb-proxy || echo true
+  waitFor: ['destroy-web-map-resources']
+  
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-forwarding-rules-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying forwarding-rules resources ********" \
+    && gcloud -q compute forwarding-rules delete https-content-rule --global || echo true
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-http-basic-check-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying ssl-certificates resources ********" \
+    && gcloud -q compute health-checks delete http-basic-check || echo true
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-backend-service-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying backend services resources ********" \
+    && gcloud -q compute backend-services delete ${_BACKEND_SERVICE_NAME} --global || echo true
+  waitFor: ['destroy-web-map-resources']
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-network-instance-group-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying instance group resources ********" \
+    && gcloud -q compute network-endpoint-groups delete ${_NETWORK_ENDPOINT_GROUP} --region ${_REGION} || echo true 
+  waitFor: ['destroy-backend-service-resources']
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-public-ip-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying public ip resources ********" \
+    && gcloud --quiet compute addresses delete ${_APP_NAME} --global || echo true
+  waitFor: ['destroy-network-instance-group-resources']
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'destroy-ssl-certificates-resources'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to destroying ssl-certificates resources ********" \
+    && gcloud -q compute ssl-certificates delete ${_APP_NAME}-cert --global || echo true
+  waitFor: ['destroy-network-instance-group-resources']

@@ -1,0 +1,110 @@
+substitutions:
+    _APP_NAME: nodeapp # change this value for your custom app
+    _REGION: us-central1 # change this value if you need your static IP to be of a different tier or region
+    _ZONE: us-central1-a # change this value for the VM instance
+    _DOCKER_IMAGE: gcr.io/control-plane-275516/nodeapp # change this value for container image location
+    _SERVICE_NAME: node-service
+    _NETWORK_ENDPOINT_GROUP: node-neg 
+    _BACKEND_SERVICE_NAME: node-backend-service # change this value for backend service group name
+images: ['gcr.io/control-plane-275516/nodeapp']
+options:
+  substitution_option: 'ALLOW_LOOSE'
+
+steps:
+# Buuild a docker image with node application
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/control-plane-275516/nodeapp', '.']
+  id: 'container-create'
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/control-plane-275516/nodeapp']
+  id: 'container-push'
+  waitFor: ['container-create']
+
+# Create the static public facing IP
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'public-ip-create'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting to allocate External IP ********"  \
+    && gcloud compute addresses create ${_APP_NAME} \
+        --ip-version=IPV4 \
+        --global \
+    && export ext_ip=$(gcloud compute addresses describe ${_APP_NAME} --global| sed -n 's/^address://p') \
+    && echo $ext_ip'.nip.io' \
+    && echo "****** End External IP Allocation ********"  \
+  waitFor: ['container-push']
+
+# deploy container image with cloudrun
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'cloudrun-deplpy-create'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting cloud run deployment creation ********"  \
+    && gcloud run deploy ${_SERVICE_NAME} --image ${_DOCKER_IMAGE} \
+        --allow-unauthenticated \
+        --region ${_REGION} \
+        --platform managed \
+    && echo "****** End cloud run deployment Creation ********"  \
+  waitFor: ['container-push']
+
+# create SSL Cert 
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'SSL-Cert-create'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting SSL cert creation ********"  \
+    && export ext_ip=$(gcloud compute addresses describe ${_APP_NAME} --global | sed -n 's/^address://p') \
+    && export ext_ip="$(echo -e "${ext_ip}" | tr -d '[:space:]')" \
+    && export ext_ip=$ext_ip'.nip.io' \
+    && echo $ext_ip \
+    && gcloud compute ssl-certificates create ${_APP_NAME}-cert \
+        --description=${_APP_NAME}_cert \
+        --domains=$ext_ip \
+        --global \
+    && echo "****** End SSL cert creation ********" 
+  waitFor: ['public-ip-create']
+
+# create LB 
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'LB-service-create'
+  entrypoint: 'bash'
+  args:
+  - '-eEuo'
+  - 'pipefail'
+  - '-c'
+  - |-
+    echo "****** Starting LB service group creation ********"  \
+    &&  gcloud compute network-endpoint-groups create ${_NETWORK_ENDPOINT_GROUP} \
+          --region ${_REGION}\
+          --network-endpoint-type serverless  \
+          --cloud-run-service ${_SERVICE_NAME} \
+    &&  gcloud compute backend-services create ${_BACKEND_SERVICE_NAME} \
+          --global \
+    &&  gcloud compute backend-services add-backend ${_BACKEND_SERVICE_NAME} \
+          --network-endpoint-group ${_NETWORK_ENDPOINT_GROUP} \
+          --network-endpoint-group-region ${_REGION} \
+          --global \
+    &&  gcloud compute url-maps create web-map-https \
+          --default-service ${_BACKEND_SERVICE_NAME} \
+    &&  gcloud compute target-https-proxies create https-lb-proxy \
+          --url-map web-map-https --ssl-certificates ${_APP_NAME}-cert \
+    &&  gcloud compute forwarding-rules create https-content-rule \
+          --address ${_APP_NAME}\
+          --global \
+          --target-https-proxy=https-lb-proxy \
+          --ports=443 \
+    && echo "****** End LB service group creation ********" 
+  waitFor: ['container-create', 'cloudrun-deplpy-create','SSL-Cert-create']

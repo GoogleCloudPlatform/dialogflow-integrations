@@ -1,13 +1,58 @@
-### **Mutual TLS authentication with Dialogflow**
+## **Mutual TLS authentication with Dialogflow**
+Often a secure connection is needed to interact with some fulfillment logic that needs to be encrypted in flight. This guide attempts to show a sample implementation that addresses this need. The GCP products we will use in this sample implementation are [Load Balancer (LB)](https://cloud.google.com/load-balancing) as the front end with optional VM or Cloud Run as backend services. We want to utilize GCP's Load Balancer since it offers the most flexibility for certificate management. We also like the flexibility that comes with using a LB since it allows for us to switch or scale backend services without end user impact. For this example, we will use *nip.io* as our sample domain.   
 
-**Create a Node.js VM on Compute Engine**
+![arch](images/lb-serverless-run.svg "arch")  
+
+
+## Deployment Methods
+
+This repo provides [Cloud Build](https://cloud.google.com/cloud-build) yamls for automated deployment. You can also deploy manually if you follow the steps starting with [Allocate IP Section](#Allocate-external-IP). 
+
+### Automated Deployment with Cloud Build
+This repo provides a [Cloud Build](https://cloud.google.com/cloud-build) yamls that steps through a deployment process via either [Cloud Run](https://cloud.google.com/run).  
+ 
+
+#### pre-req
+Ensure Cloud Build account has proper permissions to access your project resources. You can step through this [Guide](https://cloud.google.com/cloud-build/docs/quickstart-deploy) for reference.  
+
+Ensure you have the latest GCloud SDK installed on your local machine. You can follow this [Guide](https://cloud.google.com/sdk/docs/install) for reference.  
+
+#### start a build
+To kick off a cloud build pipeline, execute the following command:  
+
+```     gcloud builds submit --config build_cloud_run.yml ../```  
+
+the pipeline will deploy the following resources:  
+1. Create Docker image from Dockerfile and push to [GCP container registry](https://cloud.google.com/container-registry/)  
+2. Deploy cloudrun service from Docker image created from previous step
+3. Allocate Static IP for Load Balancer
+4. Create GCP managed SSL cert for the <Static IP >.nip.io domain (please change this to your own domain or provide your own certificates)  
+5. Create Load Balancer and map app as backend service.   
+
+#### clean up
+To clean up, run the following command:  
+
+```     gcloud builds submit --config destroy_cloud_run_based.yml```  
+
+
+once all the resources are created. open up your browser to https://<External IP>.nip.io to validate. Finally Jump to [DialogFlow set up](#Setup-Dialogflow) to complete. 
+
+### Allocate external IP
+We first need to allocate an external IP for this secure communication. In this example, we will need to know the IP address to complete the domain registration for   
+```<static_ip>.nip.io```  
+navigate to *VPC Network -> External IP addresses* to create a new static external IP address. For this example, we will use a Standard tier IP address that is regional. If you are implementing a solution for production, it's recommended that you use the Premium tier external IP.   
+![externalip](images/external_ip.png "external ip")  
+Please note the IP address once it has been reserved. We will use the IP address to formulate our domain in this example.   
+  
+    
+### Create a VM
 
 Create a Node JS VM with the following steps:
 
 From the Cloud Console menu select:** Marketplace**
 
 Choose **Node.js by Google Click to deploy image**
-
+ 
 
 
 ![alt_text](images/mtls-node-marketplace.png "image_tooltip")
@@ -34,69 +79,7 @@ Click** Create**
 
 
 ![alt_text](images/mtls-firewall-rule.png "image_tooltip")
-
-
-**Attach a domain name to your VM**
-
-From the Cloud Console menu select:** VPC Networks > External IP addresses**
-
-You should see your new VM instance. We will now reserve a static IP address so we can bind this later to a domain.
-
-Select in the dropdown:** Static**
-
-
-
-
-![alt_text](images/mtls-external-ip.png "image_tooltip")
-
-
-This will reserve a static IP address. Make a note of this address.
-
-You will need a valid SSL certificate which was provided by a valid Certificate Authority. If not, Chrome and likely other applications, like Dialogflow will block your website, once your website is blocked Dialogflow can't reach your fulfillment URL, even when it's available on HTTPS.
-
-We will make use of Certbot with Let's Encrypt, a free tool to get a free valid SSL certificate. However, you will need a domain name that you can attach to it. If you rather attach the certificate to an IP address, you could create a self signed certificate via openssl, however you will still need a valid Certificate Authority, which you will likely need to order. So instead we will go with the domain option.
-
-Do you need a free domain for development?  
-
-Then check out these options: nip.io or xip.io.
-
-Once this is linked, we will go back to the Google Cloud console. 
-
-From the Cloud Console menu select:** Compute Engine,**
-
-and** SSH **into the newly created VM**.**
-
-Once you are logged in, run this command on the command line to install Certbot:
-
-
-```
-sudo apt-get install certbot python-certbot-apache
-```
-
-
-Run this command to get a certificate and have Certbot edit your Apache configuration automatically to serve it, turning on HTTPS access in a single step.  (Note: Here is where you can specify your domain as **_External IP.nip.io_** (xx.xx.xx.xx.nip.io).
-
-
-```
-sudo certbot --apache
-```
-
-
-Restart the Apache server:
-
-
-```
-sudo /etc/init.d/apache2 restart
-```
-
-
-Now open a new browser tab, and test out your domain name. It should bring you to the default apache setup:
-
-
-
-
-![alt_text](images/mtls-apache-secure.png "image_tooltip")
-
+  
 
 **Setup your Node application**
 
@@ -135,53 +118,31 @@ Start Node in the background:
 node index.js &
 ```
 
-
-We will have to enable the proxy modules:
-
-
-```
-sudo a2enmod proxy
-sudo a2enmod proxy_http
-```
-
-
 Restart the Apache server:
 
 
 ```
 sudo /etc/init.d/apache2 restart
 ```
+  
 
+### Create HTTPS load balancer and attach VM as backend
+Navigate to *Network Services -> Load Balancing* to create your new Load Balancer (LB). For this example, we will create a HTTP(s) LB that uses the static [IP](#Allocate-external-IP)  address created previously.   
 
-Now let's modify the Apache configuration:
+![alt_text](images/LB.png "lb")  
 
+Give your LB a name, select the [VM](#Create-a-VM) created previously as *Backend Configuration*  
 
-```
-sudo nano /etc/apache2/sites-available/000-default-le-ssl.conf
-```
+For front end configuration. make sure to change protocol to *HTTPS* and create a Google-managed certificate for domain (<external_ip>.nip.io) for your LB.   
 
+![alt_text](images/front_end_config.png "front end config")  
 
-Replace the code with the code from the file “000-default-le-ssl.conf”.  Be sure to replace the necessary variables for Server Name and with your Project Directory.
+Once complete, you should see your newly created LB with a green check mark indicating that it's ready to take on traffic.   
 
-Run the following two commands to download the root CA which will be used by Dialogflow. This will add GTS101.crt and GSR2.crt to the local file: **ca-crt.pem**:
+![alt_text](images/LB_list.png "front end config")  
 
-
-```
-curl https://pki.goog/gsr2/GTS1O1.crt | openssl x509 -inform der >> ca-crt.pem
-curl https://pki.goog/gsr2/GSR2.crt | openssl x509 -inform der >> ca-crt.pem
-```
-
-
-Restart the Apache server:
-
-
-```
-sudo /etc/init.d/apache2 restart
-```
-
-
-
-#### **Setup Dialogflow**
+  
+### Setup Dialogflow
 
 First, make sure that in Dialogflow, you are pointing to your new VM, from the **fulfillments** screen.
 
