@@ -21,7 +21,7 @@ const PictureMessage = require('viber-bot').Message.Picture;
 const protoToJson = require('../botlib/proto_to_json.js');
 const filterResponses = require('../botlib/filter_responses.js');
 const dialogflowSessionClient =
-    require('../botlib/dialogflow_session_client.js');
+  require('../botlib/dialogflow_session_client.js');
 const app = express();
 
 //For authenticating dialogflow_session_client.js, create a Service Account and
@@ -31,12 +31,11 @@ const app = express();
 // https://cloud.google.com/dialogflow/docs/setup for details.
 
 const webhookUrl = 'Place webhook url here';
-const projectId = 'Place dialogflow project id here';
 const botName = 'Place Viber bot name here';
 const botAvatarLink = 'Place image link less than 100kb';
 const viberToken = 'Place Viber token here';
 
-const sessionClient = new dialogflowSessionClient(projectId);
+const sessionClient = new dialogflowSessionClient(process.env.PROJECT_ID);
 
 const bot = new ViberBot({
   authToken: viberToken,
@@ -55,7 +54,7 @@ const port = process.env.PORT;
 
 const listener = app.listen(port, () => {
   console.log('Your Viber integration server is listening on port '
-      + listener.address().port);
+    + listener.address().port);
   init();
 });
 
@@ -63,7 +62,7 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
   const userProfile = response.userProfile;
   const sessionId = botName;
   const answer = (await sessionClient.detectIntent(
-      message.text, sessionId, message)).fulfillmentMessages;
+    message.text, sessionId, message)).fulfillmentMessages;
   const reply = await convertToViberMessage(answer);
   if (reply) {
     bot.sendMessage(userProfile, reply);
@@ -72,13 +71,13 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
 
 bot.on(BotEvents.CONVERSATION_STARTED, async (response) => {
   const result = await sessionClient.detectIntentWithEvent('VIBER_WELCOME',
-      projectId);
+    projectId);
   const replies = await convertToViberMessage(result.fulfillmentMessages);
   bot.sendMessage(response.userProfile, replies);
 });
 
 process.on('SIGTERM', () => {
-  listener.close(async ()=> {
+  listener.close(async () => {
     console.log('Closing server.');
     removeWebhook();
     process.exit(0);
@@ -98,7 +97,7 @@ async function convertToViberMessage(responses) {
   const replies = [];
   if (Array.isArray(responses)) {
     const filteredResponses = await filterResponses.filterResponses(responses, 'VIBER');
-    await filteredResponses.forEach(async (response)=> {
+    await filteredResponses.forEach(async (response) => {
       let reply = null;
       switch (response.message) {
         case 'text': {
@@ -148,7 +147,7 @@ async function convertToViberMessage(responses) {
           }
           if (response.card.imageUri) {
             reply = new PictureMessage(response.card.imageUri, msgText, null,
-                keyboard);
+              keyboard);
           } else if (msgText !== '') {
             reply = new TextMessage(msgText, keyboard);
           }
@@ -158,7 +157,7 @@ async function convertToViberMessage(responses) {
         case 'quickReplies': {
           const replies = response.quickReplies.quickReplies;
           const title = response.quickReplies.title
-              ? response.quickReplies.title : 'Choose an item';
+            ? response.quickReplies.title : 'Choose an item';
           if (Array.isArray(replies) && replies.length > 0) {
             let keyboard = {
               Type: "keyboard",
@@ -181,7 +180,7 @@ async function convertToViberMessage(responses) {
         case 'payload': {
           let payload = response.payload.fields.viber.structValue;
           payload = await protoToJson.structProtoToJson(payload);
-          reply = bot._messageFactory.createMessageFromJson({message: payload});
+          reply = bot._messageFactory.createMessageFromJson({ message: payload });
           if (payload.keyboard) {
             reply.keyboard = payload.keyboard;
           }

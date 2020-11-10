@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 const express = require('express');
-const request = require('request');
 const app = express();
-const dialogflowSessionClient =
-    require('../botlib/dialogflow_session_client.js');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+const { v4: uuidv4 } = require('uuid');
+
+const dialogflowSessionClient =
+  require('../botlib/dialogflow_session_client.js');
 
 //For authenticating dialogflow_session_client.js, create a Service Account and
 // download its key file. Set the environmental variable
@@ -29,28 +33,31 @@ app.use(bodyParser.urlencoded({ extended: true }));
 //See https://dialogflow.com/docs/reference/v2-auth-setup and
 // https://cloud.google.com/dialogflow/docs/setup for details.
 
-const projectId = 'Place your dialogflow projectId here';
-const phoneNumber = "Place your twilio phone number here";
-const accountSid = 'Place your accountSid here';
-const authToken = 'Place your authToken here';
-
-const client = require('twilio')(accountSid, authToken);
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
-const sessionClient = new dialogflowSessionClient(projectId);
+const sessionClient = new dialogflowSessionClient(process.env.PROJECT_ID);
+const sessionDuration = Number(process.env.TWILIO_SESSION_LENGHT);
 
-const listener = app.listen(process.env.PORT, function() {
+const listener = app.listen(process.env.PORT, function () {
   console.log('Your Twilio integration server is listening on port '
-      + listener.address().port);
+    + listener.address().port);
 });
 
-app.post('/', async function(req, res) {
-  const body = req.body;
-  const text = body.Body;
-  const id = body.From;
-  const dialogflowResponse = (await sessionClient.detectIntent(
-      text, id, body)).fulfillmentText;
-  const twiml = new  MessagingResponse();
-  const message = twiml.message(dialogflowResponse);
+app.post('/', async function (req, res) {
+  const {
+    body, body: {
+      Body: text,
+      From: incomingPhoneNumber,
+    },
+    cookies: {
+      sessionId = uuidv4(),
+    },
+  } = req;
+  const dialogflowResponse = (await sessionClient
+    .detectIntent(text, sessionDuration ? sessionId : incomingPhoneNumber, body))
+    .fulfillmentText;
+  const twiml = new MessagingResponse();
+  twiml.message(dialogflowResponse);
+  if (sessionDuration) res.cookie('sessionId', sessionId, { maxAge: sessionDuration * 60 * 1000 })
   res.send(twiml.toString());
 });
 

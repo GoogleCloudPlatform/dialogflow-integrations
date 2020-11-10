@@ -15,7 +15,7 @@ If you are in need of more direct support, you can always reach out directly to 
 
 - Follow the instructions on the [main README file](../README.md) in the root directory of this repository.
 - Register for a [CM.com account](https://www.cm.com/register/) and top-up.
-- Replace the value of __projectId__ in the [server.js file](./server.js#L19) with your Dialogflow agent’s Project ID. (Click on the cog next to your project name and find the Google Project ID).
+- Replace the value of __PROJECT_ID__ in the [Dockerfile](../Dockerfile#L10) with your Dialogflow agent’s Project ID. (Click on the cog next to your project name and find the Google Project ID).
 
 ### Getting a CM.com Channel
 

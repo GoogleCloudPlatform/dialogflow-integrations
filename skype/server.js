@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const {ActivityTypes,
+const { ActivityTypes,
   CardFactory,
   MessageFactory,
-  BotFrameworkAdapter} = require('botbuilder');
+  BotFrameworkAdapter } = require('botbuilder');
 const protoToJson = require('../botlib/proto_to_json.js');
 const dialogflowSessionClient =
-    require('../botlib/dialogflow_session_client.js');
+  require('../botlib/dialogflow_session_client.js');
 const filterResponses = require('../botlib/filter_responses.js');
 const express = require('express');
 const app = express();
@@ -30,11 +30,10 @@ const app = express();
 //See https://dialogflow.com/docs/reference/v2-auth-setup and
 // https://cloud.google.com/dialogflow/docs/setup for details.
 
-const projectId = 'Place dialogflow project id here';
 const appId = 'Place Microsoft app id here';
 const appPassword = 'Place Microsoft password here';
 
-const sessionClient = new dialogflowSessionClient(projectId);
+const sessionClient = new dialogflowSessionClient(process.env.PROJECT_ID);
 
 // Create bot adapter, which defines how the bot sends and receives messages.
 let adapter = new BotFrameworkAdapter({
@@ -46,7 +45,7 @@ const port = process.env.PORT;
 
 const listener = app.listen(port, () => {
   console.log('Your Skype integration server is listening on port '
-      + listener.address().port);
+    + listener.address().port);
 });
 
 app.post('/', (req, res) => {
@@ -57,17 +56,17 @@ app.post('/', (req, res) => {
       const senderId = turnContext.activity.from.id;
       const payload = turnContext.activity;
       const responses = (await sessionClient.detectIntent(
-          utterance, senderId, payload)).fulfillmentMessages;
+        utterance, senderId, payload)).fulfillmentMessages;
       const replies = await convertToSkypeMessage(turnContext, responses);
       await turnContext.sendActivities(replies);
-    } else if(isMemberAdded(turnContext)) {
+    } else if (isMemberAdded(turnContext)) {
       for (let idx in turnContext.activity.membersAdded) {
         if (turnContext.activity.membersAdded[idx].id !==
-            turnContext.activity.recipient.id) {
+          turnContext.activity.recipient.id) {
           const result = await sessionClient.detectIntentWithEvent('SKYPE_WELCOME',
-              projectId);
+            projectId);
           const replies = await convertToSkypeMessage(turnContext,
-              result.fulfillmentMessages);
+            result.fulfillmentMessages);
           await turnContext.sendActivity(replies);
         }
       }
@@ -79,7 +78,7 @@ function turnContextType(turnContext) {
   return turnContext.activity.type;
 }
 
-function isMessage(turnContext){
+function isMessage(turnContext) {
   return turnContextType(turnContext) === 'message';
 }
 
@@ -87,16 +86,16 @@ function getMessageText(turnContext) {
   return turnContext.activity.text;
 }
 
-function isMemberAdded(turnContext){
+function isMemberAdded(turnContext) {
   return Array.isArray(turnContext.activity.membersAdded);
 }
 
-async function convertToSkypeMessage(turnContext, responses){
+async function convertToSkypeMessage(turnContext, responses) {
   const replies = [];
   if (Array.isArray(responses)) {
     const filteredResponses = await filterResponses.filterResponses(responses, 'SKYPE');
-    filteredResponses.forEach((response)=> {
-      let reply = {type: ActivityTypes.Message};
+    filteredResponses.forEach((response) => {
+      let reply = { type: ActivityTypes.Message };
       switch (response.message) {
         case 'text': {
           reply.text = response.text.text[0];
@@ -105,8 +104,8 @@ async function convertToSkypeMessage(turnContext, responses){
 
         case 'image': {
           reply.attachments = [(CardFactory.heroCard(
-              '',
-              CardFactory.images([response.image.imageUri])
+            '',
+            CardFactory.images([response.image.imageUri])
           ))];
         }
           break;
@@ -131,17 +130,17 @@ async function convertToSkypeMessage(turnContext, responses){
               }
             });
             reply.attachments = [(CardFactory.heroCard(
-                response.card.title,
-                response.card.subtitle,
-                CardFactory.images([response.card.imageUri]),
-                skypeButtons))];
+              response.card.title,
+              response.card.subtitle,
+              CardFactory.images([response.card.imageUri]),
+              skypeButtons))];
           }
         }
           break;
 
         case 'quickReplies': {
           reply = MessageFactory.suggestedActions(
-              response.quickReplies.quickReplies, response.quickReplies.title);
+            response.quickReplies.quickReplies, response.quickReplies.title);
         }
           break;
 

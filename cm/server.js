@@ -16,7 +16,6 @@
 
 //Insert your values here
 const cmProductToken = 'YOUR_CM_PRODUCT_TOKEN';
-const projectId = 'YOUR_PROJECT_ID';
 
 const express = require('express');
 const request = require('request');
@@ -33,7 +32,7 @@ app.use(express.json());
 // https://cloud.google.com/dialogflow/docs/setup for details.
 
 const cmMessagingApi = new messagingApi.MessageApiClient(cmProductToken);
-const sessionClient = new dialogflowSessionClient(projectId);
+const sessionClient = new dialogflowSessionClient(process.env.PROJECT_ID);
 
 const listener = app.listen(process.env.PORT, function () {
   console.log('Your CM integration server is listening on port '

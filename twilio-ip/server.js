@@ -16,7 +16,7 @@
 const express = require('express');
 const app = express();
 const dialogflowSessionClient =
-    require('../botlib/dialogflow_session_client.js');
+  require('../botlib/dialogflow_session_client.js');
 const AccessToken = require('twilio').jwt.AccessToken;
 const ChatGrant = AccessToken.ChatGrant;
 const Chat = require('twilio-chat');
@@ -27,21 +27,20 @@ const Chat = require('twilio-chat');
 //See https://dialogflow.com/docs/reference/v2-auth-setup and
 // https://cloud.google.com/dialogflow/docs/setup for details.
 
-const projectId = 'Place your dialogflow projectId here';
 const accountSid = 'Place your accont SID here';
 const apiKey = 'Place your API key here';
 const apiSecret = 'Place your secret API key here';
 const serviceSid = 'Place your service SID here';
 
 const identity = 'dialogflow_bot';
-const sessionClient = new dialogflowSessionClient(projectId);
+const sessionClient = new dialogflowSessionClient(process.env.PROJECT_ID);
 let channel = null;
 let thisClient = null;
 
-const listener = app.listen(process.env.PORT, async function() {
+const listener = app.listen(process.env.PORT, async function () {
   await initialize();
   console.log('Your Twilio-IP integration server is listening on port '
-      + listener.address().port);
+    + listener.address().port);
 });
 
 process.on('SIGTERM', () => {
@@ -57,7 +56,7 @@ process.on('SIGTERM', () => {
   });
 });
 
-async function initialize(){
+async function initialize() {
   let token = await getToken();
   const chatClient = await Chat.Client.create(token);
   thisClient = chatClient;
@@ -70,7 +69,7 @@ async function initialize(){
     const payload = message.state;
     if (sessionId !== identity) {
       const response = (await sessionClient.detectIntent(
-          text, sessionId, payload)).fulfillmentText;
+        text, sessionId, payload)).fulfillmentText;
       channel.sendMessage(response);
     }
   });
@@ -81,7 +80,7 @@ async function initialize(){
   });
 }
 
-function getToken(){
+function getToken() {
   const chatGrant = new ChatGrant({
     serviceSid: serviceSid,
   });
@@ -91,20 +90,20 @@ function getToken(){
   return token.toJwt();
 }
 
-async function createChannel(client){
-  try{
+async function createChannel(client) {
+  try {
     channel = await client.getChannelByUniqueName('bot_channel');
-  } catch (error) {}
+  } catch (error) { }
   if (!channel) {
     client.createChannel({
       uniqueName: 'bot_channel',
       friendlyName: 'Channel for Dialogflow bot'
     }).then(async function (createdChannel) {
-      channel= createdChannel;
+      channel = createdChannel;
     });
   }
   try {
     await channel.join();
-  } catch (error) {}
+  } catch (error) { }
   return channel;
 }
