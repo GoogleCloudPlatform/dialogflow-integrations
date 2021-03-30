@@ -133,7 +133,7 @@ async function convertToSkypeMessage(turnContext, responses){
             reply.attachments = [(CardFactory.heroCard(
                 response.card.title,
                 response.card.subtitle,
-                CardFactory.images([response.card.imageUri]),
+                (response.card.imageUri)? CardFactory.images([response.card.imageUri]) : [],
                 skypeButtons))];
           }
         }
