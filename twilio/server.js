@@ -29,7 +29,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 //See https://dialogflow.com/docs/reference/v2-auth-setup and
 // https://cloud.google.com/dialogflow/docs/setup for details.
 
-const projectId = 'Place your dialogflow projectId here';
+const projectId = 'faqbot-uyrp';
 const phoneNumber = "Place your twilio phone number here";
 const accountSid = 'Place your accountSid here';
 const authToken = 'Place your authToken here';
