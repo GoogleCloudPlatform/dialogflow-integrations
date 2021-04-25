@@ -30,7 +30,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // https://cloud.google.com/dialogflow/docs/setup for details.
 
 const projectId = 'faqbot-uyrp';
-const phoneNumber = "0034678927232";
+const phoneNumber = "+14155238886";
 const accountSid = 'AC43e3d89f33b9bf7a90a984be6ed285e1';
 const authToken = '0df65dd67274a4c28641eaf674f3fba1';
 
