@@ -38,7 +38,7 @@ const twitterAccessToken = "Place your access token here";
 const twitterSecretAccessToken = "Place your secret access token here";
 const targetUrl = "Place your server's url here";
 const projectId = "Place your dialogflow projectId here";
-const environmentName = "Place your twitter environment name here";
+const environmentName = "今井リサ";
 
 const twitterOAuth = {
   consumer_key: twitterAPIKey,
