@@ -7,7 +7,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "dialogflow": "0.9.1",
+    "@google-cloud/dialogflow": "2.0.0",
     "express": "^4.16.4",
     "request": "^2.88.0"
   },
