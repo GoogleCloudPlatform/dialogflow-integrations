@@ -32,7 +32,7 @@ const {SessionsClient} = require('@google-cloud/dialogflow-cx');
 const client = new SessionsClient();
 
 /**
- * Calls the Dialogflow CX API with the specific user query input and returns the a string
+ * Calls the Dialogflow CX API with the specific user query input and returns a string
  * from the API with a response for the users query depending on the matched intent.
  */
 async function detectIntentText(query) {
