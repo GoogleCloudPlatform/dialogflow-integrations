@@ -1,6 +1,5 @@
 # Telegram Integration Prototype
 
-## Setup
 
 ### Prerequisites
 
