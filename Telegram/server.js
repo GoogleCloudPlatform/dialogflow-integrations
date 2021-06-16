@@ -34,6 +34,8 @@ const client = new SessionsClient();
 /**
  * Calls the Dialogflow CX API with the specific user query input and returns a string
  * from the API with a response for the users query depending on the matched intent.
+ * The console.log() and console.info lines are included purely for debugging purposes
+ * and and don't impact the end users experience.
  */
 async function detectIntentText(query) {
   let agentResponse = '';
