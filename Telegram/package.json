@@ -1,7 +1,7 @@
 {
   "name": "node-test",
   "version": "0.0.1",
-  "description": "A server that connects Google's Dialogflow CX API",
+  "description": "A server that integrates Dialogflow CX with Telegram for text reponses only.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
