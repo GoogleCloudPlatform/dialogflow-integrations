@@ -1,4 +1,4 @@
-# Telegram Integration Prototype
+# Telegram Integration Prototype for Dialogflow CX.
 
 
 ### Prerequisites
@@ -9,8 +9,6 @@
 - Set up a [bot account](https://core.telegram.org/bots#6-botfather).
     - Copy the Token string provided and paste it into the veriable __TELEGRAM_TOKEN__ in __server.js__ file.
 - Uncomment and fill in the variables on the top of the __server.js__ file.
-- In your local terminal type and run "npm install @google-cloud/dialogflow-cx".
-
 
 
 ### Deploying the Integration Using Cloud Run
