@@ -9,7 +9,7 @@
 // const languageCode = 'en'
 // const TELEGRAM_TOKEN='1234567898:ABCdfghTtaD8dfghdfgh45sdf65467M';
 // const SERVER_URL='https://example.com';
-
+const getUuid = require('uuid-by-string')
 const express = require('express');
 const axios = require('axios');
 const bodyParser = require('body-parser');
@@ -37,10 +37,10 @@ const client = new SessionsClient();
  * The console.log() and console.info lines are included purely for debugging purposes
  * and and don't impact the end users experience.
  */
-async function detectIntentText(query) {
+async function detectIntentText(query,chatId) {
   let agentResponse = '';
 
-  const sessionId = Math.random().toString(36).substring(7);
+  const sessionId = getUuid(chatId);
   const sessionPath = client.projectLocationAgentSessionPath(
       projectId,
       location,
@@ -87,7 +87,7 @@ const setup = async () => {
 app.post(URI, async (req, res) => {
     console.log(req.body)
     const chatId = req.body.message.chat.id;
-    const text = await detectIntentText(req.body.message.text);
+    const text = await detectIntentText(req.body.message.text,chatId);
     await axios.post(`${API_URL}/sendMessage`, {
         chat_id: chatId,
         text: text
