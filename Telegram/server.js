@@ -9,7 +9,7 @@
 // const languageCode = 'en'
 // const TELEGRAM_TOKEN='1234567898:ABCdfghTtaD8dfghdfgh45sdf65467M';
 // const SERVER_URL='https://example.com';
-const getUuid = require('uuid-by-string')
+const getUuid = require('uuid-by-string');
 const express = require('express');
 const axios = require('axios');
 const bodyParser = require('body-parser');
