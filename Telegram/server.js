@@ -80,7 +80,7 @@ async function detectIntentText(query,chatId) {
 }
 
 const setup = async () => {
-    const res = await axios.get(`${API_URL}/setWebhook?url=${WEBHOOK}`);
+    const res = await axios.post(`${API_URL}/setWebhook`, {url: WEBHOOK});
     console.log(res.data);
 };
 
