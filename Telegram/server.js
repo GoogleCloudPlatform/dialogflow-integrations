@@ -40,7 +40,7 @@ const client = new SessionsClient();
 async function detectIntentText(query,chatId) {
   let agentResponse = '';
 
-  const sessionId = getUuid(chatId);
+  const sessionId = getUuid(chatId, 3);
   const sessionPath = client.projectLocationAgentSessionPath(
       projectId,
       location,
