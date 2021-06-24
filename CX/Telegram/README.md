@@ -1,4 +1,4 @@
-# Telegram Integration Prototype for Dialogflow CX.
+# Telegram Integration for Dialogflow CX.
 
 
 ### Prerequisites
