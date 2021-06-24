@@ -4,7 +4,7 @@
  * Uncomment and fill in these variables.
  */
 // const projectId = 'my-project';
-// const location = 'global';
+// const locationId = 'global';
 // const agentId = 'my-agent';
 // const languageCode = 'en'
 // const TELEGRAM_TOKEN='1234567898:ABCdfghTtaD8dfghdfgh45sdf65467M';
