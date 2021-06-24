@@ -29,7 +29,7 @@ const {SessionsClient} = require('@google-cloud/dialogflow-cx');
  *   const location = 'us-central1'
  *   const client = new SessionsClient({apiEndpoint: 'us-central1-dialogflow.googleapis.com'})
  */
-const client = new SessionsClient();
+const client = new SessionsClient({apiEndpoint: locationId + '-dialogflow.googleapis.com'});
 
 /**
  * Calls the Dialogflow CX API with the specific user query input and returns a string
