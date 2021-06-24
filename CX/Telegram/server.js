@@ -26,7 +26,7 @@ app.use(bodyParser.json());
 const {SessionsClient} = require('@google-cloud/dialogflow-cx');
 /**
  * Example for regional endpoint:
- *   const location = 'us-central1'
+ *   const locationId = 'us-central1'
  *   const client = new SessionsClient({apiEndpoint: 'us-central1-dialogflow.googleapis.com'})
  */
 const client = new SessionsClient({apiEndpoint: locationId + '-dialogflow.googleapis.com'});
@@ -43,7 +43,7 @@ async function detectIntentText(query,chatId) {
   const sessionId = chatId;
   const sessionPath = client.projectLocationAgentSessionPath(
       projectId,
-      location,
+      locationId,
       agentId,
       sessionId
   );
