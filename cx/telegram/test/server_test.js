@@ -1,9 +1,9 @@
-const detectIntentToTelegramText = require('../server.js').detectIntentToTelegramText;
+const detectIntentToTelegramMessage = require('../server.js').detectIntentToTelegramMessage;
 const telegramToDetectIntent = require('../server.js').telegramToDetectIntent;
 const assert = require('assert');
 
 
-describe('detectIntentToTelegramText() and telegramToDetectIntent()', () => {
+describe('telegramToDetectIntent()', () => {
     chatId = 12435;
 
     const telegramRequest = {
@@ -14,11 +14,6 @@ describe('detectIntentToTelegramText() and telegramToDetectIntent()', () => {
             text: 'Test Text'
         }
     };
-    
-    const telegramRequestMessage = {
-        chat_id: chatId,
-        text: 'Test Response Text\n'
-    };
 
     const dialogflowRequest = {
         session: 'sessionPath',
@@ -28,6 +23,20 @@ describe('detectIntentToTelegramText() and telegramToDetectIntent()', () => {
             },
             languageCode: 'en',
         },
+    };
+
+    it('should convert telegram request to detectIntent request', async function () {
+        assert.deepStrictEqual(telegramToDetectIntent(
+            telegramRequest,'sessionPath'), dialogflowRequest)
+    });
+});
+
+describe('detectIntentToTelegramMessage()', () => {
+    chatId = 12435;
+
+    const telegramRequestMessage = {
+        chat_id: chatId,
+        text: 'Test Response Text\n'
     };
 
     const dialogflowResponse = {
@@ -42,13 +51,8 @@ describe('detectIntentToTelegramText() and telegramToDetectIntent()', () => {
         }
     };
 
-    it('should convert telegram request to detectIntent request', async function () {
-        assert.deepStrictEqual(telegramToDetectIntent(
-            telegramRequest,'sessionPath'), dialogflowRequest)
-    });
-        
     it('should convert detectIntent response to a Telegram text message request.', async function () {
-        assert.deepStrictEqual(detectIntentToTelegramText(
+        assert.deepStrictEqual(detectIntentToTelegramMessage(
             dialogflowResponse,chatId), telegramRequestMessage)
     });
 });
