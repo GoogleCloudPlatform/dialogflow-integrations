@@ -52,7 +52,7 @@ function telegramToDetectIntent(telegramRequest, sessionPath){
 /**
  * Converts detectIntent response to a Telegram text message request. 
  */
-function detectIntentToTelegramText(response,chatId){
+function detectIntentToTelegramMessage(response,chatId){
   agentResponse = '';
     
   for (const message of response.queryResult.responseMessages) {
@@ -61,12 +61,13 @@ function detectIntentToTelegramText(response,chatId){
     };
   };
     
-  const request = {
-    chat_id: chatId,
-    text: agentResponse
+  if(agentResponse.length != ''){
+    const request = {
+      chat_id: chatId,
+      text: agentResponse
+    };
+    return request;
   };
-
-  return request;
 };
 
 /**
@@ -97,7 +98,7 @@ const setup = async () => {
 
 app.post(URI, async (req, res) => {
   const response = await detectIntentResponse(req.body);
-  const request = detectIntentToTelegramText(response,req.body.message.chat.id);
+  const request = detectIntentToTelegramMessage(response,req.body.message.chat.id);
     
   await axios.post(`${API_URL}/sendMessage`, request);
   
@@ -111,4 +112,4 @@ const listener = app.listen(process.env.PORT, async () => {
     await setup();
 });
 
-module.exports = {telegramToDetectIntent, detectIntentToTelegramText};
+module.exports = {telegramToDetectIntent, detectIntentToTelegramMessage};
