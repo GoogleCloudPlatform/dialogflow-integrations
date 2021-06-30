@@ -1,10 +1,11 @@
 {
-  "name": "node-test",
+  "name": "telegram-cx-integration",
   "version": "0.0.1",
   "description": "A server that integrates Dialogflow CX with Telegram for text reponses only.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "mocha --recursive --exit"
   },
   "dependencies": {
     "@google-cloud/dialogflow-cx": "2.7.0",
@@ -22,5 +23,10 @@
     "url": "URL"
   },
   "license": "Apache-2.0",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "mocha": "^9.0.1",
+    "supertest": "^6.1.3"
+  }
 }
