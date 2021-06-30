@@ -1,0 +1,21 @@
+{
+  "name": "spark-cx-integration",
+  "version": "0.0.1",
+  "description": "A server that integrates Dialogflow CX with Spark for text messages",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@google-cloud/dialogflow-cx": "2.7.0",
+    "express": "^4.16.4",
+    "request": "^2.88.0"
+  },
+  "engines": {
+    "node": "8.x"
+  },
+  "repository": {
+    "url": "insert URL here"
+  },
+  "license": "Apache-2.0"
+}
