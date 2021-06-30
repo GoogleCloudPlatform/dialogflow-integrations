@@ -32,20 +32,15 @@ const {SessionsClient} = require('@google-cloud/dialogflow-cx');
 const client = new SessionsClient({apiEndpoint: locationId + '-dialogflow.googleapis.com'});
 
 /**
- * Calls the Dialogflow CX API with the specific user query input and returns a string
- * from the API with a response for the users query depending on the matched intent.
- * The console.log() and console.info lines are included purely for debugging purposes
- * and and don't impact the end users experience.
+ * Converts Telgram request to a detectIntent request.
  */
-async function detectIntentText(query,chatId) {
-  let agentResponse = '';
-
-  const sessionId = chatId;
+function telegramToDetectIntent(telegramRequest){
+  const sessionId = telegramRequest.message.chat.id;
   const sessionPath = client.projectLocationAgentSessionPath(
-      projectId,
-      locationId,
-      agentId,
-      sessionId
+    projectId,
+    locationId,
+    agentId,
+    sessionId
   );
   console.info(sessionPath);
 
@@ -53,31 +48,46 @@ async function detectIntentText(query,chatId) {
     session: sessionPath,
     queryInput: {
       text: {
-        text: query,
+        text: telegramRequest.message.text,
       },
       languageCode,
     },
   };
-  const [response] = await client.detectIntent(request);
-  console.log(`User Query: ${query}`);
+
+  return request;
+}
+
+/**
+ * Converts detectIntent response to a Telegram text message request. 
+ */
+function detectIntentToTelegramText(response,chatId){
+  agentResponse = '';
+    
   for (const message of response.queryResult.responseMessages) {
     if (message.text) {
-      console.log(`${message.text.text}`);
       agentResponse += `${message.text.text}\n`;
-    }
+    };
+  };
     
-  }
-  if (response.queryResult.match.intent) {
-    console.log(
-        `Matched Intent: ${response.queryResult.match.intent.displayName}`
-    );
-  }
-  console.log(
-      `Current Page: ${response.queryResult.currentPage.displayName}`
-  );
-  
-  return agentResponse;
-}
+  const request = {
+    chat_id: chatId,
+    text: agentResponse
+  };
+
+  return request;
+};
+
+/**
+ * Takes as input a request from Telegram and converts the request to
+ * detectIntent request which is used to call the detectIntent() function
+ * and finally output the response given by detectIntent().
+ */
+async function detectIntentResponse(telegramRequest) {
+  request = telegramToDetectIntent(telegramRequest);
+  const [response] = await client.detectIntent(request);
+
+  return response;
+};
 
 const setup = async () => {
     const res = await axios.post(`${API_URL}/setWebhook`, {url: WEBHOOK});
@@ -85,14 +95,12 @@ const setup = async () => {
 };
 
 app.post(URI, async (req, res) => {
-    console.log(req.body)
-    const chatId = req.body.message.chat.id;
-    const text = await detectIntentText(req.body.message.text,chatId);
-    await axios.post(`${API_URL}/sendMessage`, {
-        chat_id: chatId,
-        text: text
-    });
-    return res.send();
+  const response = await detectIntentResponse(req.body);
+  const request = detectIntentToTelegramText(response,req.body.message.chat.id);
+    
+  await axios.post(`${API_URL}/sendMessage`, request);
+  
+  return res.send();
 });
 
 const listener = app.listen(process.env.PORT, async () => {
