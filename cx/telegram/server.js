@@ -34,15 +34,7 @@ const client = new SessionsClient({apiEndpoint: locationId + '-dialogflow.google
 /**
  * Converts Telgram request to a detectIntent request.
  */
-function telegramToDetectIntent(telegramRequest){
-  const sessionId = telegramRequest.message.chat.id;
-  const sessionPath = client.projectLocationAgentSessionPath(
-    projectId,
-    locationId,
-    agentId,
-    sessionId
-  );
-  console.info(sessionPath);
+function telegramToDetectIntent(telegramRequest, sessionPath){
 
   const request = {
     session: sessionPath,
@@ -83,7 +75,16 @@ function detectIntentToTelegramText(response,chatId){
  * and finally output the response given by detectIntent().
  */
 async function detectIntentResponse(telegramRequest) {
-  request = telegramToDetectIntent(telegramRequest);
+  const sessionId = telegramRequest.message.chat.id;
+  const sessionPath = client.projectLocationAgentSessionPath(
+    projectId,
+    locationId,
+    agentId,
+    sessionId
+  );
+  console.info(sessionPath);
+  
+  request = telegramToDetectIntent(telegramRequest, sessionPath);
   const [response] = await client.detectIntent(request);
 
   return response;
@@ -109,3 +110,5 @@ const listener = app.listen(process.env.PORT, async () => {
 
     await setup();
 });
+
+module.exports = {telegramToDetectIntent, detectIntentToTelegramText};
