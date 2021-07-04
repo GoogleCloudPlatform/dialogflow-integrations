@@ -45,8 +45,19 @@ const listener = app.listen(process.env.PORT, function() {
 
 app.post('/', async function(req, res) {
   const body = req.body;
-  const text = body.Body;
   const id = body.From;
+  let text = body.Body;
+
+  // Support for other content types
+  if (text.length == 0) {
+    // Check if location or media
+    if (body.Latitude && body.Longitude) {
+      text = 'geoLocation';
+    } else if (parseInt(body.NumMedia, 10) > 0) {
+      text = body.MediaContentType0;
+    }
+  }
+
   const dialogflowResponse = (await sessionClient.detectIntent(
       text, id, body)).fulfillmentText;
   const twiml = new  MessagingResponse();
