@@ -6,7 +6,7 @@
 
 - Follow the instructions on the [main README file](https://github.com/GoogleCloudPlatform/dialogflow-integrations#readme) in the root directory of this repository.
 - Create a [Spark account](https://teams.webex.com/signin).
-- Replace the value of __projectId__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/spark/server.js#L36) with your Dialogflow agent’s Project ID.
+- Uncomment and fill in the variables on the top of the [server.js file](https://github.com/rdouglas202/dialogflow-integrations/blob/b56f126598fb8128bd8f22d3b7342345e5ca821d/cx/spark/server.js#L16).
 
 ### Creating a Spark Bot
 
@@ -15,7 +15,7 @@
 
 ![alt text](images/spark-create-the-spark-bot.png)
 
-- On the next screen, take the value for your bot’s __access Token__ and replace the value for __sparkAccessToken__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/spark/server.js#L34).
+- On the next screen, take the value for your bot’s __access Token__ and replace the value for __sparkAccessToken__ in the [server.js file](https://github.com/rdouglas202/dialogflow-integrations/blob/b56f126598fb8128bd8f22d3b7342345e5ca821d/cx/spark/server.js#L17).
 
 ### Deploying the Integration Using Cloud Run
 
@@ -40,7 +40,7 @@ gcloud beta run deploy --image gcr.io/PROJECT-ID/dialogflow-PLATFORM --update-en
  - Copy the URL given to you, and use it according to the README file in the
  given integration's folder.
 
-Take the value for the server URL printed in the console after the completion of the execution of the above command and replace the value for __targetUrl__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/spark/server.js#L35). 
+Take the value for the server URL printed in the console after the completion of the execution of the above command and replace the value for __targetUrl__ in the [server.js file](https://github.com/rdouglas202/dialogflow-integrations/blob/b56f126598fb8128bd8f22d3b7342345e5ca821d/cx/spark/server.js#L18). 
 
 Redeploy the integration with the updated change by rerunning the above two commands. 
 
