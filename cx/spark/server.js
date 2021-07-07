@@ -4,7 +4,7 @@
  * Set the environmental variable GOOGLE_APPLICATION_CREDENTIALS 
  * to the key file's location.
  * See https://dialogflow.com/docs/reference/v2-auth-setup and 
- * https://cloud.google.com/dialogflow/docs/setup for details.
+ * https://cloud.google.com/dialogflow/cx/docs/quick/setup for details.
  */
 
 const express = require('express');
@@ -13,13 +13,13 @@ const app = express();
 
 app.use(express.json());
 
-///Uncomment and insert your values here
-//const sparkAccessToken ="1234567898-ABCdfghTtaD8dfghdfgh-45sdf65467M";
-//const targetUrl = 'https://example.com';
-//const projectId = 'my-project';
-//const locationId = 'global';
-//const agentId = 'my-agent';
-//const languageCode = 'en'
+// Uncomment and insert your values here
+// const sparkAccessToken ="1234567898-ABCdfghTtaD8dfghdfgh-45sdf65467M";
+// const targetUrl = 'https://example.com';
+// const projectId = 'my-project';
+// const locationId = 'global';
+// const agentId = 'my-agent';
+// const languageCode = 'en'
 
 // Imports the Google Cloud Some API library
 const {SessionsClient} = require('@google-cloud/dialogflow-cx');
@@ -30,8 +30,8 @@ const {SessionsClient} = require('@google-cloud/dialogflow-cx');
  */
 const client = new SessionsClient({apiEndpoint: locationId + '-dialogflow.googleapis.com'});
 
-//Upon start a webhook is registered with spark
-//Upon closure the webhook is removed from spark
+// Upon start a webhook is registered with spark
+// Upon closure the webhook is removed from spark
 
 const listener = app.listen(process.env.PORT, async function() {
   await init();
@@ -62,9 +62,8 @@ async function init(){
  * This function calls Dialogflow CX API to retrieve the response
  * https://cloud.google.com/dialogflow/cx/docs/quick/api
  */
-
-async function detectIntentText(query,personId) {
-    let agentResponse ='';
+async function detectIntentText(query, personId) {
+  let agentResponse ='';
 
   const sessionId = personId;
   const sessionPath = client.projectLocationAgentSessionPath(
@@ -91,7 +90,6 @@ async function detectIntentText(query,personId) {
       console.log(`Agent Response: ${message.text.text}`);
       agentResponse += `${message.text.text}\n`;
     }
-    
   }
   if (response.queryResult.match.intent) {
     console.log(
@@ -185,7 +183,7 @@ function retrieveMessage(messageId) {
         console.error('Failed to retrieve message :' + err);
         reject();
       }
-      //checks to make sure the message is not from itself
+      // checks to make sure the message is not from itself
       if (!((JSON.parse(resp.body).personEmail).includes('webex.bot'))) {
         const personEmail = JSON.parse(resp.body).personEmail;
         const messageText= JSON.parse(resp.body).text;
