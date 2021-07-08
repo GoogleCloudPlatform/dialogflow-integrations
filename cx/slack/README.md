@@ -18,7 +18,7 @@
         - Choose 'From an app Manifest'.
         - Pick a workspace for the app.
         - Copy and paste the code below to the YAML section and edit the display_information as you like. Make sure to fill in the request_url in the event_subscription. 
-        ```shell
+        ```
         _metadata:
         major_version: 1
         minor_version: 1
