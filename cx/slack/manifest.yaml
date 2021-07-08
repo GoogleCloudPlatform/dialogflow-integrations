@@ -1,0 +1,35 @@
+_metadata:
+  major_version: 1
+  minor_version: 1
+display_information:
+  name: Dialogflow CX Integration
+  description: Dialogflow CX Integration
+  background_color: "#1a53ff"
+features:
+  app_home:
+    home_tab_enabled: false
+    messages_tab_enabled: true
+    messages_tab_read_only_enabled: false
+  bot_user:
+    display_name: Dialogflow CX Integration
+    always_online: true
+oauth_config:
+  scopes:
+    bot:
+      - app_mentions:read
+      - im:history
+      - im:read
+      - im:write
+      - incoming-webhook
+      - chat:write
+      - channels:history
+      - groups:history
+settings:
+  event_subscriptions:
+    request_url: https://node-test-mtd3rbws3a-uc.a.run.app/slack/event
+    bot_events:
+      - message.channels
+      - message.groups
+      - message.im
+  org_deploy_enabled: false
+  socket_mode_enabled: false
