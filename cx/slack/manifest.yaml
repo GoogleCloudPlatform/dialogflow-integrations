@@ -26,7 +26,7 @@ oauth_config:
       - groups:history
 settings:
   event_subscriptions:
-    request_url: https://node-test-mtd3rbws3a-uc.a.run.app/slack/event
+    request_url: example.com/slack/event
     bot_events:
       - message.channels
       - message.groups
