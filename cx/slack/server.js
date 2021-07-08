@@ -20,10 +20,10 @@ const slackClient = new WebClient(slackToken);
 const {SessionsClient} = require('@google-cloud/dialogflow-cx');
 /**
  * Example for regional endpoint:
- *   const location = 'us-central1'
+ *   const locationId = 'us-central1'
  *   const client = new SessionsClient({apiEndpoint: 'us-central1-dialogflow.googleapis.com'})
  */
-const client = new SessionsClient();
+const client = new SessionsClient({apiEndpoint: locationId + '-dialogflow.googleapis.com'});
 
 /**
  * Converts Slack request to a detectIntent request.
@@ -84,11 +84,18 @@ async function detectIntentResponse(slackRequest) {
     return response;
 };
 
+/**
+ * Checks if the request is coming from a bot and if it is not 
+ * it will call detectIntentResponse() with the request as the input
+ * and sends the response to the Slack server. The initial check to make
+ * sure the request is not from a bot is there to prevent the Integration
+ * from replying to its own messages.
+ */
 slackEvents.on('message', (event) => {
     if(event.bot_id == '' || event.bot_id == null){
         (async () => {
             const response = await detectIntentResponse(event);
-            const request = detectIntentToSlackMessage(response,event.user);
+            const request = detectIntentToSlackMessage(response, event.user);
             try {
                 await slackClient.chat.postMessage(request)
             } catch (error) {
