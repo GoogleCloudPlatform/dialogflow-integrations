@@ -28,7 +28,7 @@ const client = new SessionsClient({apiEndpoint: locationId + '-dialogflow.google
 /**
  * Converts Slack request to a detectIntent request.
  */
-function slackToDetectIntent(slackRequest,sessionPath){
+function slackToDetectIntent(slackRequest, sessionPath){
     const request = {
         session: sessionPath,
         queryInput: {
@@ -45,7 +45,7 @@ function slackToDetectIntent(slackRequest,sessionPath){
 /**
  * Converts detectIntent response to a Slack message request. 
  */
-function detectIntentToSlackMessage(response,id){
+function detectIntentToSlackMessage(response, channel_id){
     var agentResponse = '';
     
     for (const message of response.queryResult.responseMessages) {
@@ -56,7 +56,7 @@ function detectIntentToSlackMessage(response,id){
     
     if(agentResponse.length != ''){
         const request = {
-            channel: id,
+            channel: channel_id,
             text: agentResponse
         };
         return request;
@@ -96,21 +96,21 @@ slackEvents.on('message', (event) => {
         (async () => {
             const bot = await slackClient.auth.test();
             const response = await detectIntentResponse(event);
+            var request = '';
+            // The channal type is 'im' if the message is directly from a user and not a channal.
             if(event.channel_type == 'im'){
-                const request = detectIntentToSlackMessage(response, event.user);
-                try {
-                    await slackClient.chat.postMessage(request)
-                } catch (error) {
-                    console.log(error.data)
-                }
+                request = detectIntentToSlackMessage(response, event.user);
             }else if(event.text.includes(bot.user_id)){
-                const request = detectIntentToSlackMessage(response, event.channel);
+                request = detectIntentToSlackMessage(response, event.channel);
+            };
+
+            if(request != ''){
                 try {
                     await slackClient.chat.postMessage(request)
                 } catch (error) {
                     console.log(error.data)
                 }
-            };
+            }
         })();
     };
 });
