@@ -94,18 +94,24 @@ async function detectIntentResponse(slackRequest) {
 slackEvents.on('message', (event) => {
     if(event.bot_id == '' || event.bot_id == null){
         (async () => {
+            const bot = await slackClient.auth.test();
             const response = await detectIntentResponse(event);
             var request = '';
             if(event.channel_type == 'im'){
                 request = detectIntentToSlackMessage(response, event.user);
-            }else if(event.channel_type == 'channel'){
+                try {
+                    await slackClient.chat.postMessage(request)
+                } catch (error) {
+                    console.log(error.data)
+                }
+            }else if(event.text.includes(bot.user_id)){
                 request = detectIntentToSlackMessage(response, event.channel);
+                try {
+                    await slackClient.chat.postMessage(request)
+                } catch (error) {
+                    console.log(error.data)
+                }
             };
-            try {
-                await slackClient.chat.postMessage(request)
-            } catch (error) {
-                console.log(error.data)
-            }
         })();
     };
 });
