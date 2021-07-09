@@ -1,0 +1,8 @@
+@startuml
+"Infobip CCaaS"->"middleware": req: Send external bot webhook notification
+"middleware"->"DialogFlow": req: Send detectIntent request
+"middleware"<-"DialogFlow": res: detected response
+"middleware"->"Infobip CCaaS webhook": req: Send WhatsApp message through CCaaS API
+"middleware"<-"Infobip CCaaS webhook": res: 200 OK
+"Infobip CCaaS"<-"middleware": res: 200 OK
+@enduml

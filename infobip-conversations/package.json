@@ -1,0 +1,32 @@
+{
+  "name": "infobip-conversations-dialogflow-cx-bot",
+  "version": "0.0.1",
+  "description": "External Bot for Infobip Conversations that integrates to Dialogflow CX",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "lint": "eslint 'src/**/*.js' 'test/**/*.js'",
+    "lint:fix": "npm run lint -- --fix",
+    "test": "cross-env NODE_ENV=development mocha --exit"
+  },
+  "dependencies": {
+    "@google-cloud/dialogflow-cx": "^2.6.0",
+    "axios": "^0.21.1",
+    "core-js": "^3.15.2",
+    "express": "^4.16.4"
+  },
+  "engines": {
+    "node": "10.x"
+  },
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "cross-env": "^7.0.3",
+    "eslint": "^7.27.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.23.3",
+    "mocha": "8.3.2",
+    "nock": "^13.0.11",
+    "sinon": "^11.1.0"
+  },
+  "license": "Apache-2.0"
+}

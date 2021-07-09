@@ -64,6 +64,7 @@ Follow the steps in the README file in the relevant platform subdirectory to obt
 
 - [CM.com (SMS and WhatsApp Business)](./cm/README.md)
 - [Kik](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/kik#readme)
+- [Infobip Conversations](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/infobip-conversations#readme)
 - [Skype](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/skype#readme)
 - [Spark](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/spark#readme)
 - [Twilio IP Messaging](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/twilio-ip#readme)
