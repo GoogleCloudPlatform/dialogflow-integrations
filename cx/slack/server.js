@@ -96,16 +96,15 @@ slackEvents.on('message', (event) => {
         (async () => {
             const bot = await slackClient.auth.test();
             const response = await detectIntentResponse(event);
-            var request = '';
             if(event.channel_type == 'im'){
-                request = detectIntentToSlackMessage(response, event.user);
+                const request = detectIntentToSlackMessage(response, event.user);
                 try {
                     await slackClient.chat.postMessage(request)
                 } catch (error) {
                     console.log(error.data)
                 }
             }else if(event.text.includes(bot.user_id)){
-                request = detectIntentToSlackMessage(response, event.channel);
+                const request = detectIntentToSlackMessage(response, event.channel);
                 try {
                     await slackClient.chat.postMessage(request)
                 } catch (error) {
