@@ -17,7 +17,8 @@
 
         - Choose 'From an app Manifest'.
         - Pick a workspace for the app.
-        - Copy and paste the code in manifest.yaml file to the YAML section and edit the display_information as you like. Make sure to fill in the request_url in the event_subscription. 
+        - Copy and paste the code in the __manifest.yaml__ file to the YAML section and edit the display_information as you like. Make sure to fill in the request_url in the event_subscription.
+            - For more details on Slack App manifests and its use, please visit https://api.slack.com/reference/manifests.
         - Click next and then click create.
         - Install the app to your chosen Workspace.        
         - Copy the Signing Secret from 'Basic Information' and the Bot user OAuth Token from 'Intstall App'.
@@ -52,3 +53,11 @@ More information can be found in Cloud Run
 [documentation](https://cloud.google.com/run/docs/deploying).
 
 You can view a list of your active integration deployments under [Cloud Run](https://console.cloud.google.com/run) in the GCP Console.
+
+### 
+**Testing the Integration**
+
+*   You have now completed all the necessary steps and can test your integration.
+*   There are two ways to test the integration:
+*   1. Directly instant message the integration through the Slack App you created.
+*   2. Install your Slack App on a channal and mention the name of the Slack App (Ex: @appName) in your message.
