@@ -29,9 +29,15 @@ describe('slackToDetectIntent()', () => {
 
 describe('detectIntentToSlackMessage()', () => {
     chatId = 12435;
+    channel_id = 54321
 
-    const slackRequestMessage = {
+    const slackRequestIm = {
         channel: chatId,
+        text: 'Test Response Text\n'
+    };
+    
+    const slackRequestChannel = {
+        channel: channel_id,
         text: 'Test Response Text\n'
     };
 
@@ -49,6 +55,11 @@ describe('detectIntentToSlackMessage()', () => {
 
     it('should convert detectIntent response to a Slack text message request.', async function () {
         assert.deepStrictEqual(detectIntentToSlackMessage(
-            dialogflowResponse,chatId), slackRequestMessage)
+            dialogflowResponse,chatId), slackRequestIm)
+    });
+    
+    it('should convert detectIntent response to a Slack channel message request.', async function () {
+        assert.deepStrictEqual(detectIntentToSlackMessage(
+            dialogflowResponse,channel_id), slackRequestChannel)
     });
 });
