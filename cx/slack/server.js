@@ -98,6 +98,7 @@ slackEvents.on('message', (event) => {
             const response = await detectIntentResponse(event);
             var request = '';
             // The channal type is 'im' if the message is directly from a user and not a channal.
+            // For more information visit https://api.slack.com/events/message.im
             if(event.channel_type == 'im'){
                 request = detectIntentToSlackMessage(response, event.user);
             }else if(event.text.includes(bot.user_id)){
