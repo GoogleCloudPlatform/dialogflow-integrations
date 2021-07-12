@@ -69,7 +69,7 @@ function detectIntentToSlackMessage(response, channel_id){
  * and finally output the response given by detectIntent().
  */
 async function detectIntentResponse(slackRequest) {
-    const sessionId = slackRequest.user;
+    const sessionId = slackRequest.channel;
     const sessionPath = client.projectLocationAgentSessionPath(
         projectId,
         locationId,
@@ -87,33 +87,35 @@ async function detectIntentResponse(slackRequest) {
 /**
  * Checks if the request is coming from a bot and if it is not 
  * it will call detectIntentResponse() with the request as the input
- * and sends the response to the Slack server. The initial check to make
+ * and outputs the response. The initial check to make
  * sure the request is not from a bot is there to prevent the Integration
  * from replying to its own messages.
  */
-slackEvents.on('message', (event) => {
+async function eventToRequest(event, channel_id) {
     if(event.bot_id == '' || event.bot_id == null){
-        (async () => {
-            const bot = await slackClient.auth.test();
-            const response = await detectIntentResponse(event);
-            var request = '';
-            // The channal type is 'im' if the message is directly from a user and not a channal.
-            // For more information visit https://api.slack.com/events/message.im
-            if(event.channel_type == 'im'){
-                request = detectIntentToSlackMessage(response, event.user);
-            }else if(event.text.includes(bot.user_id)){
-                request = detectIntentToSlackMessage(response, event.channel);
-            };
-
-            if(request != ''){
-                try {
-                    await slackClient.chat.postMessage(request)
-                } catch (error) {
-                    console.log(error.data)
-                }
-            }
-        })();
+        const response = await detectIntentResponse(event);
+        var request = detectIntentToSlackMessage(response, channel_id);
+        try {
+            await slackClient.chat.postMessage(request)
+        } catch (error) {
+            console.log(error.data)
+        }
     };
+};
+
+// Listens for messages posted in instant messages.
+slackEvents.on('message', (event) => {
+    (async () => {
+        await eventToRequest(event, event.user);
+    })();
+    
+});
+
+// Listens for messages that mention the Slack App in channals
+slackEvents.on('app_mention', (event) => {
+    (async () => {
+        await eventToRequest(event, event.channel);
+    })();
 });
 
 slackEvents.on('error', console.error);
