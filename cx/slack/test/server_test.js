@@ -3,11 +3,7 @@ const slackToDetectIntent = require('../server.js').slackToDetectIntent;
 const assert = require('assert');
 
 describe('slackToDetectIntent()', () => {
-    chatId = 12435;
-
     const slackRequest = {
-        type: 'message',
-        user: chatId,
         text: 'Test Text'
     };
 
@@ -28,15 +24,9 @@ describe('slackToDetectIntent()', () => {
 });
 
 describe('detectIntentToSlackMessage()', () => {
-    chatId = 12435;
     channel_id = 54321
 
-    const slackRequestIm = {
-        channel: chatId,
-        text: 'Test Response Text\n'
-    };
-    
-    const slackRequestChannel = {
+    const slackRequest = {
         channel: channel_id,
         text: 'Test Response Text\n'
     };
@@ -55,11 +45,6 @@ describe('detectIntentToSlackMessage()', () => {
 
     it('should convert detectIntent response to a Slack text message request.', async function () {
         assert.deepStrictEqual(detectIntentToSlackMessage(
-            dialogflowResponse,chatId), slackRequestIm)
-    });
-    
-    it('should convert detectIntent response to a Slack channel message request.', async function () {
-        assert.deepStrictEqual(detectIntentToSlackMessage(
-            dialogflowResponse,channel_id), slackRequestChannel)
+            dialogflowResponse,channel_id), slackRequest)
     });
 });
