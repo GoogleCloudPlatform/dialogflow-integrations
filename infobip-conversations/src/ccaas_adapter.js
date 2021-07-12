@@ -14,7 +14,7 @@ class CcaasAdapter {
 
   routeToHumanAgent(incommingMessage) {
     return this.axios
-      .post(`/ccaas/1/conversations/${incommingMessage.conversationId}/route?piIntegrator=1&piPlatform=lzkj`);
+      .post(`/ccaas/1/conversations/${incommingMessage.conversationId}/route?piIntegrator=89&piPlatform=lzkj`);
   }
 
   sendTextMessage(incommingMessage, text) {
@@ -29,7 +29,7 @@ class CcaasAdapter {
     };
 
     return this.axios
-      .post(`/ccaas/1/conversations/${incommingMessage.conversationId}/messages?piIntegrator=1&piPlatform=lzkj`, body);
+      .post(`/ccaas/1/conversations/${incommingMessage.conversationId}/messages?piIntegrator=89&piPlatform=lzkj`, body);
   }
 }
 

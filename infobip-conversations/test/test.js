@@ -13,7 +13,7 @@ const { expect } = chai;
 
 describe('Infobip Conversations ', () => {
   context('incomming text message', () => {
-    it('should be passed to Dialogflow and response should trigger outbound message being sent to Conversations', async () => {
+    it('should be passed to Dialogflow and response should trigger outbound message being sent to Conversations', () => {
       const givenSampleMessage = testhelper.sampleCcaasInboundMessage();
 
       const detectIntentRequest = testhelper.sampleDetectIntentRequest(configuration.project,
@@ -27,7 +27,7 @@ describe('Infobip Conversations ', () => {
       nock.disableNetConnect();
       nock.enableNetConnect(`localhost:${listener.address().port}`);
       const scope = nock(configuration.infobipBaseUrl)
-        .post(`/ccaas/1/conversations/${givenSampleMessage.conversationId}/messages?piIntegrator=1&piPlatform=lzkj`, testhelper.sampleCcaasOutboundMessage())
+        .post(`/ccaas/1/conversations/${givenSampleMessage.conversationId}/messages?piIntegrator=89&piPlatform=lzkj`, testhelper.sampleCcaasOutboundMessage())
         .reply(200, {});
 
       return axios.post(`http://localhost:${listener.address().port}`, givenSampleMessage)
@@ -42,13 +42,13 @@ describe('Infobip Conversations ', () => {
   });
 
   context('incomming non-text message', () => {
-    it('should route conversation to human agent', async () => {
+    it('should route conversation to human agent', () => {
       const givenSampleMessage = testhelper.sampleCcaasInboundMessage('UNSUPPORTED');
 
       nock.disableNetConnect();
       nock.enableNetConnect(`localhost:${listener.address().port}`);
       const scope = nock(configuration.infobipBaseUrl)
-        .post(`/ccaas/1/conversations/${givenSampleMessage.conversationId}/route?piIntegrator=1&piPlatform=lzkj`)
+        .post(`/ccaas/1/conversations/${givenSampleMessage.conversationId}/route?piIntegrator=89&piPlatform=lzkj`)
         .reply(200, {});
 
       return axios.post(`http://localhost:${listener.address().port}`, givenSampleMessage)
