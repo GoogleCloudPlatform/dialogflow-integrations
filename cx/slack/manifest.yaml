@@ -22,15 +22,11 @@ oauth_config:
       - im:read
       - im:write
       - incoming-webhook
-      - channels:history
-      - groups:history
 settings:
   event_subscriptions:
     request_url: https://example.com/slack/event
     bot_events:
       - app_mention
-      - message.channels
-      - message.groups
       - message.im
   org_deploy_enabled: false
   socket_mode_enabled: false
