@@ -19,7 +19,7 @@ describe('slackToDetectIntent()', () => {
 
     it('should convert Slack request to detectIntent request', async function () {
         assert.deepStrictEqual(slackToDetectIntent(
-            slackRequest,'sessionPath'), dialogflowRequest)
+            slackRequest, 'sessionPath'), dialogflowRequest)
     });
 });
 
@@ -45,6 +45,6 @@ describe('detectIntentToSlackMessage()', () => {
 
     it('should convert detectIntent response to a Slack text message request.', async function () {
         assert.deepStrictEqual(detectIntentToSlackMessage(
-            dialogflowResponse,channel_id), slackRequest)
+            dialogflowResponse, channel_id), slackRequest)
     });
 });
