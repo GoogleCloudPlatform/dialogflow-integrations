@@ -41,9 +41,9 @@ const listener = app.listen(process.env.PORT, async function() {
 
 app.post('/', async function(req, res) {
   const message = await retrieveMessage(req.body.data.id);
-  const dialogflowResponse = await detectIntentText(message.text, req.body.data.personId);
+  const dialogflowResponse = await detectIntentText(message, req.body.data.personId);
   const sparkMessage = detectIntentToSparkMessage(dialogflowResponse);
-  sendMessage(sparkMessage, message.email);
+  sendMessage(sparkMessage.text, message.email);
 });
 
 process.on('SIGTERM', () => {
@@ -60,12 +60,12 @@ async function init(){
 }
 
 // Converts Spark message to a detectIntent request. 
-function sparkToDetectIntent(query, sessionPath){
+function sparkToDetectIntent(message, sessionPath){
      const request = {
      session: sessionPath,
      queryInput: {
          text: {
-             text: query,
+             text: message.text,
             },
             languageCode,
         },
@@ -76,23 +76,27 @@ function sparkToDetectIntent(query, sessionPath){
 
 // Converts detectIntent response to a Spark text message. 
 function detectIntentToSparkMessage(response){
-    textMessage = '';
+    agentResponse = '';
     
     for (const message of response.queryResult.responseMessages) {
         if (message.text) {
-            textMessage += `${message.text.text}\n`;
+            agentResponse += `${message.text.text}\n`;
         };
     };
   
-  return textMessage;
+  if(agentResponse.length != ''){
+    const request = {
+      text: agentResponse
+    };
+  
+  return request;
 };
-module.exports = {sparkToDetectIntent, detectIntentToSparkMessage};
 
 /**
  * This function calls Dialogflow CX API to retrieve the response
  * https://cloud.google.com/dialogflow/cx/docs/quick/api
  */
-async function detectIntentText(query, personId) {
+async function detectIntentText(message, personId) {
   const sessionId = personId;
   const sessionPath = client.projectLocationAgentSessionPath(
       projectId,
@@ -102,7 +106,7 @@ async function detectIntentText(query, personId) {
   );
   console.info(sessionPath);
 
-  request = sparkToDetectIntent(query, sessionPath);
+  request = sparkToDetectIntent(message, sessionPath);
   const response = await client.detectIntent(request);
 
   return response;
@@ -200,3 +204,5 @@ function retrieveMessage(messageId) {
     });
   });
 }
+
+  module.exports = {sparkToDetectIntent, detectIntentToSparkMessage};
