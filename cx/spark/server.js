@@ -88,9 +88,8 @@ function detectIntentToSparkMessage(response){
     const request = {
       text: agentResponse
      };
+    return request;
     };
-  
-  return agentResponse;
 };
 
 /**
