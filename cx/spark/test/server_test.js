@@ -3,7 +3,7 @@ const sparkToDetectIntent = require('../server.js').sparkToDetectIntent;
 const assert = require('assert');
 
 describe('sparkToDetectIntent()', () => {
-    const query = {
+    const message = {
         text: 'Test Text'
     };
 
@@ -19,7 +19,7 @@ describe('sparkToDetectIntent()', () => {
 
     it('should converts Spark message to a detectIntent request.', async function () {
         assert.deepStrictEqual(sparkToDetectIntent(
-            query.text,'sessionPath'), dialogflowRequest)
+            message,'sessionPath'), dialogflowRequest)
     });
 });
 
@@ -42,6 +42,6 @@ describe('detectIntentToSparkMessage()', () => {
 
     it('should converts detectIntent response to a Spark text message.', async function () {
         assert.deepStrictEqual(detectIntentToSparkMessage(
-            dialogflowResponse), sparkTextMessage.text)
+            dialogflowResponse), sparkTextMessage)
     });
 });
