@@ -87,9 +87,10 @@ function detectIntentToSparkMessage(response){
   if(agentResponse.length != ''){
     const request = {
       text: agentResponse
+     };
     };
   
-  return request;
+  return agentResponse;
 };
 
 /**
