@@ -61,11 +61,11 @@ async function init(){
 
 // Converts Spark message to a detectIntent request. 
 function sparkToDetectIntent(message, sessionPath){
-     const request = {
-     session: sessionPath,
-     queryInput: {
-         text: {
-             text: message.text,
+    const request = {
+        session: sessionPath,
+        queryInput: {
+            text: {
+                text: message.text,
             },
             languageCode,
         },
@@ -85,10 +85,10 @@ function detectIntentToSparkMessage(response){
     };
   
   if(agentResponse.length != ''){
-    const request = {
-      text: agentResponse
-     };
-    return request;
+        const request = {
+            text: agentResponse
+        };
+        return request;
     };
 };
 
@@ -112,14 +112,14 @@ async function detectIntentText(message, personId) {
   return response;
 }
 
-function sendMessage(text, personEmail) {
+function sendMessage(message, personEmail) {
   request.post('https://api.ciscospark.com/v1/messages', {
     auth: {
       bearer: sparkAccessToken
     },
     json: {
       "toPersonEmail": personEmail,
-      "text": text
+      "text": message.text
     }
   }, (err, resp, body) => {
     if (err) {
