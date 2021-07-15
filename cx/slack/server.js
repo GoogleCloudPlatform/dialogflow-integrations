@@ -10,6 +10,8 @@
 // const agentId = 'my-agent';
 // const languageCode = 'en';
 
+const structProtoToJson = require('../../botlib/proto_to_json.js').structProtoToJson;
+
 const { WebClient } = require('@slack/web-api');
 const { createEventAdapter } = require('@slack/events-api');
 
@@ -43,27 +45,6 @@ function slackToDetectIntent(slackRequest, sessionPath){
 }
 
 /**
- * Converts detectIntent response to a Slack message request. 
- */
-function detectIntentToSlackMessage(response, channel_id){
-    var agentResponse = '';
-    
-    for (const message of response.queryResult.responseMessages) {
-        if (message.text) {
-            agentResponse += `${message.text.text}\n`;
-        };
-    };
-    
-    if(agentResponse.length != ''){
-        const request = {
-            channel: channel_id,
-            text: agentResponse
-        };
-        return request;
-    };
-};
-
-/**
  * Takes as input a request from Slack and converts the request to
  * detectIntent request which is used to call the detectIntent() function
  * and finally output the response given by detectIntent().
@@ -80,9 +61,48 @@ async function detectIntentResponse(slackRequest) {
     
     request = slackToDetectIntent(slackRequest, sessionPath);
     const [response] = await client.detectIntent(request);
-
+    
     return response;
 };
+
+async function convertToSlackMessage(responses, channel_id) {
+    let replies = [];
+    
+    for(let response of responses.queryResult.responseMessages) {
+        let reply;
+        
+        switch(true) {
+            case response.hasOwnProperty('text'): {
+                reply = {
+                    channel: channel_id,
+                    text: response.text.text.join()
+                };  
+            }
+            break;
+            
+            case response.hasOwnProperty('payload'): {
+                var output = structProtoToJson(response.payload)
+                if(response.payload.fields.hasOwnProperty('image_url')){
+                    reply = {
+                        channel: channel_id,
+                        blocks: [output]
+                    }
+                }else if(response.payload.fields.hasOwnProperty('attachments')){
+                    reply = output
+                    reply['channel'] = channel_id
+                } 
+            }
+            break;
+            
+            default:
+        }
+        if (reply) {
+            replies.push(reply);
+        }
+    }
+        
+    return replies;
+}
 
 /**
  * Checks if the request is coming from a bot and if it is not 
@@ -94,11 +114,13 @@ async function detectIntentResponse(slackRequest) {
 async function eventToRequest(event, channel_id) {
     if(event.bot_id == '' || event.bot_id == null){
         const response = await detectIntentResponse(event);
-        var request = detectIntentToSlackMessage(response, channel_id);
-        try {
-            await slackClient.chat.postMessage(request)
-        } catch (error) {
-            console.log(error.data)
+        var requests = await convertToSlackMessage(response, channel_id);
+        for(req of requests){
+            try {
+                await slackClient.chat.postMessage(req)
+            } catch (error) {
+                console.log(error.data)
+            }
         }
     };
 };
@@ -108,7 +130,6 @@ slackEvents.on('message', (event) => {
     (async () => {
         await eventToRequest(event, event.user);
     })();
-    
 });
 
 // Listens for messages that mention the Slack App in channals
@@ -124,4 +145,4 @@ slackEvents.start(process.env.PORT).then(() => {
     console.log(`Server started on port ${process.env.PORT}`)
 });
 
-module.exports = {slackToDetectIntent, detectIntentToSlackMessage};
+module.exports = {slackToDetectIntent, convertToSlackMessage};

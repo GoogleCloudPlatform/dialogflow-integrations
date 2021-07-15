@@ -1,4 +1,4 @@
-const detectIntentToSlackMessage = require('../server.js').detectIntentToSlackMessage;
+const convertToSlackMessage = require('../server.js').convertToSlackMessage;
 const slackToDetectIntent = require('../server.js').slackToDetectIntent;
 const assert = require('assert');
 
@@ -23,28 +23,57 @@ describe('slackToDetectIntent()', () => {
     });
 });
 
-describe('detectIntentToSlackMessage()', () => {
+describe('convertToSlackMessage()', () => {
     channel_id = 54321
 
-    const slackRequest = {
+    const slackTextRequest = [{
         channel: channel_id,
-        text: 'Test Response Text\n'
-    };
+        text: 'Test Response Text'
+    }];
 
-    const dialogflowResponse = {
+    const dialogflowTextResponse = {
         queryResult: {
-            text: 'Test Text',
-            languageCode: 'en',
             responseMessages: [{
                 text: {
-                    text: 'Test Response Text'
+                    text: ['Test Response Text']
                 }
             }]
         }
     };
 
+    const slackPayloadRequest = [{
+        channel: channel_id,
+        blocks: [{
+            type: "image",
+            image_url: "http://example.com/image",
+            alt_text: "Example image."
+        }]
+    }];
+
+    const dialogflowPayloadResponse = {
+        queryResult: {
+            responseMessages: [{    
+                payload: {
+                    fields: {    
+                        type: { stringValue: 'image', kind: 'stringValue' },
+                        image_url: {
+                            stringValue: 'http://example.com/image',
+                            kind: 'stringValue'
+                        },
+                        alt_text: { stringValue: 'Example image.', kind: 'stringValue' }
+                    }
+                }
+            }]
+        }
+    };    
+
     it('should convert detectIntent response to a Slack text message request.', async function () {
-        assert.deepStrictEqual(detectIntentToSlackMessage(
-            dialogflowResponse, channel_id), slackRequest)
+        var request =  await convertToSlackMessage(dialogflowTextResponse, channel_id);
+        assert.deepStrictEqual(request, slackTextRequest); 
+    });
+
+    it('should convert detectIntent payload response to a Slack message request.', async function () {
+        var request = await convertToSlackMessage(dialogflowPayloadResponse, channel_id);
+        assert.deepStrictEqual(request, slackPayloadRequest)    
     });
 });
