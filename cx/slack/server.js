@@ -61,7 +61,7 @@ async function detectIntentResponse(slackRequest) {
     
     request = slackToDetectIntent(slackRequest, sessionPath);
     const [response] = await client.detectIntent(request);
-    
+
     return response;
 };
 
@@ -79,7 +79,12 @@ async function convertToSlackMessage(responses, channel_id) {
                 };  
             }
             break;
-            
+            /**
+             * For image responses the message format can be found
+             * at https://api.slack.com/reference/block-kit/block-elements#image
+             * For button responses the message format can be found at
+             * https://api.slack.com/legacy/message-buttons
+             */
             case response.hasOwnProperty('payload'): {
                 var output = structProtoToJson(response.payload)
                 if(response.payload.fields.hasOwnProperty('image_url')){
