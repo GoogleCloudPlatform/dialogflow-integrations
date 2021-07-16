@@ -58,7 +58,7 @@ async function detectIntentResponse(slackRequest) {
         sessionId
     );
     console.info(sessionPath);
-    
+
     request = slackToDetectIntent(slackRequest, sessionPath);
     const [response] = await client.detectIntent(request);
 
@@ -67,10 +67,10 @@ async function detectIntentResponse(slackRequest) {
 
 async function convertToSlackMessage(responses, channel_id) {
     let replies = [];
-    
+
     for(let response of responses.queryResult.responseMessages) {
         let reply;
-        
+
         switch(true) {
             case response.hasOwnProperty('text'): {
                 reply = {
@@ -98,14 +98,14 @@ async function convertToSlackMessage(responses, channel_id) {
                 } 
             }
             break;
-            
+
             default:
         }
         if (reply) {
             replies.push(reply);
         }
     }
-        
+
     return replies;
 }
 
