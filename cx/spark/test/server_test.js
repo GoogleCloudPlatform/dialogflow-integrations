@@ -25,6 +25,7 @@ describe('sparkToDetectIntent()', () => {
 
 describe('detectIntentToSparkMessage()', () => {
     const sparkTextMessage = {
+        personEmail: 'test123@gmail.com',
         text: 'Test Response Text\n'
     };
 
@@ -39,9 +40,13 @@ describe('detectIntentToSparkMessage()', () => {
             }]
         }
     };
+    
+    const message = {
+        email: 'test123@gmail.com'
+    }
 
     it('should converts detectIntent response to a Spark text message.', async function () {
         assert.deepStrictEqual(detectIntentToSparkMessage(
-            dialogflowResponse), sparkTextMessage)
+            dialogflowResponse, message), sparkTextMessage)
     });
 });
