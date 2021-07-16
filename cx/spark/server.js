@@ -41,9 +41,9 @@ const listener = app.listen(process.env.PORT, async function() {
 
 app.post('/', async function(req, res) {
   const message = await retrieveMessage(req.body.data.id);
-  const dialogflowResponse = await detectIntentText(message, req.body.data.personId);
-  const sparkMessage = detectIntentToSparkMessage(dialogflowResponse);
-  sendMessage(sparkMessage.text, message.email);
+  const dialogflowResponse = await detectIntentText(message);
+  const sparkMessage = detectIntentToSparkMessage(dialogflowResponse, message);
+  sendMessage(sparkMessage);
 });
 
 process.on('SIGTERM', () => {
@@ -69,35 +69,36 @@ function sparkToDetectIntent(message, sessionPath){
             },
             languageCode,
         },
-    };
+      };
 
   return request;
 }
 
 // Converts detectIntent response to a Spark text message. 
-function detectIntentToSparkMessage(response){
+function detectIntentToSparkMessage(response, message){
     agentResponse = '';
     
     for (const message of response.queryResult.responseMessages) {
         if (message.text) {
             agentResponse += `${message.text.text}\n`;
-        };
-    };
+          };
+      };
   
   if(agentResponse.length != ''){
         const request = {
+          personEmail: message.email,
             text: agentResponse
-        };
+          };
         return request;
-    };
+      };
 };
 
 /**
  * This function calls Dialogflow CX API to retrieve the response
  * https://cloud.google.com/dialogflow/cx/docs/quick/api
  */
-async function detectIntentText(message, personId) {
-  const sessionId = personId;
+async function detectIntentText(message) {
+  const sessionId = message.payload.personId;
   const sessionPath = client.projectLocationAgentSessionPath(
       projectId,
       locationId,
@@ -106,19 +107,19 @@ async function detectIntentText(message, personId) {
   );
   console.info(sessionPath);
 
-  request = sparkToDetectIntent(message, sessionPath);
-  const response = await client.detectIntent(request);
+  const request = sparkToDetectIntent(message, sessionPath);
+  const [response] = await client.detectIntent(request);
 
   return response;
 }
 
-function sendMessage(message, personEmail) {
+function sendMessage(message) {
   request.post('https://api.ciscospark.com/v1/messages', {
     auth: {
       bearer: sparkAccessToken
     },
     json: {
-      "toPersonEmail": personEmail,
+      "toPersonEmail": message.personEmail,
       "text": message.text
     }
   }, (err, resp, body) => {
