@@ -81,10 +81,8 @@ async function convertToSlackMessage(responses, channel_id) {
             break;
  
             /**
-             * For image responses the message format can be found
-             * at https://api.slack.com/reference/block-kit/block-elements#image
-             * For button responses the message format can be found at
-             * https://api.slack.com/legacy/message-buttons
+             * For information on the layouts for rich messages on Slack,
+             * please visit https://api.slack.com/messaging/composing/layouts
              */
             case response.hasOwnProperty('payload'): {
                 reply = await structProtoToJson(response.payload);
