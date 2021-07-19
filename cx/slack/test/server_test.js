@@ -41,7 +41,7 @@ describe('convertToSlackMessage()', () => {
         }
     };
 
-    const slackPayloadRequest = [{
+    const slackImageRequest = [{
         channel: channel_id,
         blocks: [{
             type: "image",
@@ -50,30 +50,82 @@ describe('convertToSlackMessage()', () => {
         }]
     }];
 
-    const dialogflowPayloadResponse = {
+    const dialogflowImageResponse = {
         queryResult: {
             responseMessages: [{    
                 payload: {
                     fields: {    
-                        type: { stringValue: 'image', kind: 'stringValue' },
-                        image_url: {
-                            stringValue: 'http://example.com/image',
-                            kind: 'stringValue'
-                        },
-                        alt_text: { stringValue: 'Example image.', kind: 'stringValue' }
+                        "blocks":{"listValue":{"values":[{"structValue":{"fields":{
+                            "type":{"stringValue":"image","kind":"stringValue"},
+                            "image_url":{"stringValue":"http://example.com/image",
+                            "kind":"stringValue"},
+                            "alt_text":{"stringValue":"Example image.","kind":"stringValue"}}},
+                        "kind":"structValue"}]},"kind":"listValue"}
                     }
                 }
             }]
         }
     };    
 
-    it('should convert detectIntent response to a Slack text message request.', async function () {
+    const slackButtonRequest = [{
+        channel: channel_id,
+        text: "Would you like to play a game?",
+        attachments: [
+            {
+                text: "Choose a game to play",
+                fallback: "You are unable to choose a game",
+                callback_id: "wopr_game",
+                color: "#3AA3E3",
+                attachment_type: "default",
+                actions: [
+                    {
+                        name: "game",
+                        text: "Chess",
+                        type: "button",
+                        value: "chess"
+                    }
+                ]
+            }
+        ]
+    }]
+
+    const dialogflowButtonResponse = {
+        queryResult: {
+            responseMessages: [{    
+                payload: {
+                    fields: {    
+                        "text":{"stringValue":"Would you like to play a game?","kind":"stringValue"},
+                        "attachments":{"listValue":{"values":[{"structValue":{"fields":{
+                            "callback_id":{"stringValue":"wopr_game","kind":"stringValue"},
+                            "color":{"stringValue":"#3AA3E3","kind":"stringValue"},
+                            "actions":{"listValue":{"values":[{"structValue":{"fields":{
+                                "text":{"stringValue":"Chess","kind":"stringValue"},
+                                "name":{"stringValue":"game","kind":"stringValue"},
+                                "value":{"stringValue":"chess","kind":"stringValue"},
+                                "type":{"stringValue":"button","kind":"stringValue"}}},
+                            "kind":"structValue"}]},"kind":"listValue"},
+                            "fallback":{"stringValue":"You are unable to choose a game","kind":"stringValue"},
+                            "attachment_type":{"stringValue":"default","kind":"stringValue"},
+                            "text":{"stringValue":"Choose a game to play","kind":"stringValue"}}},
+                        "kind":"structValue"}]},"kind":"listValue"}
+                    }
+                }
+            }]
+        }
+    }
+
+    it('Should convert detectIntent text response to a Slack message request.', async function () {
         var request =  await convertToSlackMessage(dialogflowTextResponse, channel_id);
         assert.deepStrictEqual(request, slackTextRequest); 
     });
 
-    it('should convert detectIntent payload response to a Slack message request.', async function () {
-        var request = await convertToSlackMessage(dialogflowPayloadResponse, channel_id);
-        assert.deepStrictEqual(request, slackPayloadRequest)    
+    it('Should convert detectIntent Image response to a Slack message request.', async function () {
+        var request = await convertToSlackMessage(dialogflowImageResponse, channel_id);
+        assert.deepStrictEqual(request, slackImageRequest)    
+    });
+
+    it('Should convert detectIntent button response to a Slack message request.', async function () {
+        var request =  await convertToSlackMessage(dialogflowButtonResponse, channel_id);
+        assert.deepStrictEqual(request, slackButtonRequest)  
     });
 });
