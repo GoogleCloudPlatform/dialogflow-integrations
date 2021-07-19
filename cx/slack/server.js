@@ -79,6 +79,7 @@ async function convertToSlackMessage(responses, channel_id) {
                 };  
             }
             break;
+ 
             /**
              * For image responses the message format can be found
              * at https://api.slack.com/reference/block-kit/block-elements#image
@@ -86,16 +87,8 @@ async function convertToSlackMessage(responses, channel_id) {
              * https://api.slack.com/legacy/message-buttons
              */
             case response.hasOwnProperty('payload'): {
-                var output = structProtoToJson(response.payload)
-                if(response.payload.fields.hasOwnProperty('image_url')){
-                    reply = {
-                        channel: channel_id,
-                        blocks: [output]
-                    }
-                }else if(response.payload.fields.hasOwnProperty('attachments')){
-                    reply = output
-                    reply['channel'] = channel_id
-                } 
+                reply = await structProtoToJson(response.payload);
+                reply['channel'] = channel_id;
             }
             break;
 
