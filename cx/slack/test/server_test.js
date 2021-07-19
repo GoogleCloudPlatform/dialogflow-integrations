@@ -43,11 +43,13 @@ describe('convertToSlackMessage()', () => {
 
     const slackImageRequest = [{
         channel: channel_id,
-        blocks: [{
-            type: "image",
-            image_url: "http://example.com/image",
-            alt_text: "Example image."
-        }]
+        blocks: [
+            {
+                type: "image",
+                image_url: "http://example.com/image",
+                alt_text: "Example image."
+            }
+        ]
     }];
 
     const dialogflowImageResponse = {
@@ -69,45 +71,59 @@ describe('convertToSlackMessage()', () => {
 
     const slackButtonRequest = [{
         channel: channel_id,
-        text: "Would you like to play a game?",
-        attachments: [
+    	blocks: [
             {
-                text: "Choose a game to play",
-                fallback: "You are unable to choose a game",
-                callback_id: "wopr_game",
-                color: "#3AA3E3",
-                attachment_type: "default",
-                actions: [
+                type: "section",
+                text: {
+                    type: "mrkdwn",
+                    text: "This is a section block with a button."
+                }
+            },
+            {
+                type: "actions",
+                block_id: "actionblock",
+                elements: [
                     {
-                        name: "game",
-                        text: "Chess",
                         type: "button",
-                        value: "chess"
+                        text: {
+                            type: "plain_text",
+                            text: "Link Button"
+                        },
+                        url: "https://example.com/"
                     }
                 ]
             }
-        ]
+	    ]
     }]
 
     const dialogflowButtonResponse = {
         queryResult: {
             responseMessages: [{    
                 payload: {
-                    fields: {    
-                        "text":{"stringValue":"Would you like to play a game?","kind":"stringValue"},
-                        "attachments":{"listValue":{"values":[{"structValue":{"fields":{
-                            "callback_id":{"stringValue":"wopr_game","kind":"stringValue"},
-                            "color":{"stringValue":"#3AA3E3","kind":"stringValue"},
-                            "actions":{"listValue":{"values":[{"structValue":{"fields":{
-                                "text":{"stringValue":"Chess","kind":"stringValue"},
-                                "name":{"stringValue":"game","kind":"stringValue"},
-                                "value":{"stringValue":"chess","kind":"stringValue"},
-                                "type":{"stringValue":"button","kind":"stringValue"}}},
-                            "kind":"structValue"}]},"kind":"listValue"},
-                            "fallback":{"stringValue":"You are unable to choose a game","kind":"stringValue"},
-                            "attachment_type":{"stringValue":"default","kind":"stringValue"},
-                            "text":{"stringValue":"Choose a game to play","kind":"stringValue"}}},
-                        "kind":"structValue"}]},"kind":"listValue"}
+                    fields: {
+                        "blocks":{"listValue":{"values":[
+                            {"structValue":{"fields":{
+                                "type":{"stringValue":"section","kind":"stringValue"},
+                                "text":{"structValue":{"fields":{
+                                    "text":{"stringValue":"This is a section block with a button.","kind":"stringValue"},
+                                    "type":{"stringValue":"mrkdwn","kind":"stringValue"}}},
+                                "kind":"structValue"}}},
+                            "kind":"structValue"},
+                            {"structValue":{"fields":{
+                                "block_id":{"stringValue":"actionblock","kind":"stringValue"},
+                                "type":{"stringValue":"actions","kind":"stringValue"},
+                                "elements":{"listValue":{"values":[
+                                    {"structValue":{"fields":{
+                                        "url":{"stringValue":"https://example.com/","kind":"stringValue"},
+                                        "text":{"structValue":{"fields":{
+                                            "type":{"stringValue":"plain_text","kind":"stringValue"},
+                                            "text":{"stringValue":"Link Button","kind":"stringValue"}}},
+                                        "kind":"structValue"},
+                                        "type":{"stringValue":"button","kind":"stringValue"}}},
+                                    "kind":"structValue"}]},
+                                "kind":"listValue"}}},
+                            "kind":"structValue"}]}
+                        ,"kind":"listValue"}
                     }
                 }
             }]
@@ -119,7 +135,7 @@ describe('convertToSlackMessage()', () => {
         assert.deepStrictEqual(request, slackTextRequest); 
     });
 
-    it('Should convert detectIntent Image response to a Slack message request.', async function () {
+    it('Should convert detectIntent image response to a Slack message request.', async function () {
         var request = await convertToSlackMessage(dialogflowImageResponse, channel_id);
         assert.deepStrictEqual(request, slackImageRequest)    
     });
