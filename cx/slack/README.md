@@ -62,7 +62,7 @@ You can view a list of your active integration deployments under [Cloud Run](htt
     *   To do this first click "Add dialogue option" in a fulfillment editing panel.
     *   Then copy and paste the bottom code and edit it to include your chosen elements in the blocks.
         *   { "blocks": [ {...} ] }
-    *   For more information on the layouts for Slack rich messages, please visit https://api.slack.com/messaging/composing/layouts.
+    *   For more information on the layouts for rich messages on Slack, please visit https://api.slack.com/messaging/composing/layouts.
 *   There are two ways to test the integration:
     *   Directly instant message the integration through the Slack App you created.
     *   Install your Slack App on a channal and mention the name of the Slack App (Ex: @appName) in your message.
