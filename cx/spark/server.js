@@ -41,6 +41,8 @@ const listener = app.listen(process.env.PORT, async function() {
 
 app.post('/', async function(req, res) {
   const message = await retrieveMessage(req.body.data.id);
+  if(message == null)
+    console.log('ok)
   const dialogflowResponse = await detectIntentText(message);
   const sparkMessage = detectIntentToSparkMessage(dialogflowResponse, message);
   sendMessage(sparkMessage);
@@ -61,36 +63,36 @@ async function init(){
 
 // Converts Spark message to a detectIntent request. 
 function sparkToDetectIntent(message, sessionPath){
-    const request = {
-        session: sessionPath,
-        queryInput: {
-            text: {
-                text: message.text,
-            },
-            languageCode,
-        },
-      };
+  const request = {
+    session: sessionPath,
+    queryInput: {
+      text: {
+        text: message.text,
+      },
+      languageCode,
+    },
+  };
 
   return request;
 }
 
 // Converts detectIntent response to a Spark text message. 
 function detectIntentToSparkMessage(response, message){
-    agentResponse = '';
+  agentResponse = '';
     
-    for (const message of response.queryResult.responseMessages) {
-        if (message.text) {
-            agentResponse += `${message.text.text}\n`;
-          };
-      };
+  for (const message of response.queryResult.responseMessages) {
+    if (message.text) {
+      agentResponse += `${message.text.text}\n`;
+    };
+  };
   
   if(agentResponse.length != ''){
-        const request = {
-          personEmail: message.email,
-            text: agentResponse
-          };
-        return request;
-      };
+    const request = {
+      toPersonEmail: message.email,
+      text: agentResponse
+    };
+    return request;
+  };
 };
 
 /**
@@ -118,10 +120,7 @@ function sendMessage(message) {
     auth: {
       bearer: sparkAccessToken
     },
-    json: {
-      "toPersonEmail": message.personEmail,
-      "text": message.text
-    }
+    json: message
   }, (err, resp, body) => {
     if (err) {
       console.error('Failed to send message :' + err);
