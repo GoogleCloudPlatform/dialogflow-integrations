@@ -58,11 +58,10 @@ describe('convertToSlackMessage()', () => {
                 payload: {
                     fields: {    
                         "blocks":{"listValue":{"values":[{"structValue":{"fields":{
-                            "type":{"stringValue":"image","kind":"stringValue"},
-                            "image_url":{"stringValue":"http://example.com/image",
-                            "kind":"stringValue"},
-                            "alt_text":{"stringValue":"Example image.","kind":"stringValue"}}},
-                        "kind":"structValue"}]},"kind":"listValue"}
+                            "type":{"stringValue":"image", "kind":"stringValue"},
+                            "image_url":{"stringValue":"http://example.com/image", "kind":"stringValue"},
+                            "alt_text":{"stringValue":"Example image.", "kind":"stringValue"}}},
+                        "kind":"structValue"}]}, "kind":"listValue"}
                     }
                 }
             }]
@@ -103,27 +102,27 @@ describe('convertToSlackMessage()', () => {
                     fields: {
                         "blocks":{"listValue":{"values":[
                             {"structValue":{"fields":{
-                                "type":{"stringValue":"section","kind":"stringValue"},
+                                "type":{"stringValue":"section", "kind":"stringValue"},
                                 "text":{"structValue":{"fields":{
-                                    "text":{"stringValue":"This is a section block with a button.","kind":"stringValue"},
-                                    "type":{"stringValue":"mrkdwn","kind":"stringValue"}}},
+                                    "text":{"stringValue":"This is a section block with a button.", "kind":"stringValue"},
+                                    "type":{"stringValue":"mrkdwn", "kind":"stringValue"}}},
                                 "kind":"structValue"}}},
                             "kind":"structValue"},
                             {"structValue":{"fields":{
-                                "block_id":{"stringValue":"actionblock","kind":"stringValue"},
-                                "type":{"stringValue":"actions","kind":"stringValue"},
+                                "block_id":{"stringValue":"actionblock", "kind":"stringValue"},
+                                "type":{"stringValue":"actions", "kind":"stringValue"},
                                 "elements":{"listValue":{"values":[
                                     {"structValue":{"fields":{
-                                        "url":{"stringValue":"https://example.com/","kind":"stringValue"},
+                                        "url":{"stringValue":"https://example.com/", "kind":"stringValue"},
                                         "text":{"structValue":{"fields":{
-                                            "type":{"stringValue":"plain_text","kind":"stringValue"},
-                                            "text":{"stringValue":"Link Button","kind":"stringValue"}}},
+                                            "type":{"stringValue":"plain_text", "kind":"stringValue"},
+                                            "text":{"stringValue":"Link Button", "kind":"stringValue"}}},
                                         "kind":"structValue"},
-                                        "type":{"stringValue":"button","kind":"stringValue"}}},
+                                        "type":{"stringValue":"button", "kind":"stringValue"}}},
                                     "kind":"structValue"}]},
                                 "kind":"listValue"}}},
                             "kind":"structValue"}]}
-                        ,"kind":"listValue"}
+                        , "kind":"listValue"}
                     }
                 }
             }]
