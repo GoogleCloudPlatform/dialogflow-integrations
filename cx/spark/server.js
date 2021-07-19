@@ -41,11 +41,13 @@ const listener = app.listen(process.env.PORT, async function() {
 
 app.post('/', async function(req, res) {
   const message = await retrieveMessage(req.body.data.id);
-  if(message == null)
-    console.log('ok)
+  if(message == null){
+    res.sendStatus(200);
+  }
   const dialogflowResponse = await detectIntentText(message);
   const sparkMessage = detectIntentToSparkMessage(dialogflowResponse, message);
   sendMessage(sparkMessage);
+  res.sendStatus(200);
 });
 
 process.on('SIGTERM', () => {
