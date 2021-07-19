@@ -58,10 +58,11 @@ You can view a list of your active integration deployments under [Cloud Run](htt
 **Testing the Integration**
 
 *   You have now completed all the necessary steps and can test your integration.
-*   To test rich messages you have to first input in the cutom payload for your agent:
-    *   { "blocks": [ {...} ] } for [images](https://api.slack.com/reference/block-kit/block-elements#image)
-    *   {"text": "...", "attachments": [ {...} ] } for attachments such as [buttons](https://api.slack.com/legacy/message-buttons)
+*   To test rich messages you have to first input in the [custom payload](https://cloud.google.com/dialogflow/cx/docs/concept/fulfillment) for your agent:
+    *   To do this first click "Add dialogue option" in a fulfillment editing panel.
+    *   Then copy and paste the bottom code and edit it to include your chosen elements in the blocks.
+        *   { "blocks": [ {...} ] }
     *   For more information on the layouts for Slack rich messages, please visit https://api.slack.com/messaging/composing/layouts.
 *   There are two ways to test the integration:
-*   1. Directly instant message the integration through the Slack App you created.
-*   2. Install your Slack App on a channal and mention the name of the Slack App (Ex: @appName) in your message.
+    *   Directly instant message the integration through the Slack App you created.
+    *   Install your Slack App on a channal and mention the name of the Slack App (Ex: @appName) in your message.
