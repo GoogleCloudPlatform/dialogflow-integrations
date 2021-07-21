@@ -62,15 +62,7 @@ The integration requires platform credentials from the intended platform to func
 
 Follow the steps in the README file in the relevant platform subdirectory to obtain the credentials and setup the server.js file to deploy and start the integration:
 
-- [CM.com (SMS and WhatsApp Business)](./cm/README.md)
-- [Kik](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/kik#readme)
 - [Infobip Conversations](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/infobip-conversations#readme)
-- [Skype](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/skype#readme)
-- [Spark](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/spark#readme)
-- [Twilio IP Messaging](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/twilio-ip#readme)
-- [Twilio (Text Messaging)](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/twilio#readme)
-- [Twitter](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/twitter#readme)
-- [Viber](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/viber#readme)
 
 ## Post-deployment
 
