@@ -1,5 +1,5 @@
 {
-  "name": "telegram-integration",
+  "name": "telegram-cx-integration",
   "version": "0.0.1",
   "description": "A server that integrates Dialogflow CX with Telegram for text reponses only.",
   "main": "server.js",
