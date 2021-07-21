@@ -10,6 +10,8 @@
 // const TELEGRAM_TOKEN='1234567898:ABCdfghTtaD8dfghdfgh45sdf65467M';
 // const SERVER_URL='https://example.com';
 
+const structProtoToJson = require('../../botlib/proto_to_json.js').structProtoToJson;
+
 const express = require('express');
 const axios = require('axios');
 const bodyParser = require('body-parser');
@@ -21,7 +23,6 @@ const WEBHOOK = SERVER_URL + URI;
 const app = express();
 app.use(bodyParser.json());
 
-
 // Imports the Google Cloud Some API library
 const {SessionsClient} = require('@google-cloud/dialogflow-cx');
 /**
@@ -31,44 +32,58 @@ const {SessionsClient} = require('@google-cloud/dialogflow-cx');
  */
 const client = new SessionsClient({apiEndpoint: locationId + '-dialogflow.googleapis.com'});
 
-/**
- * Converts Telgram request to a detectIntent request.
- */
+// Converts Telgram request to a detectIntent request.
 function telegramToDetectIntent(telegramRequest, sessionPath){
+    const request = {
+        session: sessionPath,
+        queryInput: {
+            text: {
+                text: telegramRequest.message.text,
+            },
+            languageCode,
+        }
+    };
 
-  const request = {
-    session: sessionPath,
-    queryInput: {
-      text: {
-        text: telegramRequest.message.text,
-      },
-      languageCode,
-    },
-  };
-
-  return request;
+    return request;
 }
 
-/**
- * Converts detectIntent response to a Telegram text message request. 
- */
-function detectIntentToTelegramMessage(response,chatId){
-  agentResponse = '';
-    
-  for (const message of response.queryResult.responseMessages) {
-    if (message.text) {
-      agentResponse += `${message.text.text}\n`;
-    };
-  };
-    
-  if(agentResponse.length != ''){
-    const request = {
-      chat_id: chatId,
-      text: agentResponse
-    };
-    return request;
-  };
-};
+// Converts detectIntent responses to Telegram message requests.
+async function convertToTelegramMessage(responses, chatId) {
+    let replies = [];
+
+    for(let response of responses.queryResult.responseMessages) {
+        let reply;
+
+        switch(true) {
+            case response.hasOwnProperty('text'): {
+                reply = {
+                    chat_id: chatId,
+                    text: response.text.text.join()
+                };  
+            }
+            break;
+
+            /**
+             * The layout for the custom payload responses can be found in these sites:
+             * Buttons: https://core.telegram.org/bots/api#inlinekeyboardmarkup
+             * Photos: https://core.telegram.org/bots/api#sendphoto
+             * Voice Audios: https://core.telegram.org/bots/api#sendvoice
+             */
+            case response.hasOwnProperty('payload'): {
+                reply = await structProtoToJson(response.payload)
+                reply['chat_id'] = chatId
+            }
+            break;
+
+            default:
+        }
+        if (reply) {
+            replies.push(reply);
+        }
+    }
+
+    return replies;
+}
 
 /**
  * Takes as input a request from Telegram and converts the request to
@@ -76,19 +91,19 @@ function detectIntentToTelegramMessage(response,chatId){
  * and finally output the response given by detectIntent().
  */
 async function detectIntentResponse(telegramRequest) {
-  const sessionId = telegramRequest.message.chat.id;
-  const sessionPath = client.projectLocationAgentSessionPath(
-    projectId,
-    locationId,
-    agentId,
-    sessionId
-  );
-  console.info(sessionPath);
-  
-  request = telegramToDetectIntent(telegramRequest, sessionPath);
-  const [response] = await client.detectIntent(request);
+    const sessionId = telegramRequest.message.chat.id;
+    const sessionPath = client.projectLocationAgentSessionPath(
+        projectId,
+        locationId,
+        agentId,
+        sessionId
+    );
+    console.info(sessionPath);
 
-  return response;
+    request = telegramToDetectIntent(telegramRequest, sessionPath);
+    const [response] = await client.detectIntent(request);
+
+    return response;
 };
 
 const setup = async () => {
@@ -97,19 +112,36 @@ const setup = async () => {
 };
 
 app.post(URI, async (req, res) => {
-  const response = await detectIntentResponse(req.body);
-  const request = detectIntentToTelegramMessage(response,req.body.message.chat.id);
-    
-  await axios.post(`${API_URL}/sendMessage`, request);
-  
-  return res.send();
+    const chatId = req.body.message.chat.id;
+    const response = await detectIntentResponse(req.body);
+    const requests = await convertToTelegramMessage(response,chatId);
+
+    for(request of requests){
+        if(request.hasOwnProperty('photo')){
+            await axios.post(`${API_URL}/sendPhoto`, request)
+                .catch(function (error) {
+                    console.log(error)
+                })
+        }else if(request.hasOwnProperty('voice')){
+            await axios.post(`${API_URL}/sendVoice`, request)
+                .catch(function (error) {
+                    console.log(error)
+                })
+        }else{
+            await axios.post(`${API_URL}/sendMessage`, request)
+                .catch(function (error) {
+                    console.log(error)
+                })
+        }
+    }
+
+    return res.send();
 });
 
 const listener = app.listen(process.env.PORT, async () => {
-    console.log('Your Dialogflow integration server is listening on port '
-    + listener.address().port);
+    console.log('Your Dialogflow integration server is listening on port '+ listener.address().port);
 
     await setup();
 });
 
-module.exports = {telegramToDetectIntent, detectIntentToTelegramMessage};
+module.exports = {telegramToDetectIntent, convertToTelegramMessage};
