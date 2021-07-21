@@ -2,3 +2,6 @@ Dockerfile
 README.md
 node_modules
 npm-debug.log
+docs
+test
+.eslintrc.js

@@ -5,8 +5,6 @@ const configuration = require('./configuration_provider');
 const dialogflowAdapter = new DialogflowAdapter(configuration);
 const ccaasAdapter = new CcaasAdapter(configuration);
 
-require('core-js/stable');
-
 const handleGetRequest = (req, res) => {
   res.send('It works');
 };

@@ -8,7 +8,10 @@ If you do not have an existing Dialogflow agent, you can set one up by reading t
 
 Although it is possible to set up this integration deployment on any hosting platform, these instructions will use [Google's Cloud Run](https://cloud.google.com/run/).
 
-## Initial Setup
+## Prerequisites
+You need to have [Infobip](https://infobip.com) account with [Conversations](https://www.infobip.com/docs/conversations).
+
+## Initial GCP Setup
 
 ### Setting up gcloud CLI
 
@@ -33,9 +36,33 @@ Follow the steps below to create a Service Account and set up the integration.
 
 If deploying this integration outside of GCP Cloud Run, it may be necessary to set the GOOGLE_APPLICATION_CREDENTIALS environmental variable on the deployment environment to the absolute path of Service Account JSON key file. See [this guide](https://cloud.google.com/dialogflow/docs/quick/setup#auth) for details.
 
+<a name="InitialInfobipConversationsSetup"></a>
+## Initial Infobip Conversations setup
+- Log in to [Infobip's Customer Portal](https://portal.infobip.com)
+- Navigate to "apps"
+![Navigate to apps](docs/01-navigate-to-apps.png)
+- Switch to "Conversations" tab
+![Switch to Conversations tab](docs/02-switch-to-Conversations-tab.png)
+- Choose "Conversations"
+![Choose Conversations](docs/03-choose-Conversations.png)
+- Choose "Chatbots"
+![Choose Chatbots](docs/04-choose-chatbots-app.png)
+- Click "Connect Chatbot" button
+![Click Connect Chatbot button](docs/05-click-connect-chatbot-object.png)
+<a name="ProvideChatbotDetails"></a>
+- Provide chatbot details (name, webhook URL and number/page) and click "Connect" button
+
+  As URL you need to provide address of webhook exposed by your app. In case you don't know it yet, please provide placeholder and edit that after app is deployed.
+  To be able to edit URL, external bot needs to be inactive state.
+![Provide chatbot details and click Connect button](docs/06-provide-chatbot-name-URL-of-your-webhook-and-number-click-connect.png)
+- Activate your chatbot
+![Activate your chatbot](docs/07-activate-chatbot.png)
+- Make note of your chatbot ID. You'll need it later when configuring chatbot app 
+![Make note of your chatbot ID](docs/08-note-id-of-your-chatbot.png)
+
 ## Deploying the Integration
 
-### Setup
+### Integration setup
 
 1. Go into the Dialogflow agent’s settings and click on the Project ID link to open its associated GCP Project.
 2. Click on the navigation menu in the GCP console and click "Billing". Set up and enable billing for the project. 
@@ -43,26 +70,51 @@ If deploying this integration outside of GCP Cloud Run, it may be necessary to s
 [here](https://console.cloud.google.com/flows/enableapi?apiid=cloudbuild.googleapis.com,run.googleapis.com).
 4. Clone this git repository onto your local machine or development environment:
 `git clone [repository url]`
-5. Open the root directory of the repository on your local machine or development environment.
+5. Open the root directory of the repository on your local machine or development environment and copy Service Account JSON key file there. 
+6. Provide configuration values
+Provide values for the following variables inside of `src/configuration_provider.js` file.
+Alternatively you can provide environment variables for your container.
 
-### Dockerfile and Creating the Build
+| Variable       | Environment variable           | Description |
+|---             |---                             |---	|
+| project        | DIALOGFLOW_PROJECT             | ID of GCP project running Dialogflow |
+| agentId        | DIALOGFLOW_AGENT_ID            | ID of Dialogflow Agent |
+| agentLocation  | DIALOGFLOW_AGENT_LOCATION      | Location where Dialogflow agent is deployed |
+| infobipBaseUrl | INFOBIP_BASE_URL               | You need to provide base URL as listed on https://portal.infobip.com homepage. |
+| infobipApiKey  | INFOBIP_API_KEY                | To authenticate when sending messages to Infobip. More on https://portal.infobip.com/settings/accounts/api-keys |
+| language       | BOT_LANGUAGE                   | Language used when processing content on Dialogflow side |
+| infobipBotId   | INFOBIP_BOT_ID                 | ID of the external bot configured in Conversations |
 
-Open the [Dockerfile](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/Dockerfile#L9) in the root directory of the repository, and change YOUR_INTEGRATION in the following line to the name of the desired platform subdirectory.
+### Deploying the Integration Using Cloud Run
 
-```Dockerfile
-   # Set this environmental variable to the integration you want to use
-   ENV INTEGRATION=YOUR_INTEGRATION
-   ```
+In your local terminal, change the active directory to the repository’s root directory.
 
-If you have not done so already, copy your Service Account JSON key file to the desired platform subdirectory. 
+Run the following command to save the state of your repository into [GCP Container Registry](https://console.cloud.google.com/gcr/). Replace PROJECT-ID with your agent’s GCP Project ID and PLATFORM with the platform subdirectory name.
 
-### Platform-specific Instructions
+```shell
+gcloud builds submit --tag gcr.io/PROJECT-ID/dialogflow-PLATFORM
+```
 
-The integration requires platform credentials from the intended platform to function properly. 
+Deploy your integration to live using the following command. Replace PROJECT-ID with your agent’s GCP project Id, PLATFORM with the platform subdirectory name, and YOUR_KEY_FILE with the name (not path) of your Service Account JSON key file.
 
-Follow the steps in the README file in the relevant platform subdirectory to obtain the credentials and setup the server.js file to deploy and start the integration:
+```shell
+gcloud beta run deploy --image gcr.io/PROJECT-ID/dialogflow-PLATFORM --update-env-vars GOOGLE_APPLICATION_CREDENTIALS=YOUR_KEY_FILE --memory 1Gi
+```
 
-- [Infobip Conversations](https://github.com/GoogleCloudPlatform/dialogflow-integrations/tree/master/infobip-conversations#readme)
+- When prompted for a target platform, select a platform by entering the corresponding number (for example, ``1`` for ``Cloud Run (fully managed)``).
+- When prompted for a region, select a region (for example, ``us-central1``).
+- When prompted for a service name hit enter to accept the default.
+- When prompted to allow unauthenticated invocations press ``y``.
+- Copy the URL given to you, and use it according to the README file in the given integration's folder.
+
+Take the value for the server URL printed in the console after the completion of the execution of the above command and configure it chatbot's URL on [Provide chatbot details](#ProvideChatbotDetails) screen in Conversations.
+
+Redeploy the integration with the updated change by rerunning the above two commands. 
+
+More information can be found in Cloud Run
+[documentation](https://cloud.google.com/run/docs/deploying).
+
+You can view a list of your active integration deployments under [Cloud Run](https://console.cloud.google.com/run) in the GCP Console.
 
 ## Post-deployment
 
@@ -84,12 +136,8 @@ gcloud beta run services delete SERVICE-NAME
 
 If following the instructions closely, SERVICE-NAME should be in the format of dialogflow-PLATFORM
 
-### Multiple Integrations
-
-To set up multiple integration deployments simultaneously, repeat all of the instructions for each deployment. While it is possible to make changes to the existing deployment repository and re-deploy it under a different name, it would make it difficult to retroactively make changes to previous deployments.
-
 ### Changing Integration Behavior
 
-The behavior of an integration can be customized via the addition of your own developer code or by editing the server.js file in the platform subdirectory.
+The behavior of an integration can be customized via the addition of your own developer code or by editing the files in src/ directory.
 
 After making changes, redeploy the deployment by re-running the commands as specified in the "Deploy the Integration Using Cloud Run" section of the platform-specific integration READMEs.
