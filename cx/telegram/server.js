@@ -59,9 +59,9 @@ async function convertToTelegramMessage(responses, chatId) {
                 reply = {
                     chat_id: chatId,
                     text: response.text.text.join()
-                };  
-            }
-            break;
+                };
+                break;
+            };
 
             /**
              * The layout for the custom payload responses can be found in these sites:
@@ -70,16 +70,16 @@ async function convertToTelegramMessage(responses, chatId) {
              * Voice Audios: https://core.telegram.org/bots/api#sendvoice
              */
             case response.hasOwnProperty('payload'): {
-                reply = await structProtoToJson(response.payload)
-                reply['chat_id'] = chatId
-            }
-            break;
+                reply = await structProtoToJson(response.payload);
+                reply['chat_id'] = chatId;
+                break;
+            };
 
             default:
-        }
+        };
         if (reply) {
             replies.push(reply);
-        }
+        };
     }
 
     return replies;
