@@ -53,5 +53,5 @@ You can view a list of your active integration deployments under [Cloud Run](htt
     *   Then copy and paste one of the bottom codes and edit it to fit your needs.
         *   { "photo": "http://example.com/image.jpg" } to [send photos](https://core.telegram.org/bots/api#sendphoto).
         *   { "voice": "http://example.com/voice.mp3" } to [send voice audios](https://core.telegram.org/bots/api#sendvoice).
-        *   {"text": "Test Text", "reply_markup": {"inline_keyboard": [ [ { ... } ] ] } to [send buttons](https://core.telegram.org/bots/api#inlinekeyboardmarkup)
+        *   { "text": "Test Text", "reply_markup": {"inline_keyboard": [ [ { ... } ] ] } to [send buttons](https://core.telegram.org/bots/api#inlinekeyboardmarkup)
 *   To test the the integration, you have to direct message the bot you created.
