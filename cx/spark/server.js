@@ -1,9 +1,9 @@
 /**
  * To-Do:
- * Create a Service Account and download its key file. 
- * Set the environmental variable GOOGLE_APPLICATION_CREDENTIALS 
+ * Create a Service Account and download its key file.
+ * Set the environmental variable GOOGLE_APPLICATION_CREDENTIALS
  * to the key file's location.
- * See https://cloud.google.com/dialogflow/cx/docs and 
+ * See https://cloud.google.com/dialogflow/cx/docs and
  * https://cloud.google.com/dialogflow/cx/docs/quick/setup for details.
  */
 
@@ -19,7 +19,7 @@ app.use(express.json());
 // const projectId = 'my-project';
 // const locationId = 'global';
 // const agentId = 'my-agent';
-// const languageCode = 'en'
+// const languageCode = 'en';
 
 // Imports the Google Cloud Some API library
 const {SessionsClient} = require('@google-cloud/dialogflow-cx');
@@ -35,88 +35,94 @@ const client = new SessionsClient({apiEndpoint: locationId + '-dialogflow.google
 
 const listener = app.listen(process.env.PORT, async function() {
   await init();
-  console.log('Your Spark integration server is listening on port '
-      + listener.address().port);
+  console.log('Your Spark integration server is listening on port ' +
+      listener.address().port);
 });
 
 app.post('/', async function(req, res) {
   const message = await retrieveMessage(req.body.data.id);
-  const dialogflowResponse = await detectIntentText(message.text, req.body.data.personId);
-  const sparkMessage = detectIntentToSparkMessage(dialogflowResponse);
-  sendMessage(sparkMessage, message.email);
+  if (message == null) {
+    res.sendStatus(200);
+  }
+  const dialogflowResponse = await detectIntentText(message);
+  const sparkMessage = detectIntentToSparkMessage(dialogflowResponse, message);
+  sendMessage(sparkMessage);
+  res.sendStatus(200);
 });
 
 process.on('SIGTERM', () => {
   listener.close(async ()=>{
     console.log('Closing http server.');
-    await deleteWebhooks();
+    await deleteWebhooksByUrl(targetUrl);
     process.exit(0);
   });
 });
 
-async function init(){
-  await deleteWebhooks();
+async function init() {
+  await deleteWebhooksByUrl(targetUrl);
   registerWebhook();
 }
 
-// Converts Spark message to a detectIntent request. 
-function sparkToDetectIntent(query, sessionPath){
-     const request = {
-     session: sessionPath,
-     queryInput: {
-         text: {
-             text: query,
-            },
-            languageCode,
-        },
-    };
+// Converts Spark message to a detectIntent request.
+function sparkToDetectIntent(message, sessionPath) {
+  const request = {
+    session: sessionPath,
+    queryInput: {
+      text: {
+        text: message.text,
+      },
+      languageCode,
+    },
+  };
 
   return request;
 }
 
-// Converts detectIntent response to a Spark text message. 
-function detectIntentToSparkMessage(response){
-    textMessage = '';
-    
-    for (const message of response.queryResult.responseMessages) {
-        if (message.text) {
-            textMessage += `${message.text.text}\n`;
-        };
+// Converts detectIntent response to a Spark text message.
+function detectIntentToSparkMessage(response, message) {
+  agentResponse = '';
+
+  for (const message of response.queryResult.responseMessages) {
+    if (message.text) {
+      agentResponse += `${message.text.text}\n`;
     };
-  
-  return textMessage;
+  };
+
+  if (agentResponse.length != '') {
+    const request = {
+      toPersonEmail: message.email,
+      text: agentResponse,
+    };
+    return request;
+  };
 };
-module.exports = {sparkToDetectIntent, detectIntentToSparkMessage};
 
 /**
  * This function calls Dialogflow CX API to retrieve the response
  * https://cloud.google.com/dialogflow/cx/docs/quick/api
  */
-async function detectIntentText(query, personId) {
-  const sessionId = personId;
+async function detectIntentText(message) {
+  const sessionId = message.payload.personId;
   const sessionPath = client.projectLocationAgentSessionPath(
       projectId,
       locationId,
       agentId,
-      sessionId
+      sessionId,
   );
   console.info(sessionPath);
 
-  request = sparkToDetectIntent(query, sessionPath);
-  const response = await client.detectIntent(request);
+  const request = sparkToDetectIntent(message, sessionPath);
+  const [response] = await client.detectIntent(request);
 
   return response;
 }
 
-function sendMessage(text, personEmail) {
+function sendMessage(message) {
   request.post('https://api.ciscospark.com/v1/messages', {
     auth: {
-      bearer: sparkAccessToken
+      bearer: sparkAccessToken,
     },
-    json: {
-      "toPersonEmail": personEmail,
-      "text": text
-    }
+    json: message,
   }, (err, resp, body) => {
     if (err) {
       console.error('Failed to send message :' + err);
@@ -127,14 +133,14 @@ function sendMessage(text, personEmail) {
 function registerWebhook() {
   request.post('https://api.ciscospark.com/v1/webhooks', {
     auth: {
-      bearer: sparkAccessToken
+      bearer: sparkAccessToken,
     },
     json: {
-      "name": "test",
-      "targetUrl": targetUrl,
-      "resource": "messages",
-      "event": "created"
-    }
+      'name': 'test',
+      'targetUrl': targetUrl,
+      'resource': 'messages',
+      'event': 'created',
+    },
   }, (err, resp, body) => {
     if (err) {
       console.error('Failed to create Webhook :' + err);
@@ -142,37 +148,52 @@ function registerWebhook() {
   });
 }
 
-function deleteWebhooks() {
+async function deleteWebhooksByUrl(targetUrl) {
+  const webhooks = await listWebhooks(targetUrl);
+  for (webhook of webhooks) {
+    if (webhook.id) {
+      await deleteWebhookById(webhook.id);
+    }
+  }
+}
+
+function deleteWebhookById(webhookId) {
+  return new Promise((resolve, reject) =>{
+    request.delete(
+        'https://api.ciscospark.com/v1/webhooks/' +
+              webhookId, {
+          auth: {
+            bearer: sparkAccessToken,
+          },
+        }, (err, resp, body) => {
+          if (err) {
+            console.error('Failed to delete webhook :' + err);
+            reject(err);
+          }
+          resolve();
+        });
+  });
+}
+
+function listWebhooks(targetUrl) {
   return new Promise((resolve, reject) =>{
     request.get('https://api.ciscospark.com/v1/webhooks?max=100', {
       auth: {
-        bearer: sparkAccessToken
-      }
+        bearer: sparkAccessToken,
+      },
     }, (err, resp, body) => {
       if (err) {
         console.error('Failed to check webhooks :' + err);
-        reject();
+        reject(err);
       }
-      var webhooks = JSON.parse(resp.body).items;
+      let webhooks = JSON.parse(resp.body).items;
       if (Array.isArray(webhooks)) {
         webhooks = webhooks.filter((value, index, arr)=> {
           return value.targetUrl===targetUrl;
         });
-        webhooks.forEach((webhook) => {
-          request.delete(
-              'https://api.ciscospark.com/v1/webhooks/' +
-              webhook.id, {
-                auth: {
-                  bearer: sparkAccessToken
-                }
-              }, (err, resp, body) => {
-                if (err) {
-                  console.error('Failed to delete webhook :' + err);
-                }
-              });
-        });
+        resolve(webhooks);
       }
-      resolve();
+      resolve([]);
     });
   });
 }
@@ -181,8 +202,8 @@ function retrieveMessage(messageId) {
   return new Promise((resolve, reject) =>{
     request.get('https://api.ciscospark.com/v1/messages/' + messageId, {
       auth: {
-        bearer: sparkAccessToken
-      }
+        bearer: sparkAccessToken,
+      },
     }, (err, resp, body) => {
       if (err) {
         console.error('Failed to retrieve message :' + err);
@@ -193,10 +214,12 @@ function retrieveMessage(messageId) {
         const personEmail = JSON.parse(resp.body).personEmail;
         const messageText= JSON.parse(resp.body).text;
         const payload = JSON.parse(resp.body);
-        resolve({text: messageText, email: personEmail, payload:payload});
+        resolve({text: messageText, email: personEmail, payload: payload});
       } else {
         resolve(null);
       }
     });
   });
 }
+
+module.exports = {sparkToDetectIntent, detectIntentToSparkMessage};
