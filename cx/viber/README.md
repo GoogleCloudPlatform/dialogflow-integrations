@@ -8,13 +8,13 @@
 - Download the Viber app on your mobile device and set up account on that device.
 - Set up a [bot account](https://partners.viber.com).
 - Create and add your [GCP service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) to the current folder.
-- Uncomment and fill in the variables on the top of the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/viber/server.js#L34) 
+- Uncomment and fill in the variables on the top of the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/beff4b43b8a7545ea6187735480b91e7f57000ee/cx/viber/server.js#L15) 
 
 ### Obtaining Viber Credentials
 
 - Log in to your [bot account](https://partners.viber.com). 
 - On the main
-screen, take the values for __Token__, the URL for your bot’s avatar, and __Account Name__ and replace the values for __viberToken__, __botAvatarLink__, and __botName__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/viber/server.js#L35-L37) respectively. 
+screen, take the values for __Token__, the URL for your bot’s avatar, and __Account Name__ and replace the values for __viberToken__, __botAvatarLink__, and __botName__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/beff4b43b8a7545ea6187735480b91e7f57000ee/cx/viber/server.js#L18-L20) respectively. 
 
 ![alt text](images/viber-obtain-viber-credentials.png)
 
@@ -41,7 +41,7 @@ gcloud beta run deploy --image gcr.io/PROJECT-ID/dialogflow-PLATFORM --update-en
  - Copy the URL given to you, and use it according to the README file in the
  given integration's folder.
 
-Take the value for the server URL printed in the console after the completion of the execution of the above command and replace the value for __webhookUrl__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/viber/server.js#L33). 
+Take the value for the server URL printed in the console after the completion of the execution of the above command and replace the value for __webhookUrl__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/beff4b43b8a7545ea6187735480b91e7f57000ee/cx/viber/server.js#L16). 
 
 Redeploy the integration with the updated change by rerunning the above two commands. 
 
