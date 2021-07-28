@@ -19,7 +19,7 @@ app.use(express.json());
 // const projectId = 'my-project';
 // const locationId = 'global';
 // const agentId = 'my-agent';
-// const languageCode = 'en'
+// const languageCode = 'en';
 
 // Imports the Google Cloud Some API library
 const {SessionsClient} = require('@google-cloud/dialogflow-cx');
@@ -53,13 +53,13 @@ app.post('/', async function(req, res) {
 process.on('SIGTERM', () => {
   listener.close(async ()=>{
     console.log('Closing http server.');
-    await deleteWebhooks();
+    await deleteWebhooksByUrl(targetUrl);
     process.exit(0);
   });
 });
 
 async function init() {
-  await deleteWebhooks();
+  await deleteWebhooksByUrl(targetUrl);
   registerWebhook();
 }
 
@@ -148,7 +148,34 @@ function registerWebhook() {
   });
 }
 
-function deleteWebhooks() {
+async function deleteWebhooksByUrl(targetUrl) {
+  const webhooks = await listWebhooks(targetUrl);
+  for (webhook of webhooks) {
+    if (webhook.id) {
+      await deleteWebhookById(webhook.id);
+    }
+  }
+}
+
+function deleteWebhookById(webhookId) {
+  return new Promise((resolve, reject) =>{
+    request.delete(
+        'https://api.ciscospark.com/v1/webhooks/' +
+              webhookId, {
+          auth: {
+            bearer: sparkAccessToken,
+          },
+        }, (err, resp, body) => {
+          if (err) {
+            console.error('Failed to delete webhook :' + err);
+            reject(err);
+          }
+          resolve();
+        });
+  });
+}
+
+function listWebhooks(targetUrl) {
   return new Promise((resolve, reject) =>{
     request.get('https://api.ciscospark.com/v1/webhooks?max=100', {
       auth: {
@@ -157,28 +184,16 @@ function deleteWebhooks() {
     }, (err, resp, body) => {
       if (err) {
         console.error('Failed to check webhooks :' + err);
-        reject();
+        reject(err);
       }
       let webhooks = JSON.parse(resp.body).items;
       if (Array.isArray(webhooks)) {
         webhooks = webhooks.filter((value, index, arr)=> {
           return value.targetUrl===targetUrl;
         });
-        webhooks.forEach((webhook) => {
-          request.delete(
-              'https://api.ciscospark.com/v1/webhooks/' +
-              webhook.id, {
-                auth: {
-                  bearer: sparkAccessToken,
-                },
-              }, (err, resp, body) => {
-                if (err) {
-                  console.error('Failed to delete webhook :' + err);
-                }
-              });
-        });
+        resolve(webhooks);
       }
-      resolve();
+      resolve([]);
     });
   });
 }
