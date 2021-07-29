@@ -30,8 +30,8 @@ app.use(express.json());
 //Upon start a webhook is registered with spark
 //Upon closure the webhook is removed from spark
 
-//Insert your values here
-const sparkAccessToken ="Place your spark personal access token here";
+// Insert your values here
+const sparkAccessToken ='Place your spark personal access token here';
 const targetUrl = 'Place you servers URL here';
 const projectId = 'Place your dialogflow projectId here';
 
@@ -45,24 +45,28 @@ const listener = app.listen(process.env.PORT, async function() {
 
 app.post('/', async function(req, res) {
   const message = await retrieveMessage(req.body.data.id);
+  if (message == null) {
+    res.sendStatus(200);
+  }
   if (message) {
     const dialogflowResponse = (await sessionClient.detectIntent(
         message.text, message.email, message.payload)).fulfillmentText;
     sendMessage(dialogflowResponse, message.email);
+    res.sendStatus(200);
   }
 });
 
 process.on('SIGTERM', () => {
   listener.close(async ()=>{
     console.log('Closing http server.');
-    await deleteWebhooks();
+    await deleteWebhooksByUrl(targetUrl);
     process.exit(0);
   });
 });
 
 async function init(){
-  await deleteWebhooks();
-  registerWebhook();
+  await deleteWebhooksByUrl (targetUrl);
+  registerWebhook ();
 }
 
 function sendMessage(text, personEmail) {
@@ -71,8 +75,8 @@ function sendMessage(text, personEmail) {
       bearer: sparkAccessToken
     },
     json: {
-      "toPersonEmail": personEmail,
-      "text": text
+      'toPersonEmail': personEmail,
+      'text': text
     }
   }, (err, resp, body) => {
     if (err) {
@@ -87,10 +91,10 @@ function registerWebhook() {
       bearer: sparkAccessToken
     },
     json: {
-      "name": "test",
-      "targetUrl": targetUrl,
-      "resource": "messages",
-      "event": "created"
+      'name': 'test',
+      'targetUrl': targetUrl,
+      'resource': 'messages',
+      'event': 'created'
     }
   }, (err, resp, body) => {
     if (err) {
@@ -99,37 +103,52 @@ function registerWebhook() {
   });
 }
 
-function deleteWebhooks() {
+async function deleteWebhooksByUrl(targetUrl) {
+  const webhooks = await listWebhooks(targetUrl);
+  for (webhook of webhooks) {
+    if (webhook.id) {
+      await deleteWebhookById(webhook.id);
+    }
+  }
+}
+
+function deleteWebhookById(webhookId) {
+  return new Promise((resolve, reject) =>{
+    request.delete(
+        'https://api.ciscospark.com/v1/webhooks/' +
+              webhookId, {
+          auth: {
+            bearer: sparkAccessToken,
+          },
+        }, (err, resp, body) => {
+          if (err) {
+            console.error('Failed to delete webhook :' + err);
+            reject(err);
+          }
+          resolve();
+        });
+  });
+}
+
+function listWebhooks(targetUrl) {
   return new Promise((resolve, reject) =>{
     request.get('https://api.ciscospark.com/v1/webhooks?max=100', {
       auth: {
-        bearer: sparkAccessToken
-      }
+        bearer: sparkAccessToken,
+      },
     }, (err, resp, body) => {
       if (err) {
         console.error('Failed to check webhooks :' + err);
-        reject();
+        reject(err);
       }
-      var webhooks = JSON.parse(resp.body).items;
+      let webhooks = JSON.parse(resp.body).items;
       if (Array.isArray(webhooks)) {
         webhooks = webhooks.filter((value, index, arr)=> {
           return value.targetUrl===targetUrl;
         });
-        webhooks.forEach((webhook) => {
-          request.delete(
-              'https://api.ciscospark.com/v1/webhooks/' +
-              webhook.id, {
-                auth: {
-                  bearer: sparkAccessToken
-                }
-              }, (err, resp, body) => {
-                if (err) {
-                  console.error('Failed to delete webhook :' + err);
-                }
-              });
-        });
+        resolve(webhooks);
       }
-      resolve();
+      resolve([]);
     });
   });
 }
