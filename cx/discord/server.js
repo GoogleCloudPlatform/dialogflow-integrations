@@ -57,7 +57,7 @@ function discordToDetectIntent(discordRequest, sessionPath) {
  * and finally output the response given by detectIntent().
  */
 async function detectIntentResponse(discordRequest) {
-  const sessionId = await discordRequest.channel.id;
+  const sessionId = await discordRequest.author.id;
   const sessionPath = client.projectLocationAgentSessionPath(
       projectId, locationId, agentId, sessionId);
 
