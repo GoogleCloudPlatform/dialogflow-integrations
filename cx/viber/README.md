@@ -49,3 +49,12 @@ More information can be found in Cloud Run
 [documentation](https://cloud.google.com/run/docs/deploying).
 
 You can view a list of your active integration deployments under [Cloud Run](https://console.cloud.google.com/run) in the GCP Console.
+
+### Testing the Integration
+
+In order to test [VIBER_WELCOME](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/beff4b43b8a7545ea6187735480b91e7f57000ee/cx/viber/server.js#L65) message follow these steps
+*  On the start page of your agent add an [event handler](https://cloud.google.com/dialogflow/cx/docs/concept/handler#event)
+* Click "Use custom event" and add the event name (VIBER_WELCOME)
+* Under fulfillment edit the agent's response
+*   To test the welcome message simply start a converstion with the bot 
+

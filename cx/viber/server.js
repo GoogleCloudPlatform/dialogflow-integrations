@@ -55,14 +55,14 @@ const listener = app.listen(port, () => {
 
 bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
   const sessionId = response.userProfile.id;
-  const dialogflowResponse = await detectIntentResponse(message, sessionId);
+  const dialogflowResponse = await detectIntent(message, sessionId);
   const reply = await convertToViberMessage(dialogflowResponse);
   bot.sendMessage(response.userProfile, reply);
 });
 
 bot.on(BotEvents.CONVERSATION_STARTED, async (response) => {
   const sessionId = response.userProfile.id;
-  const dialogflowResponse = await detectIntentResponse('VIBER_WELCOME', sessionId);
+  const dialogflowResponse = await detectIntentEvent('VIBER_WELCOME', sessionId);
   const replies = await convertToViberMessage(dialogflowResponse);
   bot.sendMessage(response.userProfile, replies);
 });
@@ -81,6 +81,7 @@ const init = () => {
 
 const removeWebhook = () => {
   // Setting a webhook with empty string removes prior webhook
+  // https://developers.viber.com/docs/api/rest-bot-api/#removing-your-webhook
   bot.setWebhook('');
 };
 
@@ -95,10 +96,10 @@ async function convertToViberMessage(responses) {
 }
 
 /**
- * This function calls Dialogflow CX API to retrieve the response
+ * This function calls Dialogflow CX API to retrieve the response using a message
  * https://cloud.google.com/dialogflow/cx/docs/quick/api
  */
-async function detectIntentResponse(message, id) {
+async function detectIntent(message, id) {
   let request = null;
   const sessionId = id;
   const sessionPath = client.projectLocationAgentSessionPath(
@@ -109,11 +110,28 @@ async function detectIntentResponse(message, id) {
   );
   console.info(sessionPath);
 
-  if (message == 'VIBER_WELCOME') {
-    request = viberToDetectIntentEvent('VIBER_WELCOME', sessionPath);
-  } else {
-    request = viberToDetectIntent(message, sessionPath);
-  }
+  request = viberToDetectIntent(message, sessionPath);
+  const [response] = await client.detectIntent(request);
+
+  return response;
+}
+
+/**
+ * This function calls Dialogflow CX API to retrieve the response using an event
+ * https://cloud.google.com/dialogflow/cx/docs/quick/api
+ */
+async function detectIntentEvent(event, id) {
+  let request = null;
+  const sessionId = id;
+  const sessionPath = client.projectLocationAgentSessionPath(
+      projectId,
+      locationId,
+      agentId,
+      sessionId,
+  );
+  console.info(sessionPath);
+
+  request = viberToDetectIntentEvent(event, sessionPath);
   const [response] = await client.detectIntent(request);
 
   return response;
