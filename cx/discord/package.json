@@ -1,0 +1,28 @@
+{
+  "name": "discord-cx-integration",
+  "version": "0.0.1",
+  "description": "A server that integrates Dialogflow CX with Discord.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "mocha --recursive --exit"
+  },
+  "dependencies": {
+    "@google-cloud/dialogflow-cx": "^2.12.1",
+    "discord-buttons": "^4.0.0",
+    "discord.js": "^12.5.3",
+    "express": "^4.17.1",
+    "mocha": "^9.0.3"
+  },
+  "engines": {
+    "node": "8.x"
+  },
+  "repository": {
+    "url": "URL"
+  },
+  "license": "Apache-2.0",
+  "private": true,
+  "devDependencies": {
+    "eslint-config-google": "^0.14.0"
+  }
+}
