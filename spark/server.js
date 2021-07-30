@@ -49,6 +49,7 @@ app.post('/', async function(req, res) {
     const dialogflowResponse = (await sessionClient.detectIntent(
         message.text, message.email, message.payload)).fulfillmentText;
     sendMessage(dialogflowResponse, message.email);
+    res.sendStatus(200);
   }
 });
 
