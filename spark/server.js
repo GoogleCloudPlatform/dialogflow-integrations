@@ -48,12 +48,10 @@ app.post('/', async function(req, res) {
   if (message == null) {
     res.sendStatus(200);
   }
-  if (message) {
-    const dialogflowResponse = (await sessionClient.detectIntent(
-        message.text, message.email, message.payload)).fulfillmentText;
-    sendMessage(dialogflowResponse, message.email);
-    res.sendStatus(200);
-  }
+  const dialogflowResponse = (await sessionClient.detectIntent(
+      message.text, message.email, message.payload)).fulfillmentText;
+  sendMessage(dialogflowResponse, message.email);
+  res.sendStatus(200);
 });
 
 process.on('SIGTERM', () => {
