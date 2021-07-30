@@ -45,6 +45,9 @@ const listener = app.listen(process.env.PORT, async function() {
 
 app.post('/', async function(req, res) {
   const message = await retrieveMessage(req.body.data.id);
+  if (message == null) {
+    res.sendStatus(200);
+  }
   if (message) {
     const dialogflowResponse = (await sessionClient.detectIntent(
         message.text, message.email, message.payload)).fulfillmentText;
