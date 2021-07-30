@@ -21,17 +21,17 @@ const dialogflowSessionClient =
 
 app.use(express.json());
 
-//For authenticating dialogflow_session_client.js, create a Service Account and
+// For authenticating dialogflow_session_client.js, create a Service Account and
 // download its key file. Set the environmental variable
 // GOOGLE_APPLICATION_CREDENTIALS to the key file's location.
-//See https://dialogflow.com/docs/reference/v2-auth-setup and
+// See https://dialogflow.com/docs/reference/v2-auth-setup and
 // https://cloud.google.com/dialogflow/docs/setup for details.
 
-//Upon start a webhook is registered with spark
-//Upon closure the webhook is removed from spark
+// Upon start a webhook is registered with spark
+// Upon closure the webhook is removed from spark
 
-//Insert your values here
-const sparkAccessToken ="Place your spark personal access token here";
+// Insert your values here
+const sparkAccessToken ='Place your spark personal access token here';
 const targetUrl = 'Place you servers URL here';
 const projectId = 'Place your dialogflow projectId here';
 
@@ -55,24 +55,24 @@ app.post('/', async function(req, res) {
 process.on('SIGTERM', () => {
   listener.close(async ()=>{
     console.log('Closing http server.');
-    await deleteWebhooks();
+    await deleteWebhooksByUrl(targetUrl);
     process.exit(0);
   });
 });
 
-async function init(){
-  await deleteWebhooks();
+async function init() {
+  await deleteWebhooksByUrl(targetUrl);
   registerWebhook();
 }
 
 function sendMessage(text, personEmail) {
   request.post('https://api.ciscospark.com/v1/messages', {
     auth: {
-      bearer: sparkAccessToken
+      bearer: sparkAccessToken,
     },
     json: {
-      "toPersonEmail": personEmail,
-      "text": text
+      'toPersonEmail': personEmail,
+      'text': text
     }
   }, (err, resp, body) => {
     if (err) {
@@ -87,10 +87,10 @@ function registerWebhook() {
       bearer: sparkAccessToken
     },
     json: {
-      "name": "test",
-      "targetUrl": targetUrl,
-      "resource": "messages",
-      "event": "created"
+      'name': 'test',
+      'targetUrl': targetUrl,
+      'resource': 'messages',
+      'event': 'created'
     }
   }, (err, resp, body) => {
     if (err) {
@@ -99,37 +99,52 @@ function registerWebhook() {
   });
 }
 
-function deleteWebhooks() {
+async function deleteWebhooksByUrl(targetUrl) {
+  const webhooks = await listWebhooks(targetUrl);
+  for (webhook of webhooks) {
+    if (webhook.id) {
+      await deleteWebhookById(webhook.id);
+    }
+  }
+}
+
+function deleteWebhookById(webhookId) {
+  return new Promise((resolve, reject) =>{
+    request.delete(
+        'https://api.ciscospark.com/v1/webhooks/' +
+              webhookId, {
+          auth: {
+            bearer: sparkAccessToken,
+          },
+        }, (err, resp, body) => {
+          if (err) {
+            console.error('Failed to delete webhook :' + err);
+            reject(err);
+          }
+          resolve();
+        });
+  });
+}
+
+function listWebhooks(targetUrl) {
   return new Promise((resolve, reject) =>{
     request.get('https://api.ciscospark.com/v1/webhooks?max=100', {
       auth: {
-        bearer: sparkAccessToken
-      }
+        bearer: sparkAccessToken,
+      },
     }, (err, resp, body) => {
       if (err) {
         console.error('Failed to check webhooks :' + err);
-        reject();
+        reject(err);
       }
-      var webhooks = JSON.parse(resp.body).items;
+      let webhooks = JSON.parse(resp.body).items;
       if (Array.isArray(webhooks)) {
         webhooks = webhooks.filter((value, index, arr)=> {
           return value.targetUrl===targetUrl;
         });
-        webhooks.forEach((webhook) => {
-          request.delete(
-              'https://api.ciscospark.com/v1/webhooks/' +
-              webhook.id, {
-                auth: {
-                  bearer: sparkAccessToken
-                }
-              }, (err, resp, body) => {
-                if (err) {
-                  console.error('Failed to delete webhook :' + err);
-                }
-              });
-        });
+        resolve(webhooks);
       }
-      resolve();
+      resolve([]);
     });
   });
 }
@@ -145,12 +160,12 @@ function retrieveMessage(messageId) {
         console.error('Failed to retrieve message :' + err);
         reject();
       }
-      //checks to make sure the message is not from itself
+      // checks to make sure the message is not from itself
       if (!((JSON.parse(resp.body).personEmail).includes('webex.bot'))) {
         const personEmail = JSON.parse(resp.body).personEmail;
         const messageText= JSON.parse(resp.body).text;
         const payload = JSON.parse(resp.body);
-        resolve({text: messageText, email: personEmail, payload:payload});
+        resolve({text: messageText, email: personEmail, payload: payload});
       } else {
         resolve(null);
       }
