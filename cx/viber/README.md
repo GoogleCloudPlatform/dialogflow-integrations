@@ -58,3 +58,9 @@ In order to test [VIBER_WELCOME](https://github.com/GoogleCloudPlatform/dialogfl
 * Under fulfillment edit the agent's response
 * To test the welcome message simply start a converstion with the bot 
 
+In order to test rich response messages follow these steps
+* To add rich response navigate to the fulfillment editing panel of the agent
+* Click "Add dialogue option" and select [custom payload](https://cloud.google.com/dialogflow/cx/docs/concept/fulfillment#payload)
+* Then add the corresponding parameters for the specific message type according to [Viber's layout](https://developers.viber.com/docs/api/rest-bot-api/#message-types)
+    * For example, to send a picture message add these required parameters
+        * { "type": "picture", "text": "Photo description", "media": "http://www.images.com/img.jpg" }

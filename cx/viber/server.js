@@ -10,6 +10,7 @@ const express = require('express');
 const ViberBot = require('viber-bot').Bot;
 const BotEvents = require('viber-bot').Events;
 const TextMessage = require('viber-bot').Message.Text;
+const protoToJson = require('../../botlib/proto_to_json.js');
 const app = express();
 
 // Uncomment and insert your values here
@@ -89,8 +90,15 @@ async function convertToViberMessage(responses) {
   const replies = [];
 
   for (const message of responses.queryResult.responseMessages) {
-    const reply = new TextMessage(message.text.text[0]);
-    replies.push(reply);
+    if (message.text) {
+      const reply = new TextMessage(message.text.text[0]);
+      replies.push(reply);
+    } else if (message.payload.fields) {
+      let payload = message.payload;
+      payload = await protoToJson.structProtoToJson(payload);
+      reply = bot._messageFactory.createMessageFromJson({message: payload});
+      replies.push(reply);
+    }
   }
   return replies;
 }

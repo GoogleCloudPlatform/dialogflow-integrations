@@ -4,7 +4,7 @@ const viberToDetectIntent = require('../server.js').viberToDetectIntent;
 const viberToDetectIntentEvent = require('../server.js').viberToDetectIntentEvent;
 
 describe('convertToViberMessage', () => {
-  const dialogflowResponse = {
+  const dialogflowResponseText = {
     queryResult: {
       text: 'Test Text',
       languageCode: 'en',
@@ -15,7 +15,7 @@ describe('convertToViberMessage', () => {
       }],
     },
   };
-  
+
   const textViberMessage = [{
     text: 'Test Response Text',
     timestamp: undefined,
@@ -26,9 +26,50 @@ describe('convertToViberMessage', () => {
     minApiVersion: undefined,
   }];
 
-  it('should convert dialogflowResponse to viber message', async () => {
-    assert.deepEqual(await convertToViberMessage(dialogflowResponse),
+  it('should convert dialogflowResponse with text to viber message', async () => {
+    assert.deepEqual(await convertToViberMessage(dialogflowResponseText),
         textViberMessage);
+  });
+
+  const dialogflowResponsePicture = {
+    queryResult: {
+      languageCode: 'en',
+      responseMessages: [{
+        payload: {
+          fields: {
+            media: {
+              stringValue: 'http://www.images.com/img.jpg',
+              kind: 'stringValue',
+            },
+            text: {
+              stringValue: 'Photo description',
+              kind: 'stringValue',
+            },
+            type: {
+              stringValue: 'Picture',
+              kind: 'stringValue',
+            },
+          },
+        },
+      }],
+    },
+  };
+
+  const PictureViberMessage = [{
+    url: 'http://www.images.com/img.jpg',
+    text: 'Photo description',
+    thumbnail: null,
+    timestamp: undefined,
+    token: undefined,
+    trackingData: {},
+    keyboard: null,
+    requiredArguments: ['url'],
+    minApiVersion: undefined,
+  }];
+
+  it('should convert dialogflowResponse with picture to viber message', async () => {
+    assert.deepEqual(await convertToViberMessage(dialogflowResponsePicture),
+        PictureViberMessage);
   });
 });
 
