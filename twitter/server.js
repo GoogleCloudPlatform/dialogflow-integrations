@@ -57,9 +57,9 @@ const listener = app.listen(process.env.PORT, function() {
 });
 
 process.on('SIGTERM', () => {
-  listener.close(() => {
+  listener.close(async () => {
     deleteSubscription();
-    filterWebhooks();
+    await deleteWebhooksByUrl(targetUrl);
     console.log('Closing http server.');
     process.exit(0);
   });
@@ -112,7 +112,7 @@ function sendStatus(text, tweetId) {
 
 async function init() {
   deleteSubscription();
-  await filterWebhooks();
+  await deleteWebhooksByUrl(targetUrl);
   await registerWebhook();
   registerSubscription();
 }
@@ -148,15 +148,14 @@ function registerSubscription() {
 
 }
 
-function filterWebhooks(){
-  return new Promise((resolve, reject)=> {
+function listWebhooks(url) {
+  return new Promise((resolve, reject) => {
     request.get(
-        'https://api.twitter.com/1.1/account_activity/all/webhooks.json', {
-          oauth: twitterOAuth
-        }, function (err, resp, body) {
+        'https://api.twitter.com/1.1/account_activity/all/webhooks.json',
+        {oauth: twitterOAuth}, function(err, resp, body) {
           if (err) {
-            console.error('Failed to delete webhooks: ' + err);
-            reject();
+            console.error('Failed to check webhooks: ' + err);
+            reject(err);
           }
           const environments = JSON.parse(body).environments;
           if (Array.isArray(environments)) {
@@ -164,31 +163,39 @@ function filterWebhooks(){
               return element.environment_name === environmentName;
             });
             if (environment) {
-              const filteredWebhooks = environment.webhooks.filter(
-                  (value, index, arr) => {
-                    return value.url === targetUrl;
+              const webhooks =
+                  environment.webhooks.filter((value, index, arr) => {
+                    return value.url === url;
                   });
-
-              async () => {
-                  await deleteWebhooks(filteredWebhooks);
-              })();
+              resolve(webhooks)
             }
+            resolve([]);
           }
-          resolve();
         });
   });
 }
 
-async function deleteWebhooks(filteredWebhooks) {
-  for (let webhook of filteredWebhooks) {
+function deleteWebhookById(webhookId) {
+  return new Promise((resolve, reject) =>{
     request.delete(
         'https://api.twitter.com/1.1/account_activity/all/' + environmentName +
-            '/webhooks/' + webhook.id + '.json',
+            '/webhooks/' + webhookId + '.json',
         {oauth: twitterOAuth}, function(err, resp, body) {
           if (err) {
-            console.error('Failed to delete webhooks: ' + err);
+            console.error('Failed to delete webhook: ' + err);
+            reject(err)
           }
+          resolve()
         });
+  });
+}
+
+async function deleteWebhooksByUrl(targetUrl) {
+  const webhooks = await listWebhooks(targetUrl);
+  for (webhook of webhooks) {
+    if (webhook.id) {
+      await deleteWebhookById(webhook.id);
+    }
   }
 }
 
