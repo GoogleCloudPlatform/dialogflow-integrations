@@ -79,6 +79,10 @@ You can view a list of your active integration deployments under [Cloud Run](htt
 
 Twitter will block any duplicate tweets. So your Twitter bot may be prevented from retweeting a person if they are triggering the same response multiple times.
 
+### Too many Webhooks
+
+There is a limit on how many webhooks you can register on your given env based on your tier/plan, so please review [twitter's policy](https://developer.twitter.com/en/docs/twitter-api/premium/account-activity-api/overview).
+
 ### Cloud Run 504 Error
 
 Cloud Run will return 504 errors after Twitter receives a message. Do not be concerned. These messages appear because of the way the Twitter integration returns messages, not because there are any actual issues.
