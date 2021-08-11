@@ -167,7 +167,7 @@ function listWebhooks(url) {
                   environment.webhooks.filter((value, index, arr) => {
                     return value.url === url;
                   });
-              resolve(webhooks)
+              resolve(webhooks);
             }
             resolve([]);
           }
@@ -183,9 +183,9 @@ function deleteWebhookById(webhookId) {
         {oauth: twitterOAuth}, function(err, resp, body) {
           if (err) {
             console.error('Failed to delete webhook: ' + err);
-            reject(err)
+            reject(err);
           }
-          resolve()
+          resolve();
         });
   });
 }
