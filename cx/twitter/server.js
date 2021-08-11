@@ -242,10 +242,9 @@ app.post('/', async function(req, res) {
       for (let response of responses.queryResult.responseMessages) {
         if (response.hasOwnProperty('text')) {
           sendMessage(response.text.text.join(), senderId);
-          ;
         };
       };
-      res.sendStatus(200)
+      res.sendStatus(200);
     }
   } else if (
       Array.isArray(req.body.tweet_create_events) &&
