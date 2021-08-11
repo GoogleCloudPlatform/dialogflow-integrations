@@ -57,9 +57,9 @@ const listener = app.listen(process.env.PORT, function() {
 });
 
 process.on('SIGTERM', () => {
-  listener.close(() => {
+  listener.close(async () => {
     deleteSubscription();
-    deleteWebhooks();
+    await deleteWebhooksByUrl(targetUrl);
     console.log('Closing http server.');
     process.exit(0);
   });
@@ -112,7 +112,7 @@ function sendStatus(text, tweetId) {
 
 async function init() {
   deleteSubscription();
-  await deleteWebhooks();
+  await deleteWebhooksByUrl(targetUrl);
   await registerWebhook();
   registerSubscription();
 }
@@ -148,15 +148,14 @@ function registerSubscription() {
 
 }
 
-function deleteWebhooks(){
-  return new Promise((resolve, reject)=> {
+function listWebhooks(url) {
+  return new Promise((resolve, reject) => {
     request.get(
-        'https://api.twitter.com/1.1/account_activity/all/webhooks.json', {
-          oauth: twitterOAuth
-        }, function (err, resp, body) {
+        'https://api.twitter.com/1.1/account_activity/all/webhooks.json',
+        {oauth: twitterOAuth}, function(err, resp, body) {
           if (err) {
-            console.error('Failed to delete webhooks: ' + err);
-            reject();
+            console.error('Failed to check webhooks: ' + err);
+            reject(err);
           }
           const environments = JSON.parse(body).environments;
           if (Array.isArray(environments)) {
@@ -164,26 +163,40 @@ function deleteWebhooks(){
               return element.environment_name === environmentName;
             });
             if (environment) {
-              const filteredWebhooks = environment.webhooks.filter(
-                  (value, index, arr) => {
-                    return value.url === targetUrl;
+              const webhooks =
+                  environment.webhooks.filter((value, index, arr) => {
+                    return value.url === url;
                   });
-              filteredWebhooks.forEach((webhook) => {
-                request.delete(
-                    "https://api.twitter.com/1.1/account_activity/all/" +
-                    environmentName + "/webhooks/" + webhook.id + ".json", {
-                      oauth: twitterOAuth
-                    }, function (err, resp, body) {
-                      if (err) {
-                        console.error('Failed to delete webhooks: ' + err);
-                      }
-                    });
-              });
+              resolve(webhooks);
             }
+            resolve([]);
+          }
+        });
+  });
+}
+
+function deleteWebhookById(webhookId) {
+  return new Promise((resolve, reject) =>{
+    request.delete(
+        'https://api.twitter.com/1.1/account_activity/all/' + environmentName +
+            '/webhooks/' + webhookId + '.json',
+        {oauth: twitterOAuth}, function(err, resp, body) {
+          if (err) {
+            console.error('Failed to delete webhook: ' + err);
+            reject(err);
           }
           resolve();
         });
   });
+}
+
+async function deleteWebhooksByUrl(targetUrl) {
+  const webhooks = await listWebhooks(targetUrl);
+  for (webhook of webhooks) {
+    if (webhook.id) {
+      await deleteWebhookById(webhook.id);
+    }
+  }
 }
 
 function deleteSubscription() {
@@ -215,7 +228,8 @@ app.post('/', async function(req, res) {
     const senderId = message.user.id_str;
     if (senderId!==twitterId && message.in_reply_to_user_id_str) {
       let dialogflowResponse = (await sessionClient.detectIntent(
-          text, senderId, message)).fulfillmentText;
+          text.replace('@' + message.in_reply_to_screen_name, ''),
+          senderId, message)).fulfillmentText;
       const screenName = message.user.screen_name;
       dialogflowResponse = '@'+screenName+' '+dialogflowResponse;
       sendStatus(dialogflowResponse, senderId);
