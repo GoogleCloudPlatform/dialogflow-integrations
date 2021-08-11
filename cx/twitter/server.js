@@ -244,7 +244,6 @@ app.post('/', async function(req, res) {
           sendMessage(response.text.text.join(), senderId);
         };
       };
-      res.sendStatus(200);
     }
   } else if (
       Array.isArray(req.body.tweet_create_events) &&
@@ -263,9 +262,9 @@ app.post('/', async function(req, res) {
               '@' + screenName + ' ' + response.text.text.join(), senderId);
         };
       };
-      res.sendStatus(200);
     }
   }
+  res.sendStatus(200);
 });
 
 // responds to challenge response check verification requests
