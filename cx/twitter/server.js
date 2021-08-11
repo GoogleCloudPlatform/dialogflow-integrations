@@ -242,6 +242,7 @@ app.post('/', async function(req, res) {
       for (let response of responses.queryResult.responseMessages) {
         if (response.hasOwnProperty('text')) {
           sendMessage(response.text.text.join(), senderId);
+          res.sendStatus(200);
         };
       };
     }
@@ -260,6 +261,7 @@ app.post('/', async function(req, res) {
         if (response.hasOwnProperty('text')) {
           sendStatus(
               '@' + screenName + ' ' + response.text.text.join(), senderId);
+          res.sendStatus(200);
         };
       };
     }
