@@ -26,7 +26,7 @@ click the  "Details" button on the new project.
 
 - Go to the "Keys and tokens" tab in your App details. 
 - Click "Create" under "Access token & access token secret". 
-- Take the values for __API key__, __API secret key__, __Access token__, and __Access token secret__ and replace the values for __twitterAPIKey__, __twitterSecretAPIKey__, __twitterAccessToken__, and __twitterSecretAccessToken__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/twitter/server.js#L35-L38) respectively.
+- Take the values for __API key__, __API secret key__, __Access token__, and __Access token secret__ and replace the values for __twitterAPIKey__, __twitterSecretAPIKey__, __twitterAccessToken__, and __twitterSecretAccessToken__ in the __server.js__ file respectively.
 
 ![alt text](images/twitter-obtain-twitter-credentials-2.png)
 
@@ -37,7 +37,7 @@ click the  "Details" button on the new project.
 - Log in to your Twitter developer account and go to the [Dev environments page](https://developer.twitter.com/en/account/environments) by clicking on your username to open the dropdown menu and then clicking on "Dev environments". 
 - In the "Account Activity API / Sandbox" section, click the "Set up dev environment" button. 
 - Fill out the appropriate details and click "Complete setup".
-- Take the value of __Dev environment label__ and replace the value for __environmentName__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/twitter/server.js#L41).
+- Take the value of __Dev environment label__ and replace the value for __environmentName__ in the __server.js__ file.
 
 ![alt text](images/twitter-creating-a-dev-environment.png)
 
@@ -64,7 +64,7 @@ gcloud beta run deploy --image gcr.io/PROJECT-ID/dialogflow-PLATFORM --update-en
  - Copy the URL given to you and use it according to the README file in the
  given integration's folder.
 
-Take the value for the server URL printed in the console after the completion of the execution of the above command and replace the value for __targetUrl__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/twitter/server.js#L39). 
+Take the value for the server URL printed in the console after the completion of the execution of the above command and replace the value for __targetUrl__ in the __server.js__ file. 
 
 Redeploy the integration with the updated change by rerunning the above two commands. 
 
