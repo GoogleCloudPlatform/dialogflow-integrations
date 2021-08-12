@@ -103,7 +103,7 @@ function sendMessage(text, recipientId) {
       },
       function(err, resp, body) {
         if (err) {
-          console.eror('Failed to send message: ' + err);
+          console.error('Failed to send message: ' + err);
         }
       });
 }
