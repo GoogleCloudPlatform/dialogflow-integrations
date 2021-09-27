@@ -1,7 +1,3 @@
-.App {
-  text-align: center;
-}
-
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -24,6 +20,151 @@
   color: white;
 }
 
+.widget {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background-color: blue;
+}
+
+.messenger {
+  position: fixed;
+  bottom: 105px;
+  right: 20px;
+  width: 370px;
+  height: 560px;
+  background-color: #e5e5e5;
+  opacity: 0;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 1px 4px 15px 0px rgb(0 0 0 / 0.24);
+  transform: translateX(25%) translateY(35%) scale(0.5, 0.5);
+  transition: transform 0.2s ease, opacity 0.2s ease-in, height 0s ease 0.2s;
+}
+
+.messenger[data-opened='true'] {
+  opacity: 1;
+  transform: translate3d(0px, 0px, 0px) scale(1, 1);
+  transition: transform 0.2s ease, opacity 0.2s ease-in;
+}
+
+.message {
+  border-radius: 20px;
+  border: 1px solid #e0e0e0;
+  padding: 7px 16px;
+  margin-top: 10px;
+  align-self: flex-end;
+  background-color: white;
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+}
+
+.user-message {
+  background-color: #ddd;
+  margin-left: 75px;
+  align-self: flex-end;
+}
+
+@keyframes present-yourself {
+  100% {
+    opacity: 1;
+  }
+}
+
+.user-animation {
+  animation: present-yourself 0.3s ease 0.1s forwards;
+  opacity: 0;
+}
+
+.agent-message {
+  margin-right: 75px;
+  align-self: flex-start;
+}
+
+.agent-animation {
+  animation: present-yourself 0.3s ease 0.1s forwards;
+  opacity: 0;
+}
+
+.title-bar {
+  height: 50px;
+  min-height: 50px;
+  padding-left: 16px;
+  display: flex;
+  align-items: center;
+  border-radius: 5px 5px 0 0;
+  color: white;
+  background-color: #42a5f5;
+  box-shadow: 0px 3px 6px 0px #00000029;
+  font-family: 'Roboto', sans-serif;
+  font-size: 18px;
+}
+
+.text-window {
+  min-height: 0;
+  background-color: #fafafa;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 250px;
+}
+
+.message-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1;
+  padding: 10px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+.message-list > :first-child  {
+  margin-top: auto !important;
+}
+.message-list-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.input-field {
+  height: 50px;
+  background-color: white;
+  border-top: 1px solid #eeeeee;
+  display: flex;
+  font-family: 'Roboto', sans-serif;
+  border-radius: 0 0 5px 5px;
+}
+
+.input {
+  padding-left: 16px;
+  font-size: 14px;
+  width: 100%;
+  border: none;
+  outline: none;
+}
+
+#sendIcon {
+  cursor: pointer;
+  fill: #42A5F5;
+  height: 24px;
+  width: 24px;
+  margin: 15px;
+  transform: scale(0.01, 0.01);
+  transition: 0.3s ease;
+}
+
+#sendIcon[data-visible='true'] {
+  transform: scale(1, 1);
+}
+
+#sendIcon:hover {
+  fill: green;
+}
 .App-link {
   color: #61dafb;
 }
