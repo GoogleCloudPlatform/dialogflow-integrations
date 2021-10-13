@@ -1,5 +1,19 @@
-import './App.css';
 import { useEffect, useState, useRef } from 'react';
+import { Text } from './rich-content/Text';
+import {
+  Widget,
+  Messenger,
+  TitleBar,
+  TextWindow,
+  MessageListWrapper,
+  MessageList,
+  InputField,
+  TextInput,
+  SendIcon,
+  ChatSVG,
+  CloseSVG
+} from './Styles';
+import {Message} from './utilities/types';
 
 const getAttributes = (domElement: Element): { [key: string]: string } => {
   let attributes: { [key: string]: string } = {}
@@ -10,11 +24,6 @@ const getAttributes = (domElement: Element): { [key: string]: string } => {
     }
   }
   return attributes;
-}
-
-interface Message {
-  type: 'user' | 'agent';
-  text: string;
 }
 
 const getRandomString = () => {
@@ -29,11 +38,26 @@ function getRandomNumber(min: number, max: number) { // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
-const Message = ({message}: {message: Message}) => {
+const ChatIcon = ({visible}: {visible: boolean}) => {
   return (
-    <div className={`message ${message.type}-message ${message.type}-animation`}>
-      {message.text}
-    </div>
+    <ChatSVG visible={visible} width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <mask id="mask0" mask-type="alpha" maskUnits="userSpaceOnUse" x="3" y="3" width="30" height="30">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M24.0001 19.5C24.8251 19.5 25.5001 18.825 25.5001 18V4.5C25.5001 3.675 24.8251 3 24.0001 3H4.50006C3.67506 3 3.00006 3.675 3.00006 4.5V25.5L9.00006 19.5H24.0001ZM22.5001 5.99999V16.5H9.00013H6.00013V5.99999H22.5001ZM28.5 9.00001H31.5C32.325 9.00001 33 9.67501 33 10.5V33L27 27H10.5C9.675 27 9 26.325 9 25.5V22.5H28.5V9.00001Z" fill="white"/>
+      </mask>
+      <g mask="url(#mask0)">
+        <rect width="36" height="36" fill="white"/>
+      </g>
+    </ChatSVG>
+  )
+}
+
+const CloseIcon = ({visible}: {visible: boolean}) => {
+  return (
+    <CloseSVG visible={visible} id="closeSvg" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59
+          12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path>
+      <path d="M0 0h24v24H0z" fill="none"></path>
+    </CloseSVG>
   )
 }
 
@@ -42,6 +66,8 @@ function App({ domElement }: { domElement: Element }) {
     "chat-title": chatTitle,
     'agent-id': agentId,
     'language-code': languageCode,
+    'api-uri': apiURI,
+    'chat-icon': chatIcon,
     location
   } = getAttributes(domElement);
 
@@ -102,30 +128,33 @@ function App({ domElement }: { domElement: Element }) {
 
   return (
     <div className="App">
-      <div className="messenger" data-opened={open}>
-        <div className="title-bar">
+      <Messenger opened={open}>
+        <TitleBar>
           {chatTitle}
-        </div>
-        <div className="text-window">
-          <div className="message-list-wrapper">
-            <div className="message-list">
+        </TitleBar>
+        <TextWindow>
+          <MessageListWrapper>
+            <MessageList>
               {messages.map((message, i) => (
-                <Message key={i} message={message} />
+                <Text key={i} message={message} />
               ))}
               <div ref={messagesEndRef} />
-            </div>
-          </div>
-        </div>
-        <div className="input-field">
-          <input id="text-input" type='text' className="input" value={value} onKeyDown={handleKeyDown} onChange={(event) => setValue(event.target.value)} placeholder="Ask something..." />
+            </MessageList>
+          </MessageListWrapper>
+        </TextWindow>
+        <InputField>
+          <TextInput id="text-input" type='text' value={value} onKeyDown={handleKeyDown} onChange={(event) => setValue(event.target.value)} placeholder="Ask something..." />
           <div onClick={() => addUserMessage()}>
-            <svg id="sendIcon" data-visible={value.length > 0}>
+            <SendIcon visible={value.length > 0}>
               <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
-            </svg>
+            </SendIcon>
           </div>
-        </div>
-      </div>
-      <button onClick={() => setOpen(!open)} className="widget" />
+        </InputField>
+      </Messenger>
+      <Widget onClick={() => setOpen(!open)}>
+          <ChatIcon visible={!open} />
+          <CloseIcon visible={open} />
+      </Widget>
     </div>
   );
 }
