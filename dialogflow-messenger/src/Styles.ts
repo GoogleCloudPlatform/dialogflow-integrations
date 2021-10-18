@@ -155,11 +155,19 @@ export const ChatSVG = styled.svg<IconProps>`
   top: 10px;
   transition: opacity 0.5s;
   width: 36px;
+`;
 
+export const CustomIcon = styled.img<IconProps>`
+  height: 36px;
+  left: 10px;
+  opacity: ${props => props.visible ? '1' : '0'};
+  position: absolute;
+  top: 10px;
+  transition: opacity 0.5s;
+  width: 36px;
 `;
 
 export const CloseSVG = styled.svg<IconProps>`
-
   fill: white;
   left: 15px;
   opacity: ${props => props.visible ? '1' : '0'};
