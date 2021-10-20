@@ -1,47 +1,27 @@
-import './App.css';
 import { useEffect, useState, useRef } from 'react';
-
-const getAttributes = (domElement: Element): { [key: string]: string } => {
-  let attributes: { [key: string]: string } = {}
-  for (let i = 0; i < domElement.attributes.length; i++) {
-    const attribute = domElement.attributes.item(i)
-    if (attribute) {
-      attributes[attribute.name] = attribute.value;
-    }
-  }
-  return attributes;
-}
-
-interface Message {
-  type: 'user' | 'agent';
-  text: string;
-}
-
-const getRandomString = () => {
-  return (Math.random() + 1).toString(36).substring(7);
-}
-
-const getRandomSentence = (length: number) => {
-  return [...Array(length)].map(i => getRandomString()).join(' ');
-}
-
-function getRandomNumber(min: number, max: number) { // min and max included
-  return Math.floor(Math.random() * (max - min + 1) + min)
-}
-
-const Message = ({message}: {message: Message}) => {
-  return (
-    <div className={`message ${message.type}-message ${message.type}-animation`}>
-      {message.text}
-    </div>
-  )
-}
+import { Text } from './rich-content/Text';
+import {
+  Widget,
+  Messenger,
+  TitleBar,
+  TextWindow,
+  MessageListWrapper,
+  MessageList,
+  InputField,
+  TextInput,
+  SendIcon,
+} from './Styles';
+import {Message, APIResponse} from './utilities/types';
+import {getAttributes} from './utilities/utils';
+import {ChatIcon, CloseIcon} from './utilities/components';
+import axios from "axios";
 
 function App({ domElement }: { domElement: Element }) {
   const {
     "chat-title": chatTitle,
-    'agent-id': agentId,
     'language-code': languageCode,
+    'api-uri': apiURI,
+    'chat-icon': chatIcon,
     location
   } = getAttributes(domElement);
 
@@ -55,43 +35,70 @@ function App({ domElement }: { domElement: Element }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
-  const updateAgentMessage = (value: string) => {
-    const messagesCopy = [...messages];
+  const updateAgentMessage = (response: APIResponse) => {
+    setMessages(prevMessages => {
+      const messagesCopy = [...prevMessages];
 
-    let lastAgentIndex = messagesCopy.length - 1;
-    while (messagesCopy[lastAgentIndex].type !== 'agent') lastAgentIndex--;
+      const {queryResult} = response
+      const {text: messageSent = '', responseMessages = []} = queryResult
 
-    if (messagesCopy[lastAgentIndex].type === 'agent') {
-      messagesCopy[lastAgentIndex].text = value;
-      setMessages(messagesCopy);
-      scrollToBottom();
+      let lastAgentIndex = messagesCopy.length - 1;
+      while (lastAgentIndex > 0 && messagesCopy[lastAgentIndex].id !== messageSent) lastAgentIndex--;
+
+      if (messagesCopy[lastAgentIndex].id === messageSent) {
+        const responseMessage = responseMessages[0]
+        const responseText = responseMessage?.text?.text
+        messagesCopy[lastAgentIndex].text = responseText[0];
+        messagesCopy[lastAgentIndex].id = undefined;
+      }
+
+      for (let i = 1; i < responseMessages.length; i++) {
+        const message = responseMessages[i];
+        const responseText = message?.text?.text
+        responseText && messagesCopy.push({type: 'agent', text: responseText[0]})
+      }
+      return messagesCopy
+    })
+
+    scrollToBottom();
+  }
+
+  const addUserMessage = async () => {
+    const textVal = value
+    addMessage({type: 'user', text: textVal})
+    addMessage({type: 'agent', text: '...', id: textVal})
+
+
+    try {
+      const addUserMessageResult = await axios.post<string>(apiURI, {
+        queryInput: {
+          text: {
+            text: value
+          },
+          languageCode: languageCode ?? "en"
+        }
+      })
+
+      let JSONBeginningIndex = 0
+      while (addUserMessageResult.data[JSONBeginningIndex] !== '{') {
+        JSONBeginningIndex++
+      }
+      const responseJSON = JSON.parse(addUserMessageResult.data.substr(JSONBeginningIndex))
+
+      updateAgentMessage(responseJSON)
+    } catch (err) {
+      console.log(err)
     }
+
   }
 
-  const addUserMessage = () => {
-    const messagesCopy = [...messages].concat({type: 'user', text: value});
-    setMessages(messagesCopy);
-    setValue('');
-  }
-
-  const addAgentMessage = (value: string) => {
-    const messagesCopy = [...messages].concat({type: 'agent', text: value});
-    setMessages(messagesCopy);
+  const addMessage = ({type, text, id}: Message) => {
+    setMessages(prevMessages => ([...prevMessages, {type, text, id}]));
     setValue('');
   }
 
   useEffect(() => {
     scrollToBottom()
-
-    if (messages.length > 0) {
-      if (messages[messages.length - 1].type === 'agent') {
-        setTimeout(() => {
-          updateAgentMessage(getRandomSentence(getRandomNumber(2, 15)));
-        }, 2000);
-      } else {
-        addAgentMessage('...')
-      }
-  }
   }, [messages.length]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -102,30 +109,33 @@ function App({ domElement }: { domElement: Element }) {
 
   return (
     <div className="App">
-      <div className="messenger" data-opened={open}>
-        <div className="title-bar">
+      <Messenger opened={open}>
+        <TitleBar>
           {chatTitle}
-        </div>
-        <div className="text-window">
-          <div className="message-list-wrapper">
-            <div className="message-list">
+        </TitleBar>
+        <TextWindow>
+          <MessageListWrapper>
+            <MessageList>
               {messages.map((message, i) => (
-                <Message key={i} message={message} />
+                <Text key={i} message={message} />
               ))}
               <div ref={messagesEndRef} />
-            </div>
-          </div>
-        </div>
-        <div className="input-field">
-          <input id="text-input" type='text' className="input" value={value} onKeyDown={handleKeyDown} onChange={(event) => setValue(event.target.value)} placeholder="Ask something..." />
+            </MessageList>
+          </MessageListWrapper>
+        </TextWindow>
+        <InputField>
+          <TextInput id="text-input" type='text' value={value} onKeyDown={handleKeyDown} onChange={(event) => setValue(event.target.value)} placeholder="Ask something..." />
           <div onClick={() => addUserMessage()}>
-            <svg id="sendIcon" data-visible={value.length > 0}>
+            <SendIcon visible={value.length > 0}>
               <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
-            </svg>
+            </SendIcon>
           </div>
-        </div>
-      </div>
-      <button onClick={() => setOpen(!open)} className="widget" />
+        </InputField>
+      </Messenger>
+      <Widget onClick={() => setOpen(!open)}>
+        <ChatIcon url={chatIcon} visible={!open} />
+          <CloseIcon visible={open} />
+      </Widget>
     </div>
   );
 }
