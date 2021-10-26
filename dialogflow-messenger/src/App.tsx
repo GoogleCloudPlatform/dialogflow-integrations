@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Text } from './rich-content/Text';
+import {Text, ContentCard} from './rich-content';
 import {
   Widget,
   Messenger,
@@ -47,15 +47,33 @@ function App({ domElement }: { domElement: Element }) {
 
       if (messagesCopy[lastAgentIndex].id === messageSent) {
         const responseMessage = responseMessages[0]
-        const responseText = responseMessage?.text?.text
-        messagesCopy[lastAgentIndex].text = responseText[0];
-        messagesCopy[lastAgentIndex].id = undefined;
+
+        if (responseMessage.text) {
+          const responseText = responseMessage?.text?.text
+          messagesCopy[lastAgentIndex].text = responseText[0];
+          messagesCopy[lastAgentIndex].id = undefined;
+        } else if (responseMessage.payload) {
+          const {richContent = []} = responseMessage.payload;
+          const contentList = richContent[0]
+          messagesCopy[lastAgentIndex].text = undefined;
+          messagesCopy[lastAgentIndex].id = undefined;
+          messagesCopy[lastAgentIndex].payload = contentList;
+        }
+
       }
 
       for (let i = 1; i < responseMessages.length; i++) {
         const message = responseMessages[i];
-        const responseText = message?.text?.text
-        responseText && messagesCopy.push({type: 'agent', text: responseText[0]})
+
+        if (message.text) {
+          const responseText = message?.text?.text
+          responseText && messagesCopy.push({type: 'agent', text: responseText[0]})
+        } else if (message.payload) {
+          const {richContent = []} = message.payload;
+          const contentList = richContent[0]
+          contentList && messagesCopy.push({type: 'agent', payload: contentList})
+        }
+
       }
       return messagesCopy
     })
@@ -107,6 +125,15 @@ function App({ domElement }: { domElement: Element }) {
     }
   }
 
+  const renderMessage = (message: Message, i: number) => {
+    if (message.text) {
+      return <Text key={i} message={message} />
+    } else if (message.payload) {
+      return <ContentCard key={i} message={message} />
+    }
+    return null;
+  }
+
   return (
     <div className="App">
       <Messenger opened={open}>
@@ -116,9 +143,8 @@ function App({ domElement }: { domElement: Element }) {
         <TextWindow>
           <MessageListWrapper>
             <MessageList>
-              {messages.map((message, i) => (
-                <Text key={i} message={message} />
-              ))}
+              {messages.map((message, i) => renderMessage(message, i)
+              )}
               <div ref={messagesEndRef} />
             </MessageList>
           </MessageListWrapper>
@@ -134,7 +160,7 @@ function App({ domElement }: { domElement: Element }) {
       </Messenger>
       <Widget onClick={() => setOpen(!open)}>
         <ChatIcon url={chatIcon} visible={!open} />
-          <CloseIcon visible={open} />
+        <CloseIcon visible={open} />
       </Widget>
     </div>
   );
