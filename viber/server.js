@@ -31,7 +31,7 @@ const app = express();
 // https://cloud.google.com/dialogflow/docs/setup for details.
 
 const webhookUrl = 'Place webhook url here';
-const projectId = 'Place dialogflow project id here';
+const projectId = 'aisatsu-99ji';
 const botName = 'Place Viber bot name here';
 const botAvatarLink = 'Place image link less than 100kb';
 const viberToken = 'Place Viber token here';
