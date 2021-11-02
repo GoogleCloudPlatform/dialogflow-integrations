@@ -35,10 +35,12 @@ export const ContentCard = ({message}: {message: Message}) => {
 
   return (
     <>
-      <RichContentCard>
-        {sanitizedContent.map(item => renderRichContent(item))}
-      </RichContentCard>
-      {chips.map(chipObj => <Chips chips={chipObj} />)}
+      {sanitizedContent.length > 0 && (
+        <RichContentCard>
+          {sanitizedContent.map((item, i) => renderRichContent(item, i))}
+        </RichContentCard>
+      )}
+      {chips.map((chipObj, i) => <Chips key={i} chips={chipObj} />)}
     </>
-  )
+  );
 }

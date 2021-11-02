@@ -14,7 +14,6 @@ import {
 import {Message, APIResponse} from './utilities/types';
 import {getAttributes} from './utilities/utils';
 import {ChatIcon, CloseIcon} from './utilities/components';
-import axios from "axios";
 import {handleResponse} from './utilities/responseHandlers';
 
 function App({ domElement }: { domElement: Element }) {
@@ -23,7 +22,6 @@ function App({ domElement }: { domElement: Element }) {
     'language-code': languageCode,
     'api-uri': apiURI,
     'chat-icon': chatIcon,
-    location
   } = getAttributes(domElement);
 
   const [open, setOpen] = useState(true);

@@ -343,7 +343,7 @@ interface AccordionProps {
   open: Boolean
 }
 
-export const AccordionIcon = styled.span<AccordionProps>`
+export const AccordionIcon = styled.svg<AccordionProps>`
   font-size: 32px;
   padding: 7px 0;
   color: #757575;

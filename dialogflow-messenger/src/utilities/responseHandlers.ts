@@ -19,7 +19,7 @@ export const handleResponse = async (apiURI: string, value: string, languageCode
 
     return responseJSON
   } catch (err) {
-    console.log(err)
+    console.log((err as any).response)
     return {};
   }
 }

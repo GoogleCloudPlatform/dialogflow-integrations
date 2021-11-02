@@ -21,12 +21,12 @@ export const getAttributes = (domElement: Element): {[key: string]: string} => {
   return attributes;
 }
 
-export const renderRichContent = (param: RichContent) => {
-  if (isButton(param)) return <Button button={param} />
-  if (isImage(param)) return <Image alt={param.accessibilityText} src={param.rawUrl} />
-  if (isInfo(param)) return <Info info={param} />
-  if (isChips(param)) return <Chips chips={param} />
-  if (isDescription(param)) return <Description description={param} />
-  if (isList(param)) return <List list={param} />
-  if (isAccordion(param)) return <Accordion accordion={param} />
+export const renderRichContent = (param: RichContent, i: number) => {
+  if (isButton(param)) return <Button key={i} button={param} />
+  if (isImage(param)) return <Image key={i} alt={param.accessibilityText} src={param.rawUrl} />
+  if (isInfo(param)) return <Info key={i} info={param} />
+  if (isChips(param)) return <Chips key={i} chips={param} />
+  if (isDescription(param)) return <Description key={i} description={param} />
+  if (isList(param)) return <List key={i} list={param} />
+  if (isAccordion(param)) return <Accordion key={i} accordion={param} />
 }

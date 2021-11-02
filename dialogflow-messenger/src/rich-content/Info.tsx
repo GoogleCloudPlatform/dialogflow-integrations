@@ -1,10 +1,10 @@
 import {SubTitle, Title, InfoContainer, InfoTextContainer, InfoImage} from "../Styles";
-import {Info as InfoType, Message} from "../utilities/types";
+import {Info as InfoType} from "../utilities/types";
 
 export const Info = ({info}: {info: InfoType}) => {
 
   return (
-    <a href={info.actionLink} style={{textDecoration: 'none'}} target='_blank'>
+    <a href={info.actionLink} style={{textDecoration: 'none'}} rel="noreferrer" target='_blank'>
       <InfoContainer>
         {info.image &&
           <InfoImage src={info.image?.src.rawUrl} />
