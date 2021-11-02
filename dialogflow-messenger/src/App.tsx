@@ -15,6 +15,7 @@ import {Message, APIResponse} from './utilities/types';
 import {getAttributes} from './utilities/utils';
 import {ChatIcon, CloseIcon} from './utilities/components';
 import axios from "axios";
+import {handleResponse} from './utilities/responseHandlers';
 
 function App({ domElement }: { domElement: Element }) {
   const {
@@ -37,6 +38,10 @@ function App({ domElement }: { domElement: Element }) {
 
   const updateAgentMessage = (response: APIResponse) => {
     setMessages(prevMessages => {
+      if (JSON.stringify(response) === '{}') {
+        const messagesCopy = prevMessages.filter(m => m.text !== '...');
+        return messagesCopy;
+      }
       const messagesCopy = [...prevMessages];
 
       const {queryResult} = response
@@ -86,28 +91,8 @@ function App({ domElement }: { domElement: Element }) {
     addMessage({type: 'user', text: textVal})
     addMessage({type: 'agent', text: '...', id: textVal})
 
-
-    try {
-      const addUserMessageResult = await axios.post<string>(apiURI, {
-        queryInput: {
-          text: {
-            text: value
-          },
-          languageCode: languageCode ?? "en"
-        }
-      })
-
-      let JSONBeginningIndex = 0
-      while (addUserMessageResult.data[JSONBeginningIndex] !== '{') {
-        JSONBeginningIndex++
-      }
-      const responseJSON = JSON.parse(addUserMessageResult.data.substr(JSONBeginningIndex))
-
-      updateAgentMessage(responseJSON)
-    } catch (err) {
-      console.log(err)
-    }
-
+    const response = await handleResponse(apiURI, value, languageCode)
+    updateAgentMessage(response)
   }
 
   const addMessage = ({type, text, id}: Message) => {
