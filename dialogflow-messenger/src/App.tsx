@@ -10,11 +10,11 @@ import {
   InputField,
   TextInput,
   SendIcon,
+  Error,
 } from './Styles';
 import {Message, APIResponse} from './utilities/types';
 import {getAttributes} from './utilities/utils';
 import {ChatIcon, CloseIcon} from './utilities/components';
-import axios from "axios";
 import {handleResponse} from './utilities/responseHandlers';
 
 function App({ domElement }: { domElement: Element }) {
@@ -23,11 +23,12 @@ function App({ domElement }: { domElement: Element }) {
     'language-code': languageCode,
     'api-uri': apiURI,
     'chat-icon': chatIcon,
-    location
+    'expand': expand,
   } = getAttributes(domElement);
 
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(expand != null);
   const [value, setValue] = useState('');
+  const [error, setError] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -36,10 +37,19 @@ function App({ domElement }: { domElement: Element }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
-  const updateAgentMessage = (response: APIResponse) => {
+  useEffect(() => {
+    if (error) {
+      setTimeout(() => {
+        setError(false);
+      }, 2000)
+    }
+  }, [error])
+
+  const updateAgentMessage = (response: APIResponse, fromEvent?: boolean) => {
     setMessages(prevMessages => {
       if (JSON.stringify(response) === '{}') {
         const messagesCopy = prevMessages.filter(m => m.text !== '...');
+        setError(true);
         return messagesCopy;
       }
       const messagesCopy = [...prevMessages];
@@ -48,9 +58,16 @@ function App({ domElement }: { domElement: Element }) {
       const {text: messageSent = '', responseMessages = []} = queryResult
 
       let lastAgentIndex = messagesCopy.length - 1;
-      while (lastAgentIndex > 0 && messagesCopy[lastAgentIndex].id !== messageSent) lastAgentIndex--;
+      while (lastAgentIndex > 0 && (
+        fromEvent ?
+          messagesCopy[lastAgentIndex].text !== '...'
+          :
+          messagesCopy[lastAgentIndex].id !== messageSent
+      )) {
+        lastAgentIndex--;
+      }
 
-      if (messagesCopy[lastAgentIndex].id === messageSent) {
+      if (messagesCopy[lastAgentIndex].id === messageSent || (fromEvent && messagesCopy[lastAgentIndex].text === '...')) {
         const responseMessage = responseMessages[0]
 
         if (responseMessage.text) {
@@ -91,7 +108,8 @@ function App({ domElement }: { domElement: Element }) {
     addMessage({type: 'user', text: textVal})
     addMessage({type: 'agent', text: '...', id: textVal})
 
-    const response = await handleResponse(apiURI, value, languageCode)
+    const response = await handleResponse(apiURI, languageCode, value)
+    console.log(response)
     updateAgentMessage(response)
   }
 
@@ -114,7 +132,7 @@ function App({ domElement }: { domElement: Element }) {
     if (message.text) {
       return <Text key={i} message={message} />
     } else if (message.payload) {
-      return <ContentCard key={i} message={message} />
+      return <ContentCard key={i} message={message} apiURI={apiURI} addMessage={addMessage} updateAgentMessage={updateAgentMessage} languageCode={languageCode} />
     }
     return null;
   }
@@ -127,6 +145,9 @@ function App({ domElement }: { domElement: Element }) {
         </TitleBar>
         <TextWindow>
           <MessageListWrapper>
+            <Error open={error}>
+              Something went wrong, please try again.
+            </Error>
             <MessageList>
               {messages.map((message, i) => renderMessage(message, i)
               )}

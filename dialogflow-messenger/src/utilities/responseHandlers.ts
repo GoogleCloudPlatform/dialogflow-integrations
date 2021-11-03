@@ -1,12 +1,20 @@
 import axios from "axios"
 
-export const handleResponse = async (apiURI: string, value: string, languageCode: string) => {
+export const handleResponse = async (apiURI: string, languageCode?: string, value?: string, event?: boolean) => {
+  const queryObj = event ? {
+    event: {
+      event: value
+    }
+  } : {
+    text: {
+      text: value
+    }
+  }
+
   try {
     const addUserMessageResult = await axios.post<string>(apiURI, {
       queryInput: {
-        text: {
-          text: value
-        },
+        ...queryObj,
         languageCode: languageCode ?? "en"
       }
     })
@@ -19,7 +27,7 @@ export const handleResponse = async (apiURI: string, value: string, languageCode
 
     return responseJSON
   } catch (err) {
-    console.log(err)
+    console.log((err as any).response)
     return {};
   }
 }

@@ -9,7 +9,9 @@ import {
   List,
   PayloadList,
   RichContent,
-  RichContentPayload
+  RichContentPayload,
+  ListItemProps,
+  ButtonProps
 } from "./types";
 
 export const isButton = (param: RichContentPayload): param is Button => {
@@ -50,4 +52,8 @@ export const isAccordion = (param: RichContentPayload): param is Accordion => {
 
 export const isRichContent = (param: RichContentPayload): param is RichContent => {
   return !isPayloadList(param);
+}
+
+export const isButtonProps = (param: ButtonProps | ListItemProps): param is ButtonProps => {
+  return 'button' in param;
 }

@@ -1,11 +1,14 @@
 import {ButtonText, IconContainer, Link} from "../Styles";
-import {Button as ButtonType} from "../utilities/types";
+import {addAgentMessage} from '../utilities/utils';
+import {ButtonProps} from "../utilities/types";
 
-export const Button = ({button}: {button: ButtonType}) => {
+export const Button = (props: ButtonProps) => {
+  const {button} = props
+
   return (
     <div>
       <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-      <Link href={button.link} target='_blank'>
+      <Link onClick={() => addAgentMessage(props)} href={button.link} target='_blank'>
         {button.icon && (
           <IconContainer>
             <span className='material-icons' style={{color: button.icon.color}}>
