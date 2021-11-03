@@ -394,3 +394,27 @@ export const Redirect = styled.svg`
   margin-left: 8px;
   width: 15px;
 `;
+
+interface ErrorProps {
+  open: Boolean
+}
+
+export const Error = styled.div<ErrorProps>`
+  align-items: center;
+  align-self: center;
+  background-color: black;
+  box-shadow: 1px 4px 15px 0 rgb(0 0 0 / 24%);
+  color: white;
+  display: flex;
+  font-family: 'Roboto', sans-serif;
+  font-size: 12px;
+  justify-content: center;
+  margin-top: 0;
+  opacity: ${props => props.open ? '0.8' : '0'};
+  padding: 10px;
+  position: absolute;
+  transition: transform 0.2s, opacity 0.2s;
+  transform: ${props => props.open ? 'translateY(0)' : 'translateY(-100%);'};
+  width: 95%;
+  z-index: 1;
+`;

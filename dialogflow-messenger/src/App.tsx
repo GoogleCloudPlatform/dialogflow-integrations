@@ -10,6 +10,7 @@ import {
   InputField,
   TextInput,
   SendIcon,
+  Error,
 } from './Styles';
 import {Message, APIResponse} from './utilities/types';
 import {getAttributes} from './utilities/utils';
@@ -26,6 +27,7 @@ function App({ domElement }: { domElement: Element }) {
 
   const [open, setOpen] = useState(true);
   const [value, setValue] = useState('');
+  const [error, setError] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -34,10 +36,19 @@ function App({ domElement }: { domElement: Element }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
+  useEffect(() => {
+    if (error) {
+      setTimeout(() => {
+        setError(false);
+      }, 2000)
+    }
+  }, [error])
+
   const updateAgentMessage = (response: APIResponse, fromEvent?: boolean) => {
     setMessages(prevMessages => {
       if (JSON.stringify(response) === '{}') {
         const messagesCopy = prevMessages.filter(m => m.text !== '...');
+        setError(true);
         return messagesCopy;
       }
       const messagesCopy = [...prevMessages];
@@ -133,6 +144,9 @@ function App({ domElement }: { domElement: Element }) {
         </TitleBar>
         <TextWindow>
           <MessageListWrapper>
+            <Error open={error}>
+              Something went wrong, please try again.
+            </Error>
             <MessageList>
               {messages.map((message, i) => renderMessage(message, i)
               )}
