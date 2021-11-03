@@ -23,9 +23,10 @@ function App({ domElement }: { domElement: Element }) {
     'language-code': languageCode,
     'api-uri': apiURI,
     'chat-icon': chatIcon,
+    'expand': expand,
   } = getAttributes(domElement);
 
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(expand != null);
   const [value, setValue] = useState('');
   const [error, setError] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
