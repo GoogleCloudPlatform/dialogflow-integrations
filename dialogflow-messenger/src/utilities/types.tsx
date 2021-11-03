@@ -126,3 +126,27 @@ export interface APIResponse {
     }[]
   }
 }
+
+export interface ButtonProps {
+  button: Button,
+  apiURI: string,
+  languageCode?: string,
+  addMessage: (message: Message) => void,
+  updateAgentMessage: (r: any, b?: boolean) => void
+}
+
+export interface ListProps {
+  list: List,
+  apiURI: string,
+  languageCode?: string,
+  addMessage: (message: Message) => void,
+  updateAgentMessage: (r: any, b?: boolean) => void
+}
+
+export interface ListItemProps {
+  item: ListItem,
+  apiURI: string,
+  languageCode?: string,
+  addMessage: (message: Message) => void,
+  updateAgentMessage: (r: any, b?: boolean) => void
+}

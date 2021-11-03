@@ -1,16 +1,20 @@
 import {Divider, ListItemContainer, SubTitle, Title} from "../Styles";
-import {List as ListType, ListItem as ListItemType} from "../utilities/types";
+import {ListItemProps, ListProps} from "../utilities/types";
+import {addAgentMessage} from "../utilities/utils";
 
-const ListItem = ({item}: {item: ListItemType}) => {
+const ListItem = (props: ListItemProps) => {
+  const {item} = props
+
   return (
-    <ListItemContainer>
+    <ListItemContainer onClick={() => addAgentMessage(props)}>
       <Title>{item.title}</Title>
       <SubTitle>{item.subtitle}</SubTitle>
     </ListItemContainer>
   )
 }
 
-export const List = ({list}: {list: ListType}) => {
+export const List = (props: ListProps) => {
+  const {list} = props
 
   return (
     <div>
@@ -18,7 +22,7 @@ export const List = ({list}: {list: ListType}) => {
         if (item === 'DIVIDER') {
           return <Divider />
         } else {
-          return <ListItem item={item} />
+          return <ListItem {...props} item={item} />
         }
       })}
     </div>

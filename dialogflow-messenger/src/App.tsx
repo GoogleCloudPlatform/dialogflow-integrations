@@ -34,7 +34,7 @@ function App({ domElement }: { domElement: Element }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }
 
-  const updateAgentMessage = (response: APIResponse) => {
+  const updateAgentMessage = (response: APIResponse, fromEvent?: boolean) => {
     setMessages(prevMessages => {
       if (JSON.stringify(response) === '{}') {
         const messagesCopy = prevMessages.filter(m => m.text !== '...');
@@ -46,9 +46,16 @@ function App({ domElement }: { domElement: Element }) {
       const {text: messageSent = '', responseMessages = []} = queryResult
 
       let lastAgentIndex = messagesCopy.length - 1;
-      while (lastAgentIndex > 0 && messagesCopy[lastAgentIndex].id !== messageSent) lastAgentIndex--;
+      while (lastAgentIndex > 0 && (
+        fromEvent ?
+          messagesCopy[lastAgentIndex].text !== '...'
+          :
+          messagesCopy[lastAgentIndex].id !== messageSent
+      )) {
+        lastAgentIndex--;
+      }
 
-      if (messagesCopy[lastAgentIndex].id === messageSent) {
+      if (messagesCopy[lastAgentIndex].id === messageSent || (fromEvent && messagesCopy[lastAgentIndex].text === '...')) {
         const responseMessage = responseMessages[0]
 
         if (responseMessage.text) {
@@ -89,7 +96,8 @@ function App({ domElement }: { domElement: Element }) {
     addMessage({type: 'user', text: textVal})
     addMessage({type: 'agent', text: '...', id: textVal})
 
-    const response = await handleResponse(apiURI, value, languageCode)
+    const response = await handleResponse(apiURI, languageCode, value)
+    console.log(response)
     updateAgentMessage(response)
   }
 
@@ -112,7 +120,7 @@ function App({ domElement }: { domElement: Element }) {
     if (message.text) {
       return <Text key={i} message={message} />
     } else if (message.payload) {
-      return <ContentCard key={i} message={message} />
+      return <ContentCard key={i} message={message} apiURI={apiURI} addMessage={addMessage} updateAgentMessage={updateAgentMessage} languageCode={languageCode} />
     }
     return null;
   }
