@@ -1,0 +1,10 @@
+{
+  "name": "dialogflow-cx-integration",
+  "version": "1.0.0",
+  "description": "Integrating Dialogflow with Google Chat",
+  "main": "server.js",
+  "dependencies": {
+    "@google-cloud/dialogflow-cx": "^2.14.0",
+    "uuid": "^8.3.2"
+  }
+}
