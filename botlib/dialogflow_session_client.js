@@ -16,6 +16,10 @@
 /**
  * @fileoverview Contacts dialogflow and returns response.
  */
+const fs = require('fs');
+const util = require('util');
+const https = require('https');
+const httpsFollowRedirects = require('follow-redirects').https;
 const dialogflow = require('dialogflow');
 const jsonToProto = require('./json_to_proto')
 module.exports = class DialogflowSessionClient {
@@ -40,6 +44,30 @@ module.exports = class DialogflowSessionClient {
     };
   }
 
+  async constructRequestWithAudioBuffer(audioFile, sessionPath, payload) {
+    try {
+      const inputAudio = await this.getDataFromURLBuffer(audioFile);
+      return {
+        session: sessionPath,
+        queryInput: {
+          audioConfig: {
+            audioEncoding: 'AUDIO_ENCODING_OGG_OPUS',
+            sampleRateHertz: 16000,
+            languageCode: 'pt-BR'
+          }
+        },
+        // inputAudio: file,
+        inputAudio: inputAudio,
+        queryParams: {
+          payload: jsonToProto.jsonToStructProto(payload)
+        }
+      };
+    } catch (error) {
+      console.error(error)
+      return '';
+    }
+  }
+
   constructRequestWithEvent(eventName, sessionPath) {
     return {
       session: sessionPath,
@@ -50,6 +78,24 @@ module.exports = class DialogflowSessionClient {
         },
       },
     };
+  }
+
+  async getDataFromURLBuffer(fileURL) {
+    return new Promise((resolve, reject) => {
+      httpsFollowRedirects.get(fileURL, (resp) => {
+        const data = [];
+        resp.on('data', (chunk) => {
+          data.push(chunk);
+        });
+        resp.on('end', () => {
+          const buffer = Buffer.concat(data);
+          resolve(buffer);
+        });
+      })
+      .on('error', (err) => {
+        reject(err);
+      });
+    });
   }
 
   //This function calls Dialogflow DetectIntent API to retrieve the response
@@ -64,6 +110,17 @@ module.exports = class DialogflowSessionClient {
         this.projectId, sessionId);
     const request = this.constructRequest(text, sessionPath, payload);
     return await this.detectIntentHelper(request);
+  }
+
+  async detectIntentWithAudio(audioFile, sessionId, payload) {
+    const sessionPath = this.sessionClient.sessionPath(this.projectId, sessionId);
+    try {
+      const request = await this.constructRequestWithAudioBuffer(audioFile, sessionPath, payload);
+      return await this.detectIntentHelper(request);
+    } catch (error) {
+      console.error(error);
+      return error;
+    }
   }
 
   async detectIntentWithEvent(eventName, sessionId) {

@@ -4,7 +4,8 @@
   "description": "Common Functions for Bots",
   "license": "Apache-2.0",
   "dependencies": {
-    "dialogflow": "0.8.0"
+    "dialogflow": "0.8.0",
+    "follow-redirects": "^1.14.5"
   },
   "devDependencies": {
     "mocha": "^2.5.3"
