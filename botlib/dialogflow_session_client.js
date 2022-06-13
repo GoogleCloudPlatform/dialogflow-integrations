@@ -16,9 +16,6 @@
 /**
  * @fileoverview Contacts dialogflow and returns response.
  */
-const fs = require('fs');
-const util = require('util');
-const https = require('https');
 const httpsFollowRedirects = require('follow-redirects').https;
 const dialogflow = require('dialogflow');
 const jsonToProto = require('./json_to_proto')
@@ -56,7 +53,6 @@ module.exports = class DialogflowSessionClient {
             languageCode: 'pt-BR'
           }
         },
-        // inputAudio: file,
         inputAudio: inputAudio,
         queryParams: {
           payload: jsonToProto.jsonToStructProto(payload)
