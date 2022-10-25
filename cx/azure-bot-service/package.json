@@ -1,0 +1,27 @@
+{
+  "name": "azure-integration",
+  "version": "0.0.1",
+  "description": "An Azure bot with dialogflow integration.",
+  "main": "server.js",
+  "scripts": {
+    "start": "npx functions-framework --target=app [--signature-type=http]",
+    "test": "mocha"
+  },
+  "dependencies": {
+    "@google-cloud/dialogflow-cx": "2.13.0",
+    "botbuilder": "^4.4.0",
+    "dotenv": "^16.0.3",
+    "express": "^4.16.4"
+  },
+  "devDependencies": {
+    "@google-cloud/functions-framework": "^3.1.2",
+    "mocha": "6.1.4"
+  },
+  "engines": {
+    "node": "8.x"
+  },
+  "repository": {
+    "url": "insert url here"
+  },
+  "license": "Apache-2.0"
+}
