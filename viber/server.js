@@ -39,8 +39,8 @@ const viberToken = 'Place Viber token here';
 const sessionClient = new dialogflowSessionClient(projectId);
 
 const bot = new ViberBot({
-  authToken: viberToken,
-  name: botName,
+  authToken: viberToken,50691dac14a7dfbd-90fc108b5203193e-517ddb81c711bac
+  name: botName,santoshtharu
   avatar: botAvatarLink,
   registerToEvents: [
     "subscribed",
