@@ -31,9 +31,9 @@ app.use(express.json());
 //Upon closure the webhook is removed from spark
 
 //Insert your values here
-const sparkAccessToken ="Place your spark personal access token here";
-const targetUrl = 'Place you servers URL here';
-const projectId = 'Place your dialogflow projectId here';
+const sparkAccessToken =" ZDM1NDIxM2YtM2M0Yi00NTI1LThmMmUtNDA1NzM1YjhlODQxOTkxNTlmZWItMDQ1_PF84_0d882151-70b4-4264-a09c-4a599e4494b1 ";
+const targetUrl = 'https://dialogflow.cloud.google.com/#/editAgent/uccbot-dlbj/';
+const projectId = 'uccbot-dlbj';
 
 const sessionClient = new dialogflowSessionClient(projectId);
 
