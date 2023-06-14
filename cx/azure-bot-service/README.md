@@ -81,6 +81,16 @@ gcloud functions deploy dialogflow-azure-webhook --entry-point app --runtime nod
 
 <br>
 
+## Enabling and testing Skype integration
+
+1. Navigate to Channels in your Azure bot and click Add to Skype.
+
+2. Select Add to Contacts. If prompted, sign in and add to contacts again. 
+
+3. Select Get Started and on the next page select Send Message. You can now communicate with your Dialogflow agent. 
+
+<br>
+
 ## Security Considerations
 
 Within this solution there are 2 types of authentication to consider: bot authentication & user authentication.
