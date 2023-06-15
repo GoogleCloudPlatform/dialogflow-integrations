@@ -81,6 +81,19 @@ gcloud functions deploy dialogflow-azure-webhook --entry-point app --runtime nod
 
 <br>
 
+## Enabling and testing Skype integration
+
+1. Navigate to Channels in your Azure bot and click **Add to Skype**.
+<br><br><img src="./images/channels_skype.png" width="700px" alt="Skype Channel"/>
+
+2. Select **Add to Contacts**. If prompted, sign in and add to contacts again. 
+<br><br><img src="./images/skype_add_to_contacts.png" width="700px" alt="Add to Contacts"/>
+
+3. Log into skype using the same account and see the agent as a new contact. You can now communicate with your Dialogflow agent. 
+<br><br><img src="./images/skype_df_conversation.png" width="700px" alt="Conversation"/>
+
+<br>
+
 ## Security Considerations
 
 Within this solution there are 2 types of authentication to consider: bot authentication & user authentication.
