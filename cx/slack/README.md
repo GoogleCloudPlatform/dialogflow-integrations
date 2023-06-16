@@ -17,13 +17,11 @@
 
         - Choose 'From an app Manifest'.
         - Pick a workspace for the app.
-        - Copy and paste the code in the __manifest.yaml__ file to the YAML section and edit the display_information as you like. Make sure to fill in the request_url in the event_subscription.
+        - Copy and paste the code in the __manifest.yaml__ file to the YAML section and edit the `display_information` as you like. Make sure to fill in the `request_url` in the `event_subscription` after deploying your integration.
             - For more details on Slack App manifests and its use, please visit https://api.slack.com/reference/manifests.
         - Click next and then click create.
         - Install the app to your chosen Workspace.        
-        - Copy the Signing Secret from 'Basic Information' and the Bot user OAuth Token from 'Intstall App'.
-    
-- Uncomment and fill in the variables on the top of the __server.js__ file.
+        - At the top of __server.js__, uncomment and replace the variables `slackSigningSecret` with the Signing Secret from 'Basic Information' and `slackToken` with the OAuth Token from 'Install App'.
 
 
 ### Deploying the Integration Using Cloud Run
@@ -46,8 +44,7 @@ gcloud beta run deploy --image gcr.io/PROJECT-ID/dialogflow-PLATFORM --update-en
  - When prompted for a region, select a region (for example, ``us-central1``).
  - When prompted for a service name hit enter to accept the default.
  - When prompted to allow unauthenticated invocations press ``y``.
- - Copy the URL given to you, and use it according to the README file in the
- given integration's folder.
+ - Copy the URL given to you, and update the `event_subscription` url in __manifest.yaml__, or if updating an existing Slack App, update the `Request URL` in found in Event Subscriptions.
 
 More information can be found in Cloud Run
 [documentation](https://cloud.google.com/run/docs/deploying).
