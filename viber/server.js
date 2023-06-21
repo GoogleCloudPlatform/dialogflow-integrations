@@ -24,12 +24,6 @@ const dialogflowSessionClient =
     require('../botlib/dialogflow_session_client.js');
 const app = express();
 
-//For authenticating dialogflow_session_client.js, create a Service Account and
-// download its key file. Set the environmental variable
-// GOOGLE_APPLICATION_CREDENTIALS to the key file's location.
-//See https://dialogflow.com/docs/reference/v2-auth-setup and
-// https://cloud.google.com/dialogflow/docs/setup for details.
-
 const webhookUrl = 'Place webhook url here';
 const projectId = 'Place dialogflow project id here';
 const botName = 'Place Viber bot name here';

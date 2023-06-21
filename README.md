@@ -28,10 +28,11 @@ Follow the steps below to create a Service Account and set up the integration.
 1. Go into the Dialogflow agent’s settings and click on the Project ID link to open its associated GCP Project.
 2. Click on the navigation menu in the GCP console, hover over "IAM & admin", and click "Service accounts". 
 3. Click on "+ CREATE SERVICE ACCOUNT", fill in the details, and give it the "Dialogflow Client API" role.
-4. Click on "+ Create Key" and download the resulting JSON key file. 
-5. Save the JSON key file in the desired platform subdirectory. 
 
-If deploying this integration outside of GCP Cloud Run, it may be necessary to set the GOOGLE_APPLICATION_CREDENTIALS environmental variable on the deployment environment to the absolute path of Service Account JSON key file. See [this guide](https://cloud.google.com/dialogflow/docs/quick/setup#auth) for details.
+If deploying this integration outside of GCP, you may authenticate using a key file. Deploying on Cloud Run or Cloud Functions obviates this process.
+1. Click on "+ Create Key" and download the resulting JSON key file. 
+2. Save the JSON key file in the desired platform subdirectory. 
+3. Set the GOOGLE_APPLICATION_CREDENTIALS environmental variable on the deployment environment to the absolute path of Service Account JSON key file. See [this guide](https://cloud.google.com/dialogflow/docs/quick/setup#auth) for details.
 
 ## Deploying the Integration
 

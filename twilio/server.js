@@ -23,12 +23,6 @@ const bodyParser = require('body-parser');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-//For authenticating dialogflow_session_client.js, create a Service Account and
-// download its key file. Set the environmental variable
-// GOOGLE_APPLICATION_CREDENTIALS to the key file's location.
-//See https://dialogflow.com/docs/reference/v2-auth-setup and
-// https://cloud.google.com/dialogflow/docs/setup for details.
-
 const projectId = 'Place your dialogflow projectId here';
 const phoneNumber = "Place your twilio phone number here";
 const accountSid = 'Place your accountSid here';
