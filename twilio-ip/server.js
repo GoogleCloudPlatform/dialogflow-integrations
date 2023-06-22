@@ -21,12 +21,6 @@ const AccessToken = require('twilio').jwt.AccessToken;
 const ChatGrant = AccessToken.ChatGrant;
 const Chat = require('twilio-chat');
 
-//For authenticating dialogflow_session_client.js, create a Service Account and
-// download its key file. Set the environmental variable
-// GOOGLE_APPLICATION_CREDENTIALS to the key file's location.
-//See https://dialogflow.com/docs/reference/v2-auth-setup and
-// https://cloud.google.com/dialogflow/docs/setup for details.
-
 const projectId = 'Place your dialogflow projectId here';
 const accountSid = 'Place your accont SID here';
 const apiKey = 'Place your API key here';

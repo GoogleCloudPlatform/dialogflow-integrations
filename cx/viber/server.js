@@ -1,11 +1,3 @@
-/**
- * To-Do:
- * Create a Service Account and download its key file.
- * Set the environmental variable GOOGLE_APPLICATION_CREDENTIALS
- * to the key file's location.
- * See https://cloud.google.com/dialogflow/cx/docs and
- * https://cloud.google.com/dialogflow/cx/docs/quick/setup for details.
- */
 const express = require('express');
 const ViberBot = require('viber-bot').Bot;
 const BotEvents = require('viber-bot').Events;

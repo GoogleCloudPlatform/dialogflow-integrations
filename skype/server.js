@@ -24,12 +24,6 @@ const filterResponses = require('../botlib/filter_responses.js');
 const express = require('express');
 const app = express();
 
-//For authenticating dialogflow_session_client.js, create a Service Account and
-// download its key file. Set the environmental variable
-// GOOGLE_APPLICATION_CREDENTIALS to the key file's location.
-//See https://dialogflow.com/docs/reference/v2-auth-setup and
-// https://cloud.google.com/dialogflow/docs/setup for details.
-
 const projectId = 'Place dialogflow project id here';
 const appId = 'Place Microsoft app id here';
 const appPassword = 'Place Microsoft password here';

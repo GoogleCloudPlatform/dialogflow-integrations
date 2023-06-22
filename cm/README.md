@@ -36,10 +36,10 @@ Run the following command to save the state of your repository into [GCP Contain
 gcloud builds submit --tag gcr.io/PROJECT-ID/dialogflow-cm
 ```
 
-Deploy your integration to live using the following command. Replace PROJECT-ID with your agent’s GCP project Id, and YOUR_KEY_FILE with the name (not path) of your Service Account JSON key file which you acquired in the Service Account Setup step of the [main README file](../readme.md).
+Deploy your integration to Cloud Run using the following command. Replace `PROJECT_ID` with your agent’s GCP project Id, and `DIALOGFLOW_SERIVCE_ACCOUNT` with the Service Account which you acquired in the Service Account Setup step of the [main README file](../readme.md).
 
 ```shell
-gcloud beta run deploy --image gcr.io/PROJECT-ID/dialogflow-cm --update-env-vars GOOGLE_APPLICATION_CREDENTIALS=YOUR_KEY_FILE --memory 1Gi
+gcloud beta run deploy --image gcr.io/PROJECT_ID/dialogflow-cm --service--acount DIALOGFLOW_SERVICE_ACCOUNT --memory 1Gi
 ```
 
 - When prompted for a target platform, select a platform by entering the corresponding number (for example, ``1`` for ``Cloud Run (fully managed)``).
