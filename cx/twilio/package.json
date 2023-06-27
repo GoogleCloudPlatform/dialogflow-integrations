@@ -1,7 +1,7 @@
 {
   "name": "twilio-cx-integration",
   "version": "1.0.0",
-  "description": "barnettjason's testing project",
+  "description": "A server that connects Dialogflow to Twilio SMS",
   "main": "server.js",
   "scripts": {
     "test": "mocha",
