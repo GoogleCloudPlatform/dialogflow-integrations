@@ -49,15 +49,19 @@ const listener = app.listen(port, () => {
 bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
   const sessionId = response.userProfile.id;
   const dialogflowResponse = await detectIntent(message, sessionId);
-  const reply = await convertToViberMessage(dialogflowResponse);
-  bot.sendMessage(response.userProfile, reply);
+  const replies = await convertToViberMessage(dialogflowResponse);
+  if (replies.length > 0) {
+    bot.sendMessage(response.userProfile, replies);
+  }
 });
 
 bot.on(BotEvents.CONVERSATION_STARTED, async (response) => {
   const sessionId = response.userProfile.id;
   const dialogflowResponse = await detectIntentEvent('VIBER_WELCOME', sessionId);
   const replies = await convertToViberMessage(dialogflowResponse);
-  bot.sendMessage(response.userProfile, replies);
+  if (replies.length > 0) {
+    bot.sendMessage(response.userProfile, replies);
+  }
 });
 
 process.on('SIGTERM', () => {

@@ -1,6 +1,6 @@
 # ServiceNow Integration
 
-This integration provides an example for managing incident reports with a Dialogflow ES agent by communicating with a ServiceNow webhook.
+This integration provides an example for managing incident reports with a Dialogflow CX agent by communicating with a ServiceNow webhook.
 
 ## ServiceNow Setup
 
@@ -37,31 +37,18 @@ This integration provides an example for managing incident reports with a Dialog
 
 ### Import Dialogflow Agent
 
-* From the [Dialogflow Console](https://dialogflow.cloud.google.com/), click on the settings icon next to the agent name to view the agent settings.
-* Select **Export and Import**.
-* Click on the **IMPORT FROM ZIP** button.
-* Select the file `Dialogflow2ServiceNow.zip`.
-* Type the word `IMPORT` in the Upload agent window; then click on the **IMPORT** button.
-* After the Import, click on the **DONE** button to close the window.
-* From the Navigation menu, click on **Intents** to view the Intents page.
-* You should now see two new Intents `incident.create` and `incident.status`.
-* Click on the `incident.create` Intent.
-* Scroll down the page and leave the **Responses** section as is. Expand the **Fulfillment** section and switch the toggle button to enable both options as follows:
-
-![enabling webhook call for intent and slot filing](images/df-incident-fulfillment.png)
-
-* Click the **Save** button at the top. 
-* Click on the `incident.status` Intent.
-* Scroll down the page and leave the **Responses** section as is. Expand the **Fulfillment** section and switch the toggle button to enable both options as you did on the previous step.
-* Click the **Save** button at the top.
+* Create the agent from the [Dialogflow Console](https://dialogflow.cloud.google.com/cx) by selecting **Create agent** and following the prompts and selecting **Create**.
+* From the Dialogflow Console, select vertical dots next to the project you just created.
+* Select **Restore**.
+* Select the **Upload** radio option and upload the provided agent `servicenow-demo-agent.zip`.
 
 ### Webhook Configuration
 
-* From the Dialogflow Navigation menu, click on **Fulfillment**.
-* Switch the toggle to enable the Webhook.
-* For **URL**, enter your ServiceNow Developer Instance URL along with the **Base API Path** to the ServiceNow Scripted REST Service that you created in an earlier step.
-* For **Basic Auth**, enter the login and password. **_Note_**: _In this example we use the Admin credentials for simplicity, but for more than a Sandbox, you would want to create a new user to make the web requests or better, configure OAuth tokens._
-* For **Headers**, enter a key of `content-type` with a value of `application/json`. Your Webhook should look similar to this:
+* From the agent portal select **Manage**.
+* Select **Webhooks** on the left menu.
+* Select the provided webhook called _ServicewNow_.
+* Fill the **Webhook URL** filed with your ServiceNow Developer Instance URL along with the **Base API Path** for the ServiceNow Scripted REST Service that you created in an earlier step.
+* For _Authentication_, enter the username and password. **_Note_**: _In this example we use the Admin credentials for simplicity, but for more than a Sandbox, you would want to create a new user to make the web requests or better, configure OAuth tokens._
 
 ![Dialogflow webhook configuration](images/df-webhook.png)
 
@@ -69,7 +56,7 @@ This integration provides an example for managing incident reports with a Dialog
 
 ### Testing the Integration
 
-* You have now completed all the necessary steps and can test your integration in the **Try it now** window.
+* You have now completed all the necessary steps and can test your integration in the **Test Agent** window.
 * Try creating a ticket:
 
 ![creating a ticket with the agent](images/df-test-create.png)

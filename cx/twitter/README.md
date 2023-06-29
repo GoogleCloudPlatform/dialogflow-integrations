@@ -45,16 +45,16 @@ click the  "Details" button on the new project.
 
 In your local terminal, change the active directory to the repository’s root directory.
 
-Run the following command to save the state of your repository into [GCP Container Registry](https://console.cloud.google.com/gcr/). Replace PROJECT-ID with your agent’s GCP Project ID and PLATFORM with the platform subdirectory name.
+Run the following command to save the state of your repository into [GCP Container Registry](https://console.cloud.google.com/gcr/). Replace PROJECT-ID with your agent’s GCP Project ID.
 
 ```shell
-gcloud builds submit --tag gcr.io/PROJECT-ID/dialogflow-PLATFORM
+gcloud builds submit --tag gcr.io/PROJECT-ID/dialogflow-twitter
 ```
 
 Deploy your integration to Cloud Run using the following command. Replace `PROJECT_ID` with your agent’s GCP project Id, and `DIALOGFLOW_SERIVCE_ACCOUNT` with the Service Account which you acquired in the Service Account Setup step of the [main README file](../readme.md).
 
 ```shell
-gcloud beta run deploy --image gcr.io/PROJECT_ID/dialogflow-cm --service--acount DIALOGFLOW_SERVICE_ACCOUNT --memory 1Gi
+gcloud beta run deploy --image gcr.io/PROJECT_ID/dialogflow-twitter --service-account DIALOGFLOW_SERVICE_ACCOUNT --memory 1Gi
 ```
 
 - When prompted for a target platform, select a platform by entering the corresponding number (for example, ``1`` for ``Cloud Run (fully managed)``).

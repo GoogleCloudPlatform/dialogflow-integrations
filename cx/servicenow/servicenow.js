@@ -16,13 +16,16 @@
 
 (function process(/*RESTAPIRequest*/ request, /*RESTAPIResponse*/ response) {
   var requestData = request.body.data;
+  var tag = requestData.fulfillmentInfo.tag;
+  var parameters = requestData.sessionInfo.parameters;
+
   var responseMessage = '';
 
   // create a new ticket
-  if (requestData.queryResult.intent.displayName == 'incident.create.details') {
-    var username = requestData.queryResult.parameters.username + '';
-    var description = requestData.queryResult.parameters.description + '';
-  
+  if (tag == 'create') {
+    var username = parameters.username + '';
+    var description = parameters.description + '';
+
     var incidentData = new GlideRecord('incident');
     incidentData.initialize();
     incidentData.short_description = description;
@@ -33,8 +36,8 @@
   }
 
   // get status of ticket
-  if (requestData.queryResult.intent.displayName == 'incident.status.number') {
-    var incidentNumber = requestData.queryResult.parameters.number + '';
+  if (tag == 'status') {
+    var incidentNumber = parameters.number + '';
 
     var incidentData = new GlideRecord('incident');
     incidentData.addQuery('number', 'ENDSWITH', incidentNumber);
@@ -55,21 +58,18 @@
   response.setContentType('application/json');
   response.setStatus(200);
 
+  // https://cloud.google.com/dialogflow/cx/docs/reference/rest/v3/Fulfillment#ResponseMessage
   var response_body = {
-    'fulfillmentText': responseMessage,
-    'payload': {
-      'google': {
-        'expectUserResponse': true,
-        'richResponse': {
-          'items': [
-            {
-              'simpleResponse': {
-                'textToSpeech': responseMessage
-              }
-            }
-          ]
+    'fulfillmentResponse': {
+      'messages': [
+        {
+          'text': {
+            'text': [
+              responseMessage
+            ]
+          }
         }
-      }
+      ]
     }
   };
 

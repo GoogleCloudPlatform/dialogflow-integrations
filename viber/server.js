@@ -58,9 +58,9 @@ bot.on(BotEvents.MESSAGE_RECEIVED, async (message, response) => {
   const sessionId = botName;
   const answer = (await sessionClient.detectIntent(
       message.text, sessionId, message)).fulfillmentMessages;
-  const reply = await convertToViberMessage(answer);
-  if (reply) {
-    bot.sendMessage(userProfile, reply);
+  const replies = await convertToViberMessage(answer);
+  if (replies.length) {
+    bot.sendMessage(userProfile, replies);
   }
 });
 
@@ -68,7 +68,9 @@ bot.on(BotEvents.CONVERSATION_STARTED, async (response) => {
   const result = await sessionClient.detectIntentWithEvent('VIBER_WELCOME',
       projectId);
   const replies = await convertToViberMessage(result.fulfillmentMessages);
-  bot.sendMessage(response.userProfile, replies);
+  if (replies.length) {
+    bot.sendMessage(response.userProfile, replies);
+  }
 });
 
 process.on('SIGTERM', () => {

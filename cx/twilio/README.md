@@ -6,23 +6,32 @@
 
 - Follow the instructions on the [main README file](https://github.com/GoogleCloudPlatform/dialogflow-integrations#readme) in the root directory of this repository.
 - Create a [Twilio account](https://www.twilio.com/try-twilio).
-- Replace the value of __projectId__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/twilio/server.js#L32) with your Dialogflow agent’s Project ID.
-
+- Copy and paste the following text into a new file titled __env__ created in the folder for this integration.
+- Replace __PROJECT_ID__ with your Google Cloud project ID.
+- Replace __AGENT_ID__ with your Dialogflow CX agent ID.
+- Replace __LOCATION__ with your agent's location code, e.g. "us-central-1."
+  
+```TWILIO_ACCOUNT_SID = ''
+TWILIO_AUTH_TOKEN = ''
+PROJECT_ID = ''
+LOCATION = ''
+AGENT_ID = ''
+LANGUAGE_CODE = ''
+```
 ### Retrieving Credentials
 
 1. Log in to the Twilio [Dashboard](https://www.twilio.com/console). 
-2. Under the "Project Info" section, take the values for  __Account SID__ and __Auth Token__ and replace the value for __accountSid__ and __authToken__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/twilio/server.js#L34-L35) respectively. 
-![alt text](images/twilio-retrieving-credentials.png)
+2. Under the "Account Info" section, take the values for  __Account SID__ and __Auth Token__ and replace the value for __TWILIO_ACCOUNT_SID__ and __TWILIO_AUTH_TOKEN__ in the __.env__ file.
+
+![Account Info](images/account-info.png)
 
 ### Buying a Phone Number
 
 1. Navigate to the Twilio console. 
-2. Click on the "All product and services" button and navigate to "Phone Numbers". 
-3. Click [Buy a Number](https://www.twilio.com/console/phone-numbers/search). Search for a 
-number that has SMS capabilities and buy it. 
-4. Take the phone number and replace the value for __phoneNumber__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/twilio/server.js#L33). Include the "+" at the beginning of the number.
+2. Under the "Develop" tab, click "Manage," then "Phone Numbers". 
+3. Click "Buy a Number. "Search for a number that has SMS capabilities and buy it. 
 
-![alt text](images/twilio-buying-a-phone-number.png)
+![Buy a Number](images/buy-a-number.png)
 
 ### Deploying the Integration Using Cloud Run
 
@@ -58,4 +67,8 @@ You can view a list of your active integration deployments under [Cloud Run](htt
 2. Click on the purchased number. 
 3. Underneath "Messaging", take the value for the server URL printed in the console after the completion of the execution of the last command from the above section to the __"A message comes in"__ fill-in box. Set the first drop-down to __Webhook__ and the HTTP method to __HTTP POST__. 
 
-![alt text](images/twilio-setup-phone-number.png)
+![Number Configuration](images/number-config.png)
+
+### Complete
+
+Now simply text the Twilio phone number you registered and your agent will respond. 
