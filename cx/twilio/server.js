@@ -21,11 +21,13 @@ const listener = app.listen(process.env.PORT, () => {
 });
 
 const twilioToDetectIntent = (twilioReq) => {
+    const sessionId = twilioReq.body.To;
+
     const sessionPath = sessionClient.projectLocationAgentSessionPath (
         process.env.PROJECT_ID,
         process.env.LOCATION,
         process.env.AGENT_ID,
-        process.env.SESSION_ID
+        sessionId
     );
 
     const message = twilioReq.body.Body;
