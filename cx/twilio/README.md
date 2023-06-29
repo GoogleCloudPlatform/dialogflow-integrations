@@ -23,7 +23,7 @@ LANGUAGE_CODE = ''
 1. Log in to the Twilio [Dashboard](https://www.twilio.com/console). 
 2. Under the "Account Info" section, take the values for  __Account SID__ and __Auth Token__ and replace the value for __TWILIO_ACCOUNT_SID__ and __TWILIO_AUTH_TOKEN__ in the __.env__ file.
 
-![Account Info](twilio/images/account-info.png)
+![Account Info](images/account-info.png)
 
 ### Buying a Phone Number
 
@@ -31,7 +31,7 @@ LANGUAGE_CODE = ''
 2. Under the "Develop" tab, click "Manage," then "Phone Numbers". 
 3. Click "Buy a Number. "Search for a number that has SMS capabilities and buy it. 
 
-![Buy a Number](twilio/images/buy-a-number.png)
+![Buy a Number](images/buy-a-number.png)
 
 ### Deploying the Integration Using Cloud Run
 
@@ -67,7 +67,7 @@ You can view a list of your active integration deployments under [Cloud Run](htt
 2. Click on the purchased number. 
 3. Underneath "Messaging", take the value for the server URL printed in the console after the completion of the execution of the last command from the above section to the __"A message comes in"__ fill-in box. Set the first drop-down to __Webhook__ and the HTTP method to __HTTP POST__. 
 
-![Number Configuration](twilio/images/number-config.png)
+![Number Configuration](images/number-config.png)
 
 ### Complete
 
