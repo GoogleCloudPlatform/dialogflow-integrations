@@ -3,6 +3,7 @@ const {SessionsClient} = require('@google-cloud/dialogflow-cx');
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const path = require('path')
 const bodyParser = require('body-parser');
+const { get } = require('https');
 const ENV_FILE = path.join(__dirname, '.env');
 require('dotenv').config({ path: ENV_FILE });
 
@@ -21,8 +22,8 @@ const listener = app.listen(process.env.PORT, () => {
 });
 
 const twilioToDetectIntent = (twilioReq) => {
+    // console.log(twilioReq);
     const sessionId = twilioReq.body.To;
-
     const sessionPath = sessionClient.projectLocationAgentSessionPath (
         process.env.PROJECT_ID,
         process.env.LOCATION,
@@ -31,11 +32,10 @@ const twilioToDetectIntent = (twilioReq) => {
     );
 
     const message = twilioReq.body.Body;
-
     const languageCode = process.env.LANGUAGE_CODE;
     const request = {
         session: sessionPath,
-        queryInput: 
+        queryInput:
             {
                 text: {
                     text: message
@@ -45,7 +45,7 @@ const twilioToDetectIntent = (twilioReq) => {
         };
     
     return request;
-}
+};
 
 const detectIntentToTwilio = (dialogflowResponse) => {
     let reply = "";
@@ -59,14 +59,20 @@ const detectIntentToTwilio = (dialogflowResponse) => {
     const twiml = new  MessagingResponse();
     twiml.message(reply);
     return twiml;
-}
+};
 
-app.post('/', async (req, res) => {
+const getResponseMessage = async (req) => {
     const dialogflowRequest = twilioToDetectIntent(req);
     const [dialogflowResponse] = await sessionClient.detectIntent(dialogflowRequest);
     const twiml = detectIntentToTwilio(dialogflowResponse);
-    res.send(twiml.toString());
-})
+    return twiml.toString();
+};
+
+app.post('/', async (req, res) => {
+    const message = await getResponseMessage(req);
+    console.log("MESSAGE: " + message);
+    res.send(message);
+});
 
 process.on('SIGTERM', () => {
     listener.close(async ()=> {
@@ -75,4 +81,4 @@ process.on('SIGTERM', () => {
     });
   });
 
-module.exports = {twilioToDetectIntent, detectIntentToTwilio}
+module.exports = {twilioToDetectIntent, detectIntentToTwilio};
