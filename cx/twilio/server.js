@@ -1,9 +1,21 @@
+
+/*
+* TODO (developer): 
+* Create file ".env" in this directory with the following contents:
+*
+* TWILIO_ACCOUNT_SID = ''
+* TWILIO_AUTH_TOKEN = ''
+* PROJECT_ID = ''
+* LOCATION = ''
+* AGENT_ID = ''
+* LANGUAGE_CODE = '' 
+*/
+
 const express = require('express');
 const {SessionsClient} = require('@google-cloud/dialogflow-cx');
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const path = require('path')
 const bodyParser = require('body-parser');
-const { get } = require('https');
 const ENV_FILE = path.join(__dirname, '.env');
 require('dotenv').config({ path: ENV_FILE });
 
@@ -21,8 +33,12 @@ const listener = app.listen(process.env.PORT, () => {
     listener.address().port);
 });
 
+/*
+*  Converts a Twilio POST request to a JSON payload for the Dialogflow's DetectIntent endpoint
+*  @param {JSON} twilioReq
+*  @return {JSON} 
+*/
 const twilioToDetectIntent = (twilioReq) => {
-    // console.log(twilioReq);
     const sessionId = twilioReq.body.To;
     const sessionPath = sessionClient.projectLocationAgentSessionPath (
         process.env.PROJECT_ID,
@@ -47,6 +63,11 @@ const twilioToDetectIntent = (twilioReq) => {
     return request;
 };
 
+/*
+*  Converts DetctIntent response to a JSON payload for Twilio
+*  @param {JSON} dialogflowResponse
+*  @return {JSON} 
+*/
 const detectIntentToTwilio = (dialogflowResponse) => {
     let reply = "";
     
@@ -61,6 +82,11 @@ const detectIntentToTwilio = (dialogflowResponse) => {
     return twiml;
 };
 
+/*
+*  Returns a message from a Dialogflow agent in response to a Twilio message
+*  @param {JSON} req
+*  @return {string}
+*/
 const getResponseMessage = async (req) => {
     const dialogflowRequest = twilioToDetectIntent(req);
     const [dialogflowResponse] = await sessionClient.detectIntent(dialogflowRequest);
