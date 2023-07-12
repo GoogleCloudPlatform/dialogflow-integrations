@@ -9,8 +9,7 @@
 
 ### Deploying the Integration Using Cloud Run
 
-In your local terminal, change the active directory to the repository’s root directory.
-
+In your local terminal, change the active directory to this integration's folder.
 Run the following command to save the state of your repository into [GCP Container Registry](https://console.cloud.google.com/gcr/). Make sure to uncomment the TODO section in server.js and replace the variables to your corresponding GCP project and Dialogflow Agent. 
 
 ```shell
