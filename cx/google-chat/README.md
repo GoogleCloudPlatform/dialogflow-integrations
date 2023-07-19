@@ -62,6 +62,8 @@ In configuration you'll be able to give your Chat Bot a name, avatar and descrip
 
 Once you fill in the Chat bot information get the link that the Google Cloud function was deployed to and set the Bot URL. 
 
+**If you want to integrate Google Chat with a Dialogflow ES agent, select "Dialogflow" under "Connection settings" then hit "save." You will not need to use the bot URL you got earlier.**
+
 ![alt text](images/config1.png)
 
 At the bottom of the configuration page, make sure to set the bot's visibility. 
