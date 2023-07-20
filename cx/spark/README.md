@@ -48,3 +48,7 @@ More information can be found in Cloud Run
 [documentation](https://cloud.google.com/run/docs/deploying).
 
 You can view a list of your active integration deployments under [Cloud Run](https://console.cloud.google.com/run) in the GCP Console.
+
+### Testing
+
+To test your bot, either download the [webex app](https://web.webex.com/) and send a direct message to your bot using the username you specified earlier. This username should end in "@webex.bot"
