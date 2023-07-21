@@ -33,7 +33,7 @@ The example belows shows how to integrate a Dialogflow CX Agent with Azure Bot S
 
 1. Open the Google Cloud Console and navigate to the project that contains your Dialogflow CX agent.
 
-2. Navigate to **IAM & admin > Service Accounts** from the navigation menu in the GCP console. Click on **+ CREATE SERVICE ACCOUNT**, fill in the details, and give it the **Dialogflow Client API** role. Copy the service account email address for use in the next step.
+2. Navigate to **IAM & admin > Service Accounts** from the navigation menu in the GCP console. Click on **+ CREATE SERVICE ACCOUNT**, fill in the details, and give it the **Dialogflow API Client** role. Copy the service account email address for use in the next step.
 <br><br><img src="./images/dialogflow_service_account.png" width="500px" alt="Dialogflow Webhook Service Account"/>
 <br><br><img src="./images/service_account_role.png" width="500px" alt="Service Account Role"/>
 
