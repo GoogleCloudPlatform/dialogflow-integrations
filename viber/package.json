@@ -8,9 +8,9 @@
     "test": "mocha"
   },
   "dependencies": {
+    "@google-cloud/dialogflow": "2.0.0",
     "express": "^4.16.4",
-    "viber-bot": "^1.0.13",
-    "dialogflow": "0.6.0"
+    "viber-bot": "^1.0.13"
   },
   "engines": {
     "node": "8.x"
