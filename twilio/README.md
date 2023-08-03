@@ -59,3 +59,17 @@ You can view a list of your active integration deployments under [Cloud Run](htt
 3. Underneath "Messaging", take the value for the server URL printed in the console after the completion of the execution of the last command from the above section to the __"A message comes in"__ fill-in box. Set the first drop-down to __Webhook__ and the HTTP method to __HTTP POST__. 
 
 ![alt text](images/twilio-setup-phone-number.png)
+
+### WhatsApp Setup
+
+This integration can be used as a webhook with Twilio to send WhatsApp messages.
+
+1. Under **Messaging** and **Try it out**, select **Send a WhatsApp message**
+2. Follow the prompts to join the sandbox
+3. Select the **Sandbox settings** tab
+4. Fill **When a message comes in** with the webhook URL given during deployment and select **POST** for the **Method**
+
+<img src="./images/twilio-whatsapp-configuration.png" width="700px" alt="Setting the Twilio WhatsApp webhook URL" />
+
+5. Select **Save**
+6. Send a message to your WhatsApp number to test the integration.
