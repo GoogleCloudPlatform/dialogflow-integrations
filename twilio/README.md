@@ -24,6 +24,8 @@ number that has SMS capabilities and buy it.
 
 ![alt text](images/twilio-buying-a-phone-number.png)
 
+Additionally, all phone [10DLC numbers](https://support.twilio.com/hc/en-us/articles/360038173654-What-are-the-differences-between-long-codes-A2P-10DLC-short-codes-and-Toll-Free-numbers-for-messaging-to-US-Canada-) will need to be registered with Twilio. If this applies to you, follow [this guide](https://support.twilio.com/hc/en-us/articles/1260801864489-How-do-I-register-to-use-A2P-10DLC-messaging-) to register your new number. 
+
 ### Deploying the Integration Using Cloud Run
 
 In your local terminal, change the active directory to the repository’s root directory.
