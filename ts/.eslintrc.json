@@ -1,0 +1,9 @@
+{
+  "extends": "./node_modules/gts/",
+  "plugins": ["jest"],
+  "rules": {
+    "node/no-unpublished-import": ["error", {
+      "allowModules": ["typed-emitter", "type-fest"]
+    }]
+  }
+}
