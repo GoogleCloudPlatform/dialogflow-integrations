@@ -1,0 +1,6 @@
+build/
+*.md
+node_modules
+npm-debug.log
+.git
+images

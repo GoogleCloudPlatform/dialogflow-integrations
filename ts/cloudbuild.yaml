@@ -1,0 +1,7 @@
+steps:
+- name: 'gcr.io/kaniko-project/executor'
+  args: 
+    - --destination=${_LOCATION}-docker.pkg.dev/$PROJECT_ID/dialogflow-integrations/dialogflow-${_INTEGRATION}:latest
+    - --cache=true
+    - --build-arg=INTEGRATION=${_INTEGRATION}
+    - --build-arg=GCP_PROJECT=$PROJECT_ID

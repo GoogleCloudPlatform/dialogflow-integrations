@@ -1,0 +1,20 @@
+{
+  "extends": "./node_modules/gts/tsconfig-google.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "build",
+    "esModuleInterop": true,
+    // https://github.com/microsoft/TypeScript/wiki/Node-Target-Mapping#node-18
+    "lib": ["ES2022"],
+    "module": "CommonJS",
+    "target": "ES2022",
+    "typeRoots": [
+      "src/types",
+      "node_modules/@types",
+      "node_modules/@jest/globals"
+    ]
+  },
+  "include": [
+    "src/**/*.ts"
+  ]
+}
