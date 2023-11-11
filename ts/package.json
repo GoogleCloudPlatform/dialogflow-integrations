@@ -40,7 +40,7 @@
     "@google-cloud/dialogflow": "^5.9.0",
     "@google-cloud/dialogflow-cx": "^3.8.0",
     "@slack/bolt": "^3.13.2",
-    "axios": "^1.4.0",
+    "axios": "^1.6.0",
     "body-parser": "^1.20.2",
     "express": "^4.18.2",
     "parse-duration": "^1.1.0",
