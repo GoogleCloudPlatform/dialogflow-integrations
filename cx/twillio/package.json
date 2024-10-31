@@ -1,0 +1,27 @@
+{
+  "name": "twillio-cx-integration",
+  "version": "0.0.1",
+  "description": "A server that integrates Dialogflow CX with Twillio.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@google-cloud/dialogflow-cx": "^2.12.1",
+    "express": "^4.16.4",
+    "request": "^2.88.0",
+    "dialogflow": "0.9.1",
+    "twilio": "3.33.0"
+  },
+  "engines": {
+    "node": "8.x"
+  },
+  "repository": {
+    "url": "URL"
+  },
+  "license": "Apache-2.0",
+  "private": true,
+  "devDependencies": {
+    "eslint-config-google": "^0.14.0"
+  }
+}
