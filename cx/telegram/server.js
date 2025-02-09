@@ -1,13 +1,13 @@
 /**
  * TODO(developer):
  * Add your service key to the current folder.
- * Uncomment and fill in these variables.
+ * Uncomment and fill in these variables. 
  */
 // const projectId = 'my-project';
 // const locationId = 'global';
 // const agentId = 'my-agent';
 // const languageCode = 'en'
-// const TELEGRAM_TOKEN='1234567898:ABCdfghTtaD8dfghdfgh45sdf65467M';
+// const TELEGRAM_TOKEN='6981450930:AAEoW8uH6mtEwWAWbHqdEr0u3FR5KFDfi28';
 // const SERVER_URL='https://example.com';
 
 const structProtoToJson =
