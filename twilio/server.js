@@ -43,8 +43,8 @@ app.post('/', async function(req, res) {
   const id = body.From;
   const dialogflowResponse = (await sessionClient.detectIntent(
       text, id, body)).fulfillmentText;
-  const twiml = new  MessagingResponse();
-  const message = twiml.message(dialogflowResponse);
+  const twiml = new MessagingResponse();
+  twiml.message(dialogflowResponse);
   res.send(twiml.toString());
 });
 

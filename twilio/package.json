@@ -7,9 +7,9 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "@google-cloud/dialogflow": "2.0.0",
     "express": "^4.16.4",
     "request": "^2.88.0",
-    "dialogflow": "0.9.1",
     "twilio": "3.33.0"
   },
   "engines": {
