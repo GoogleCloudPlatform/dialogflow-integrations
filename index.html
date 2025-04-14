@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - METABISaaS</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!--
+-  DB Script Tool
+- 2022-11-07 05:31:35
+- 
+-  HTML5 Forms for METABIS Database
+-->
+<!DOCTYPE html>
+<html  lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>METABIS Forms</title>
+
+    <!--
+    <link rel="stylesheet" type="text/css" href="file.css" media="all">
+    <script type="text/javascript" src="file.js"></script>
+    -->
+
+    <style type="text/css">
+        form { background-color: #eee; padding: 10px; margin-bottom: 10px; }
+        form fieldset { border: 1px solid #CCC; }
+        form h2 { color: green; font-size: 16pt; font-variant: small-caps; }
+        .row { clear: right; display: block; padding-bottom: 8px; }
+        .label { color: #333; font-weight: bold; clear: right; display: block; }
+    </style>
+
+</head>
+<body>
+
+    <header id="header">METABIS</header>
+<h1>What is METABISaaS all about?
+    <div id="main">
+
+        <form id="formMETABIaaS" class="form" enctype="multipart/form-data" method="post" action="">
+            <fieldset>
+
+                <h3>METABIaaS Form</h3>
+
+                <div class="row">
+                    <label class="label" for="_id">_id</label>
+                    <input id="_id" name="_id" class="" type="number"  min="0" max="9999999999" value="0"/>
+                </div>
+
+                <div class="row">
+                    <label class="label" for="journalname">Journalname</label>
+                    <input id="journalname" name="journalname" class="" type="text" maxlength="10" value=""/>
+                </div>
+
+                <div class="row">
+                    <label class="label" for="articletitle">Articletitle</label>
+                    <input id="articletitle" name="articletitle" class="" type="text" maxlength="10" value=""/>
+                </div>
+
+                <div class="row">
+                    <label class="label" for="publicationdate">Publicationdate</label>
+                    <input id="publicationdate" name="publicationdate" class="" type="text" value="" />
+                </div>
+
+                <div class="row">
+                    <label class="label" for="articlerentcost">Articlerentcost</label>
+                    <input id="articlerentcost" name="articlerentcost" class="" type="number"  min="0" max="9999999999" value="0"/>
+                </div>
+
+                <div class="row">
+                    <label class="label" for="ArticleAnswer">
+                        <input id="ArticleAnswer" name="ArticleAnswer" type="checkbox" checked="checked" />
+                        ArticleAnswer
+                    </label>
+                </div>
+
+                <div class="row">
+                    <input class="" type="button" value="Cancel" />
+                    <input class="" type="submit" value="Save" />
+                </div>
+
+            </fieldset>
+        </form>
+
+    </div>
+
+    <footer id="footer"> &#169; 2022 Emergent APHID</footer>
+
+</body>
+</html>
+<!-- partial -->
+  
+</body>
+</html>
