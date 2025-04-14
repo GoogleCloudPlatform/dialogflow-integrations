@@ -5,7 +5,7 @@
 ### Prerequisites
 
 - Follow the instructions on the [main README file](https://github.com/GoogleCloudPlatform/dialogflow-integrations#readme) in the root directory of this repository.
-- Create a [Microsoft Azure account](http://developer.twitter.com/en/apply/user).
+- Create a [Microsoft Azure account](https://azure.microsoft.com/en-us/free/).
 - Replace the value of __projectId__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/03676af04840c21c12e2590393d5542602591bee/skype/server.js#L33) with your Dialogflow agent’s Project ID.
 
 ### Creating a Skype Bot
