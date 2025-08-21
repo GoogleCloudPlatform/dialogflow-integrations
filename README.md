@@ -52,7 +52,8 @@ Open the [Dockerfile](https://github.com/GoogleCloudPlatform/dialogflow-integrat
 
 ```Dockerfile
    # Set this environmental variable to the integration you want to use
-   ENV INTEGRATION=YOUR_INTEGRATION
+   ENV INTEGRATION=twitter
+
    ```
 
 If you have not done so already, copy your Service Account JSON key file to the desired platform subdirectory. 
