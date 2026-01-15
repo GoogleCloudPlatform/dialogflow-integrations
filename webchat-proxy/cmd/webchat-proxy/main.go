@@ -10,11 +10,21 @@ import (
 	"time"
 
 	"webchat-proxy/internal/api"
+	dialogflow "cloud.google.com/go/dialogflow/apiv2beta1"
 )
 
 func main() {
+	ctx := context.Background()
+
+	// Initialize Dialogflow Client
+	client, err := dialogflow.NewParticipantsClient(ctx)
+	if err != nil {
+		log.Fatalf("Failed to create ParticipantsClient: %v", err)
+	}
+	defer client.Close()
+
 	// Initialize API Server
-	srv := api.NewServer()
+	srv := api.NewServer(client)
 
 	// Server Configuration
 	port := os.Getenv("PORT")

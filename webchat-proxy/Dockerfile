@@ -5,15 +5,15 @@ FROM golang:1.24 as builder
 WORKDIR /app
 
 # Retrieve application dependencies.
-# This allows the container build to reuse cached dependencies.
+# We need to copy libs because of the 'replace' directive in go.mod
 COPY go.mod go.sum ./
+COPY libs ./libs
 RUN go mod download
 
-# Copy local code to the container image.
+# Copy the rest of the source code.
 COPY . .
 
 # Build the binary.
-# -o webchat-proxy specifies the output binary name.
 RUN CGO_ENABLED=0 GOOS=linux go build -v -o webchat-proxy ./cmd/webchat-proxy
 
 # Use the official Alpine image for a lean production container.

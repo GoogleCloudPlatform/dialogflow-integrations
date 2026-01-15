@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"webchat-proxy/internal/session"
+	dialogflow "cloud.google.com/go/dialogflow/apiv2beta1"
 )
 
 type Server struct {
@@ -11,8 +12,8 @@ type Server struct {
 	Mux            *http.ServeMux
 }
 
-func NewServer() *Server {
-	sm := session.NewSessionManager()
+func NewServer(client *dialogflow.ParticipantsClient) *Server {
+	sm := session.NewSessionManager(client)
 	s := &Server{
 		SessionManager: sm,
 		Mux:            http.NewServeMux(),
