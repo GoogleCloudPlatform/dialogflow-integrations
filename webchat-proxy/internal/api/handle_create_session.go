@@ -38,10 +38,12 @@ func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// TODO: a. handshake with Ccaas platform
+	// upon this request, the proxy server should set up properly on 3P platform
 
 	// TODO: b. create a session which create a bidi grpc stream
+	// upon this request, the proxy server should spin up a process calling BidiEndpointInteract
 
-	_, err := s.SessionManager.CreateSession(conversationID)
+	_, err := s.SessionManager.CreateSession(conversationID, req.Participant)
 	if err != nil {
 		log.Printf("Failed to create session: %v", err)
 		http.Error(w, "Failed to create session", http.StatusInternalServerError)
