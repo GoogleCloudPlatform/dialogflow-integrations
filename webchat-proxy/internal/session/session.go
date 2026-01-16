@@ -14,6 +14,7 @@ type Session struct {
 	ID              string
 	ParticipantName string
 	CCAIPChatID     string
+	CCAIPEndUserID  string
 	Cancel          context.CancelFunc
 	Done            chan struct{}
 
@@ -23,11 +24,12 @@ type Session struct {
 }
 
 
-func NewSession(id, participantName, ccaipChatID string, client *dialogflow.ParticipantsClient, cc *ccaas.CCAIPConnector) *Session {
+func NewSession(id, participantName, ccaipChatID, ccaipEndUserID string, client *dialogflow.ParticipantsClient, cc *ccaas.CCAIPConnector) *Session {
 	return &Session{
 		ID:              id,
 		ParticipantName: participantName,
 		CCAIPChatID:     ccaipChatID,
+		CCAIPEndUserID:  ccaipEndUserID,
 		Done:            make(chan struct{}),
 		client:          client,
 		ccaas:           cc,
@@ -95,16 +97,19 @@ func (s *Session) runStream(ctx context.Context) {
 		// Forward any message from V2 API to the 3P
 		log.Printf("Session %s: Received response from Dialogflow: %+v", s.ID, resp)
 		if output := resp.GetOutput(); output != nil && output.GetText() != "" {
+			if output.GetParticipant() == s.ParticipantName {
+				log.Printf("Session %s: Ignoring message from our own participant (%s).", s.ID, s.ParticipantName)
+				continue
+			}
+
 			text := output.GetText()
 			log.Printf("Session %s: Forwarding bot message to CCaIP: %s", s.ID, text)
 
 			sendReq := &ccaas.SendMessageRequest{
-				FromUserID: s.CCAIPChatID, // bot messages usually come from the system or the chat ID context
+				FromUserID: s.CCAIPEndUserID, // Bot messages should be attributed to the end user for context, or a system user if applicable
 				Message: ccaas.MessageBlock{
-					Type: "text",
-					Content: ccaas.MessageContent{
-						Text: text,
-					},
+					Type:    "text",
+					Content: text,
 				},
 			}
 			if err := s.ccaas.SendMessage(ctx, s.CCAIPChatID, sendReq); err != nil {

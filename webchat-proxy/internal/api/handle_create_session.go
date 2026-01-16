@@ -62,7 +62,7 @@ func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {
 	s.CCaaS.RegisterParticipant(chatSession.ID, req.Participant)
 
 	// Create a local session which manages the bidi grpc stream
-	_, err = s.SessionManager.CreateSession(conversationID, req.Participant, chatSession.ID)
+	_, err = s.SessionManager.CreateSession(conversationID, req.Participant, chatSession.ID, chatSession.EndUserID)
 	if err != nil {
 		log.Printf("Failed to create local session: %v", err)
 		// TODO: Should we end the CCAIP session here if local creation fails?
