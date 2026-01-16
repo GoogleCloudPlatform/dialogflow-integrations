@@ -18,7 +18,7 @@ SERVICE_ACCOUNT=${SERVICE_ACCOUNT:-"${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount
 # CCaIP Configuration
 CCAIP_SUBDOMAIN=${CCAIP_SUBDOMAIN:-"default-subdomain"}
 CCAIP_DEFAULT_MENU_ID=${CCAIP_DEFAULT_MENU_ID:-"1"}
-CCAIP_DEFAULT_LANG=${CCAIP_DEFAULT_LANG:-"en-us"}
+CCAIP_DEFAULT_LANG=${CCAIP_DEFAULT_LANG:-"en"}
 
 echo "Deploying $SERVICE_NAME to Cloud Run (Region: $REGION, Project: $PROJECT_ID)..."
 echo "Using Service Account: $SERVICE_ACCOUNT"
