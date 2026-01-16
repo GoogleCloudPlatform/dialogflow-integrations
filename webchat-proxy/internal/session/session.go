@@ -93,6 +93,7 @@ func (s *Session) runStream(ctx context.Context) {
 		}
 
 		// Forward any message from V2 API to the 3P
+		log.Printf("Session %s: Received response from Dialogflow: %+v", s.ID, resp)
 		if output := resp.GetOutput(); output != nil && output.GetText() != "" {
 			text := output.GetText()
 			log.Printf("Session %s: Forwarding bot message to CCaIP: %s", s.ID, text)
