@@ -56,7 +56,7 @@ func (s *Session) runStream(ctx context.Context) {
 		Request: &dialogflowpb.BidiEndpointInteractRequest_Config_{
 			Config: &dialogflowpb.BidiEndpointInteractRequest_Config{
 				Participant:  s.ParticipantName,
-				EndpointId:   "webchat-proxy-endpoint",
+				EndpointId:   "webchat-proxy-receive-endpoint",
 				ConnectAudio: false,
 			},
 		},
@@ -87,8 +87,24 @@ func (s *Session) runStream(ctx context.Context) {
 			}
 		}
 
-		// TODO: Forward any message from V2 API to the 3P
+		// TODO: Replace the echo behavior below.
+		// Forward any message from V2 API to the 3P
 		log.Printf("Session %s: Received message from V2 API: %v", s.ID, resp)
+		output := resp.GetOutput()
+		if output == nil { continue }
+		text := output.GetText()
+		if text == "" { continue }
+		messageReq := &dialogflowpb.BidiEndpointInteractRequest{
+		  Request: &dialogflowpb.BidiEndpointInteractRequest_Input_{
+		    Input: &dialogflowpb.BidiEndpointInteractRequest_Input{
+		      Text: text,
+		    },
+		  },
+		}
+	  if err := s.stream.Send(messageReq); err != nil {
+		  log.Printf("[Session %s] ERROR: Failed to send initial request: %v", s.ID, err)
+		  return
+	  }
 	}
 }
 
