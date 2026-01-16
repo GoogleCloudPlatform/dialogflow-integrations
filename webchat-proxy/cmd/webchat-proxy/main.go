@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"webchat-proxy/internal/api"
+	"webchat-proxy/internal/ccaas"
 	dialogflow "cloud.google.com/go/dialogflow/apiv2beta1"
 )
 
@@ -23,8 +24,17 @@ func main() {
 	}
 	defer client.Close()
 
+	// Initialize CCaaS Connector (dummy for now)
+	ccaipCfg := &ccaas.GoogleCCAIPConfig{
+		APIBaseURL: "https://example.com/api/v1",
+		Auth: ccaas.Auth{
+			Username: "dummy",
+		},
+	}
+	cc := ccaas.NewCCAIPConnector(ccaipCfg, "dummy-password")
+
 	// Initialize API Server
-	srv := api.NewServer(client)
+	srv := api.NewServer(client, cc)
 
 	// Server Configuration
 	port := os.Getenv("PORT")
