@@ -64,9 +64,19 @@ func (c *CCAIPConnector) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if event.Type == EventMessageReceived {
+	if event.EventType == EventMessageReceived {
+		log.Printf("Received CCAIP %s from %s: %s", event.EventType, event.Body.Sender.Type, string(body))
+		
+		// Only relay messages FROM agents/bots TO Dialogflow end-users (or system logic).
+		// We ignore messages from "end_user" because those are the ones we are proxying FOR.
+		if event.Body.Sender.Type != "agent" && event.Body.Sender.Type != "virtual_agent" {
+			log.Printf("Ignoring message from sender type: %s", event.Body.Sender.Type)
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
 		chatID := strconv.Itoa(event.ChatID)
-		text := event.Message.Content.Text
+		text := event.Body.Message.Content
 		
 		c.participantsMu.RLock()
 		participantName := c.participants[chatID]
@@ -83,6 +93,7 @@ func (c *CCAIPConnector) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *CCAIPConnector) relayToDialogflow(ctx context.Context, participantName, text string) {
+	log.Printf("Relaying message to Dialogflow: %s", text)
 	stream, err := c.DialogflowClient.BidiEndpointInteract(ctx)
 	if err != nil {
 		log.Printf("ERROR relayToDialogflow: failed to open stream: %v", err)
@@ -248,10 +259,8 @@ func (c *CCAIPConnector) SendMessage(ctx context.Context, chatID string, req *Se
 	ccaipReq := map[string]interface{}{
 		"from_user_id": endUserID,
 		"message": map[string]interface{}{
-			"type": req.Message.Type,
-			"content": map[string]interface{}{
-				"text": req.Message.Content.Text,
-			},
+			"type":    req.Message.Type,
+			"content": req.Message.Content,
 		},
 	}
 
@@ -362,13 +371,8 @@ type SendMessageRequest struct {
 
 // MessageBlock represents the message structure in SendMessageRequest.
 type MessageBlock struct {
-	Type    string         `json:"type"` // e.g., "text"
-	Content MessageContent `json:"content"`
-}
-
-// MessageContent contains the actual content of a message.
-type MessageContent struct {
-	Text string `json:"text"`
+	Type    string `json:"type"`    // e.g., "text"
+	Content string `json:"content"` // actual message text
 }
 
 // EndSessionRequest contains parameters for ending a session.

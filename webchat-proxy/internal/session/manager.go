@@ -23,15 +23,15 @@ func NewSessionManager(client *dialogflow.ParticipantsClient, cc *ccaas.CCAIPCon
 	}
 }
 
-func (sm *SessionManager) CreateSession(id, participantName, ccaipChatID string) (*Session, error) {
+func (sm *SessionManager) CreateSession(id, participantName, ccaipChatID, ccaipEndUserID string) (*Session, error) {
 	sm.sessionsMu.Lock()
 	defer sm.sessionsMu.Unlock()
-
+ 
 	if _, exists := sm.sessions[id]; exists {
 		return nil, fmt.Errorf("session %s already exists", id)
 	}
-
-	s := NewSession(id, participantName, ccaipChatID, sm.client, sm.ccaas)
+ 
+	s := NewSession(id, participantName, ccaipChatID, ccaipEndUserID, sm.client, sm.ccaas)
 	s.StartStream()
 	sm.sessions[id] = s
 	return s, nil

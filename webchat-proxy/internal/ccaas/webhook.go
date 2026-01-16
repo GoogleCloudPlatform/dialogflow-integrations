@@ -9,11 +9,11 @@ import (
 
 // Webhook event types.
 const (
-	EventMessageReceived   = "MessageReceivedEvent"
-	EventParticipantJoined = "ParticipantJoinedEvent"
-	EventParticipantLeft   = "ParticipantLeftEvent"
-	EventChatEnded         = "ChatEndedEvent"
-	EventChatDismissed     = "ChatDismissedEvent"
+	EventMessageReceived   = "message_received"
+	EventParticipantJoined = "participant_joined"
+	EventParticipantLeft   = "participant_left"
+	EventChatEnded         = "chat_ended"
+	EventChatDismissed     = "chat_dismissed"
 )
 
 // VerifyCCAIPSignature verifies the X-Signature header from CCAIP.
@@ -51,13 +51,32 @@ func VerifyCCAIPSignature(payload []byte, signatureHeader string, secret string)
 	return hmac.Equal(actualMAC, expectedMAC)
 }
 
-// Note: Specific event payloads can be added here as needed for parsing in the handlers.
+// BaseEvent represents common fields for all CCAIP webhook events.
 type BaseEvent struct {
-	Type   string `json:"type"`
-	ChatID int    `json:"chat_id"`
+	EventType string `json:"event_type"`
+	Timestamp string `json:"timestamp"`
+	ChatID    int    `json:"chat_id"`
 }
 
+// MessageEvent represents the payload for message_received events.
 type MessageEvent struct {
 	BaseEvent
-	Message MessageBlock `json:"message"`
+	Body struct {
+		Sender  Sender         `json:"sender"`
+		Message WebhookMessage `json:"message"`
+	} `json:"body"`
+}
+
+// Sender represents the participant who sent the message.
+type Sender struct {
+	ID          int    `json:"id"`
+	Type        string `json:"type"` // "agent", "virtual_agent", "end_user"
+	Status      string `json:"status"`
+	ConnectedAt string `json:"connected_at"`
+}
+
+// WebhookMessage represents a message received via webhook.
+type WebhookMessage struct {
+	Type    string `json:"type"` // e.g., "text", "markdown"
+	Content string `json:"content"`
 }
