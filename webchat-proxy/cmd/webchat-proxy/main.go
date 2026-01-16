@@ -31,7 +31,7 @@ func main() {
 			Username: "dummy",
 		},
 	}
-	cc := ccaas.NewCCAIPConnector(ccaipCfg, "dummy-password")
+	cc := ccaas.NewCCAIPConnector(ccaipCfg, "dummy-password", client)
 
 	// Initialize API Server
 	srv := api.NewServer(client, cc)

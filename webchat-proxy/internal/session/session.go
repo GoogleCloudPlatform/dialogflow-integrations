@@ -7,25 +7,30 @@ import (
 
 	dialogflow "cloud.google.com/go/dialogflow/apiv2beta1"
 	"cloud.google.com/go/dialogflow/apiv2beta1/dialogflowpb"
+	"webchat-proxy/internal/ccaas"
 )
 
 type Session struct {
 	ID              string
 	ParticipantName string
+	CCAIPChatID     string
 	Cancel          context.CancelFunc
 	Done            chan struct{}
 
 	client *dialogflow.ParticipantsClient
 	stream dialogflowpb.Participants_BidiEndpointInteractClient
+	ccaas  *ccaas.CCAIPConnector
 }
 
 
-func NewSession(id, participantName string, client *dialogflow.ParticipantsClient) *Session {
+func NewSession(id, participantName, ccaipChatID string, client *dialogflow.ParticipantsClient, cc *ccaas.CCAIPConnector) *Session {
 	return &Session{
 		ID:              id,
 		ParticipantName: participantName,
+		CCAIPChatID:     ccaipChatID,
 		Done:            make(chan struct{}),
 		client:          client,
+		ccaas:           cc,
 	}
 }
 
@@ -56,7 +61,7 @@ func (s *Session) runStream(ctx context.Context) {
 		Request: &dialogflowpb.BidiEndpointInteractRequest_Config_{
 			Config: &dialogflowpb.BidiEndpointInteractRequest_Config{
 				Participant:  s.ParticipantName,
-				EndpointId:   "webchat-proxy-endpoint",
+				EndpointId:   "webchat-proxy-receive-endpoint",
 				ConnectAudio: false,
 			},
 		},
@@ -87,8 +92,24 @@ func (s *Session) runStream(ctx context.Context) {
 			}
 		}
 
-		// TODO: Forward any message from V2 API to the 3P
-		log.Printf("Session %s: Received message from V2 API: %v", s.ID, resp)
+		// Forward any message from V2 API to the 3P
+		if output := resp.GetOutput(); output != nil && output.GetText() != "" {
+			text := output.GetText()
+			log.Printf("Session %s: Forwarding bot message to CCaIP: %s", s.ID, text)
+
+			sendReq := &ccaas.SendMessageRequest{
+				FromUserID: s.CCAIPChatID, // bot messages usually come from the system or the chat ID context
+				Message: ccaas.MessageBlock{
+					Type: "text",
+					Content: ccaas.MessageContent{
+						Text: text,
+					},
+				},
+			}
+			if err := s.ccaas.SendMessage(ctx, s.CCAIPChatID, sendReq); err != nil {
+				log.Printf("Session %s: ERROR forwarding bot message: %v", s.ID, err)
+			}
+		}
 	}
 }
 
