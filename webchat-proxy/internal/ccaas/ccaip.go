@@ -10,6 +10,10 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"sync"
+
+	dialogflow "cloud.google.com/go/dialogflow/apiv2beta1"
+	"cloud.google.com/go/dialogflow/apiv2beta1/dialogflowpb"
 )
 
 // CCAIPConnector handles interactions with Google CCAIP.
@@ -18,14 +22,28 @@ type CCAIPConnector struct {
 	HTTPClient *http.Client
 	// Password is the actual API token, resolved from Secret Manager.
 	Password string
+
+	DialogflowClient *dialogflow.ParticipantsClient
+	
+	// Map of CCAIP ChatID to Dialogflow ParticipantName
+	participants   map[string]string
+	participantsMu sync.RWMutex
 }
 
-func NewCCAIPConnector(config *GoogleCCAIPConfig, password string) *CCAIPConnector {
+func NewCCAIPConnector(config *GoogleCCAIPConfig, password string, client *dialogflow.ParticipantsClient) *CCAIPConnector {
 	return &CCAIPConnector{
-		Config:     config,
-		HTTPClient: &http.Client{},
-		Password:   password,
+		Config:           config,
+		HTTPClient:       &http.Client{},
+		Password:         password,
+		DialogflowClient: client,
+		participants:     make(map[string]string),
 	}
+}
+
+func (c *CCAIPConnector) RegisterParticipant(chatID, participantName string) {
+	c.participantsMu.Lock()
+	defer c.participantsMu.Unlock()
+	c.participants[chatID] = participantName
 }
 
 func (c *CCAIPConnector) HandleWebhook(w http.ResponseWriter, r *http.Request) {
@@ -40,10 +58,70 @@ func (c *CCAIPConnector) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Received CCAIP Webhook. Signature: %s, Body: %s", sig, string(body))
 
 	// TODO: Verification logic using ccaas.VerifyCCAIPSignature
-	// This requires looking up the secret for the specific escalation config.
-	// For now, we return 200 OK to acknowledge receipt.
+
+	// Process event
+	var event MessageEvent
+	if err := json.Unmarshal(body, &event); err != nil {
+		log.Printf("Error unmarshaling CCAIP webhook: %v", err)
+		http.Error(w, "Error parsing body", http.StatusBadRequest)
+		return
+	}
+
+	if event.Type == EventMessageReceived {
+		chatID := strconv.Itoa(event.ChatID)
+		text := event.Message.Content.Text
+		
+		c.participantsMu.RLock()
+		participantName := c.participants[chatID]
+		c.participantsMu.RUnlock()
+
+		if participantName != "" {
+			go c.relayToDialogflow(context.Background(), participantName, text)
+		} else {
+			log.Printf("No participant registered for CCAIP chat %s", chatID)
+		}
+	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (c *CCAIPConnector) relayToDialogflow(ctx context.Context, participantName, text string) {
+	stream, err := c.DialogflowClient.BidiEndpointInteract(ctx)
+	if err != nil {
+		log.Printf("ERROR relayToDialogflow: failed to open stream: %v", err)
+		return
+	}
+	defer stream.CloseSend()
+
+	// 1. Initial Config
+	configReq := &dialogflowpb.BidiEndpointInteractRequest{
+		Request: &dialogflowpb.BidiEndpointInteractRequest_Config_{
+			Config: &dialogflowpb.BidiEndpointInteractRequest_Config{
+				Participant: participantName,
+				EndpointId:   "webchat-proxy-send-endpoint",
+				ConnectAudio: false,
+			},
+		},
+	}
+	if err := stream.Send(configReq); err != nil {
+		log.Printf("ERROR relayToDialogflow: failed to send config: %v", err)
+		return
+	}
+
+	// 2. Text Input
+	inputReq := &dialogflowpb.BidiEndpointInteractRequest{
+		Request: &dialogflowpb.BidiEndpointInteractRequest_Input_{
+			Input: &dialogflowpb.BidiEndpointInteractRequest_Input{
+				Text: text,
+			},
+		},
+	}
+	if err := stream.Send(inputReq); err != nil {
+		log.Printf("ERROR relayToDialogflow: failed to send input: %v", err)
+		return
+	}
+
+	log.Printf("Relayed message to Dialogflow: %s", text)
 }
 
 func (c *CCAIPConnector) getAuthHeader() string {

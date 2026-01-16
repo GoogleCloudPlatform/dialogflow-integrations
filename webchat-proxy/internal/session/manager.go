@@ -5,22 +5,25 @@ import (
 	"sync"
 
 	dialogflow "cloud.google.com/go/dialogflow/apiv2beta1"
+	"webchat-proxy/internal/ccaas"
 )
 
 type SessionManager struct {
 	sessions   map[string]*Session
 	sessionsMu sync.RWMutex
 	client     *dialogflow.ParticipantsClient
+	ccaas      *ccaas.CCAIPConnector
 }
 
-func NewSessionManager(client *dialogflow.ParticipantsClient) *SessionManager {
+func NewSessionManager(client *dialogflow.ParticipantsClient, cc *ccaas.CCAIPConnector) *SessionManager {
 	return &SessionManager{
 		sessions: make(map[string]*Session),
 		client:   client,
+		ccaas:    cc,
 	}
 }
 
-func (sm *SessionManager) CreateSession(id, participantName string) (*Session, error) {
+func (sm *SessionManager) CreateSession(id, participantName, ccaipChatID string) (*Session, error) {
 	sm.sessionsMu.Lock()
 	defer sm.sessionsMu.Unlock()
 
@@ -28,7 +31,7 @@ func (sm *SessionManager) CreateSession(id, participantName string) (*Session, e
 		return nil, fmt.Errorf("session %s already exists", id)
 	}
 
-	s := NewSession(id, participantName, sm.client)
+	s := NewSession(id, participantName, ccaipChatID, sm.client, sm.ccaas)
 	s.StartStream()
 	sm.sessions[id] = s
 	return s, nil

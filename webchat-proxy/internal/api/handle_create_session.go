@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"webchat-proxy/internal/ccaas"
 )
 
 type CreateSessionRequest struct {
@@ -37,16 +39,39 @@ func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: a. handshake with Ccaas platform
-	// upon this request, the proxy server should set up properly on 3P platform
+	// Extract Participant ID for ExternalIdentifier
+	participantID := parts[len(parts)-1]
 
-	_, err := s.SessionManager.CreateSession(conversationID, req.Participant)
+	// Handshake with CCAIP platform
+	chatReq := &ccaas.CreateChatRequest{
+		ExternalIdentifier: participantID,
+		Context: map[string]interface{}{
+			"escalation_id": req.EscalationID,
+			"participant":   req.Participant,
+		},
+	}
+
+	chatSession, err := s.CCaaS.CreateChatSession(r.Context(), chatReq)
 	if err != nil {
-		log.Printf("Failed to create session: %v", err)
-		http.Error(w, "Failed to create session", http.StatusInternalServerError)
+		log.Printf("Failed to create CCAIP chat session: %v", err)
+		http.Error(w, "Failed to initialize CCaaS session", http.StatusInternalServerError)
 		return
 	}
-	log.Printf("Created session: %s", conversationID)
+
+	// Register participant name for webhook relay
+	s.CCaaS.RegisterParticipant(chatSession.ID, req.Participant)
+
+	// Create a local session which manages the bidi grpc stream
+	_, err = s.SessionManager.CreateSession(conversationID, req.Participant, chatSession.ID)
+	if err != nil {
+		log.Printf("Failed to create local session: %v", err)
+		// TODO: Should we end the CCAIP session here if local creation fails?
+		http.Error(w, "Failed to create local session", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("Created session: %s (CCAIP ID: %s)", conversationID, chatSession.ID)
 	w.WriteHeader(http.StatusCreated)
-	fmt.Fprintf(w, `{"session_id": "%s"}`, conversationID)
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprintf(w, `{"session_id": "%s", "ccaip_chat_id": "%s"}`, conversationID, chatSession.ID)
 }
