@@ -17,6 +17,8 @@ SERVICE_ACCOUNT=${SERVICE_ACCOUNT:-"${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount
 
 # CCaIP Configuration
 CCAIP_SUBDOMAIN=${CCAIP_SUBDOMAIN:-"default-subdomain"}
+CCAIP_DEFAULT_MENU_ID=${CCAIP_DEFAULT_MENU_ID:-"1"}
+CCAIP_DEFAULT_LANG=${CCAIP_DEFAULT_LANG:-"en-us"}
 
 echo "Deploying $SERVICE_NAME to Cloud Run (Region: $REGION, Project: $PROJECT_ID)..."
 echo "Using Service Account: $SERVICE_ACCOUNT"
@@ -28,7 +30,7 @@ gcloud run deploy "$SERVICE_NAME" \
   --allow-unauthenticated \
   --service-account "$SERVICE_ACCOUNT" \
   --set-secrets="CCAIP_PASSWORD=ccaip-password:latest" \
-  --set-env-vars="CCAIP_SUBDOMAIN=${CCAIP_SUBDOMAIN}" \
+  --set-env-vars="CCAIP_SUBDOMAIN=${CCAIP_SUBDOMAIN},CCAIP_DEFAULT_MENU_ID=${CCAIP_DEFAULT_MENU_ID},CCAIP_DEFAULT_LANG=${CCAIP_DEFAULT_LANG}" \
   --min-instances 1 \
   --max-instances 1 \
   --platform managed

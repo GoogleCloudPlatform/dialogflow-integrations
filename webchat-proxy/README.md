@@ -17,6 +17,8 @@ gcloud config set project YOUR_PROJECT_ID
 # (Optional) Export CCaIP credentials for local use
 export CCAIP_SUBDOMAIN="your-subdomain"
 export CCAIP_PASSWORD="your-password"
+export CCAIP_DEFAULT_MENU_ID="1"
+export CCAIP_DEFAULT_LANG="en-us"
 ```
 
 ## Running Locally

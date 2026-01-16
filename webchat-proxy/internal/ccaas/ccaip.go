@@ -128,9 +128,12 @@ func (c *CCAIPConnector) getAuthHeader() string {
 
 func (c *CCAIPConnector) upsertEndUser(ctx context.Context, identifier string) (int, error) {
 	url := fmt.Sprintf("%s/end_users", c.Config.APIBaseURL)
-	body, _ := json.Marshal(map[string]string{
+	payload := map[string]string{
 		"identifier": identifier,
-	})
+	}
+	body, _ := json.Marshal(payload)
+
+	log.Printf("CCAIP REQUEST: POST %s | Body: %s", url, string(body))
 
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(body))
 	if err != nil {
@@ -142,9 +145,13 @@ func (c *CCAIPConnector) upsertEndUser(ctx context.Context, identifier string) (
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
+		log.Printf("CCAIP ERROR: POST %s | Error: %v", url, err)
 		return 0, err
 	}
 	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+	log.Printf("CCAIP RESPONSE: POST %s | Status: %d | Body: %s", url, resp.StatusCode, string(respBody))
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return 0, fmt.Errorf("unexpected status code from upsertEndUser: %d", resp.StatusCode)
@@ -153,7 +160,7 @@ func (c *CCAIPConnector) upsertEndUser(ctx context.Context, identifier string) (
 	var result struct {
 		ID int `json:"id"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := json.Unmarshal(respBody, &result); err != nil {
 		return 0, err
 	}
 
@@ -185,9 +192,9 @@ func (c *CCAIPConnector) CreateChatSession(ctx context.Context, req *CreateChatR
 			"menu_id":     menuID,
 			"end_user_id": ccaipEndUserID,
 			"lang":        lang,
-			"context": map[string]interface{}{
-				"value": req.Context,
-			},
+			// "context": map[string]interface{}{
+			// 	"value": req.Context,
+			// },
 		},
 	}
 
@@ -196,6 +203,8 @@ func (c *CCAIPConnector) CreateChatSession(ctx context.Context, req *CreateChatR
 	}
 
 	body, _ := json.Marshal(ccaipReq)
+	log.Printf("CCAIP REQUEST: POST %s | Body: %s", url, string(body))
+
 	hReq, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
@@ -207,19 +216,22 @@ func (c *CCAIPConnector) CreateChatSession(ctx context.Context, req *CreateChatR
 
 	resp, err := c.HTTPClient.Do(hReq)
 	if err != nil {
+		log.Printf("CCAIP ERROR: POST %s | Error: %v", url, err)
 		return nil, err
 	}
 	defer resp.Body.Close()
 
+	respBody, _ := io.ReadAll(resp.Body)
+	log.Printf("CCAIP RESPONSE: POST %s | Status: %d | Body: %s", url, resp.StatusCode, string(respBody))
+
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		respBody, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("failed to create chat: status=%d body=%s", resp.StatusCode, string(respBody))
 	}
 
 	var result struct {
 		ID int `json:"id"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+	if err := json.Unmarshal(respBody, &result); err != nil {
 		return nil, err
 	}
 
@@ -244,6 +256,8 @@ func (c *CCAIPConnector) SendMessage(ctx context.Context, chatID string, req *Se
 	}
 
 	body, _ := json.Marshal(ccaipReq)
+	log.Printf("CCAIP REQUEST: POST %s | Body: %s", url, string(body))
+
 	hReq, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(body))
 	if err != nil {
 		return err
@@ -255,12 +269,15 @@ func (c *CCAIPConnector) SendMessage(ctx context.Context, chatID string, req *Se
 
 	resp, err := c.HTTPClient.Do(hReq)
 	if err != nil {
+		log.Printf("CCAIP ERROR: POST %s | Error: %v", url, err)
 		return err
 	}
 	defer resp.Body.Close()
 
+	respBody, _ := io.ReadAll(resp.Body)
+	log.Printf("CCAIP RESPONSE: POST %s | Status: %d | Body: %s", url, resp.StatusCode, string(respBody))
+
 	if resp.StatusCode != http.StatusOK {
-		respBody, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("failed to send message: status=%d body=%s", resp.StatusCode, string(respBody))
 	}
 
@@ -279,6 +296,8 @@ func (c *CCAIPConnector) EndSession(ctx context.Context, chatID string, req *End
 	}
 
 	body, _ := json.Marshal(ccaipReq)
+	log.Printf("CCAIP REQUEST: PATCH %s | Body: %s", url, string(body))
+
 	hReq, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(body))
 	if err != nil {
 		return err
@@ -290,12 +309,15 @@ func (c *CCAIPConnector) EndSession(ctx context.Context, chatID string, req *End
 
 	resp, err := c.HTTPClient.Do(hReq)
 	if err != nil {
+		log.Printf("CCAIP ERROR: PATCH %s | Error: %v", url, err)
 		return err
 	}
 	defer resp.Body.Close()
 
+	respBody, _ := io.ReadAll(resp.Body)
+	log.Printf("CCAIP RESPONSE: PATCH %s | Status: %d | Body: %s", url, resp.StatusCode, string(respBody))
+
 	if resp.StatusCode != http.StatusOK {
-		respBody, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("failed to end session: status=%d body=%s", resp.StatusCode, string(respBody))
 	}
 

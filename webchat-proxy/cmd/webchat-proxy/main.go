@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -37,12 +38,20 @@ func main() {
 		ccaipSubdomain = "dummy" // Fallback for local dev
 	}
 
+	ccaipDefaultMenuID, _ := strconv.Atoi(os.Getenv("CCAIP_DEFAULT_MENU_ID"))
+	ccaipDefaultLang := os.Getenv("CCAIP_DEFAULT_LANG")
+	if ccaipDefaultLang == "" {
+		ccaipDefaultLang = "en"
+	}
+
 	ccaipCfg := &ccaas.GoogleCCAIPConfig{
 		APIBaseURL: fmt.Sprintf("https://%s.stg.ccaiplatform.com/apps/api/v1", ccaipSubdomain),
 		Auth: ccaas.Auth{
 			Username: ccaipSubdomain,
 			Password: ccaipPassword,
 		},
+		DefaultMenuID: ccaipDefaultMenuID,
+		DefaultLang:   ccaipDefaultLang,
 	}
 	cc := ccaas.NewCCAIPConnector(ccaipCfg, client)
 
