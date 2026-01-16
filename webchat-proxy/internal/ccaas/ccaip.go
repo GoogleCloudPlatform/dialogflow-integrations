@@ -20,8 +20,6 @@ import (
 type CCAIPConnector struct {
 	Config     *GoogleCCAIPConfig
 	HTTPClient *http.Client
-	// Password is the actual API token, resolved from Secret Manager.
-	Password string
 
 	DialogflowClient *dialogflow.ParticipantsClient
 	
@@ -30,11 +28,10 @@ type CCAIPConnector struct {
 	participantsMu sync.RWMutex
 }
 
-func NewCCAIPConnector(config *GoogleCCAIPConfig, password string, client *dialogflow.ParticipantsClient) *CCAIPConnector {
+func NewCCAIPConnector(config *GoogleCCAIPConfig, client *dialogflow.ParticipantsClient) *CCAIPConnector {
 	return &CCAIPConnector{
 		Config:           config,
 		HTTPClient:       &http.Client{},
-		Password:         password,
 		DialogflowClient: client,
 		participants:     make(map[string]string),
 	}
@@ -125,7 +122,7 @@ func (c *CCAIPConnector) relayToDialogflow(ctx context.Context, participantName,
 }
 
 func (c *CCAIPConnector) getAuthHeader() string {
-	auth := fmt.Sprintf("%s:%s", c.Config.Auth.Username, c.Password)
+	auth := fmt.Sprintf("%s:%s", c.Config.Auth.Username, c.Config.Auth.Password)
 	return "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
 }
 

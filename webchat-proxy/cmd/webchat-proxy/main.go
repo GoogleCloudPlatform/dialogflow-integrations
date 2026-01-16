@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -24,14 +25,25 @@ func main() {
 	}
 	defer client.Close()
 
-	// Initialize CCaaS Connector (dummy for now)
+	// Initialize CCaaS Connector
+	ccaipPassword := os.Getenv("CCAIP_PASSWORD")
+	if ccaipPassword == "" {
+		ccaipPassword = "dummy-password" // Fallback for local dev
+	}
+
+	ccaipSubdomain := os.Getenv("CCAIP_SUBDOMAIN")
+	if ccaipSubdomain == "" {
+		ccaipSubdomain = "dummy" // Fallback for local dev
+	}
+
 	ccaipCfg := &ccaas.GoogleCCAIPConfig{
-		APIBaseURL: "https://example.com/api/v1",
+		APIBaseURL: fmt.Sprintf("https://%s.stg.ccaiplatform.com/apps/api/v1", ccaipSubdomain),
 		Auth: ccaas.Auth{
-			Username: "dummy",
+			Username: ccaipSubdomain,
+			Password: ccaipPassword,
 		},
 	}
-	cc := ccaas.NewCCAIPConnector(ccaipCfg, "dummy-password", client)
+	cc := ccaas.NewCCAIPConnector(ccaipCfg, client)
 
 	// Initialize API Server
 	srv := api.NewServer(client, cc)

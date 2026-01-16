@@ -7,6 +7,18 @@ A Go-based proxy server for CES webchat integrations, handling session managemen
 - Go 1.24 or later
 - Google Cloud SDK (`gcloud`) (for deployment)
 
+## Setup
+
+Before running or deploying, ensure you have set your Google Cloud project and CCaIP credentials:
+
+```bash
+gcloud config set project YOUR_PROJECT_ID
+
+# (Optional) Export CCaIP credentials for local use
+export CCAIP_SUBDOMAIN="your-subdomain"
+export CCAIP_PASSWORD="your-password"
+```
+
 ## Running Locally
 
 Use the provided script to start the server locally on port 8080. This script automatically handles killing any existing process on that port.
@@ -15,22 +27,20 @@ Use the provided script to start the server locally on port 8080. This script au
 ./run_local.sh
 ```
 
-Alternatively, you can run directly with:
+## Deployment
 
-```bash
-export PORT=8080
-go run ./cmd/webchat-proxy
-```
+1. **Configure Service Account**: Create a custom service account with the necessary permissions for Dialogflow interaction.
 
-## deployment
+   ```bash
+   ./setup_sa.sh
+   ```
 
-To deploy to Google Cloud Run, verify your Project ID and run:
+2. **Deploy to Cloud Run**: Set your CCaIP subdomain using `export` before running the script.
 
-```bash
-# Replace YOUR_PROJECT_ID with your actual Google Cloud Project ID
-export PROJECT_ID=YOUR_PROJECT_ID
-./deploy.sh
-```
+   ```bash
+   export CCAIP_SUBDOMAIN="your-subdomain"
+   ./deploy.sh
+   ```
 
 ## API Usage
 
@@ -61,7 +71,8 @@ curl -X POST http://localhost:8080/sessions \
 **Response:**
 ```json
 {
-  "session_id": "conv-123"
+  "session_id": "conv-123",
+  "ccaip_chat_id": "999"
 }
 ```
 

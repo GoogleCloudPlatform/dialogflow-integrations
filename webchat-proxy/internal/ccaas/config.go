@@ -20,4 +20,5 @@ type Auth struct {
 	Type           string `json:"type"` // e.g., "basic"
 	Username       string `json:"username"`
 	PasswordSecret string `json:"password_secret"`
+	Password       string `json:"-"`
 }
