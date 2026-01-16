@@ -15,7 +15,7 @@ type Server struct {
 }
 
 func NewServer(client *dialogflow.ParticipantsClient, cc *ccaas.CCAIPConnector) *Server {
-	sm := session.NewSessionManager(client)
+	sm := session.NewSessionManager(client, cc)
 	s := &Server{
 		SessionManager: sm,
 		Mux:            http.NewServeMux(),
