@@ -13,13 +13,14 @@ import (
 	"webchat-proxy/internal/api"
 	"webchat-proxy/internal/ccaas"
 	dialogflow "cloud.google.com/go/dialogflow/apiv2beta1"
+	"google.golang.org/api/option"
 )
 
 func main() {
 	ctx := context.Background()
 
 	// Initialize Dialogflow Client
-	client, err := dialogflow.NewParticipantsClient(ctx)
+	client, err := dialogflow.NewParticipantsClient(ctx, option.WithEndpoint("test-dialogflow.sandbox.googleapis.com:443"))
 	if err != nil {
 		log.Fatalf("Failed to create ParticipantsClient: %v", err)
 	}

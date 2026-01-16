@@ -29,6 +29,8 @@ gcloud run deploy "$SERVICE_NAME" \
   --service-account "$SERVICE_ACCOUNT" \
   --set-secrets="CCAIP_PASSWORD=ccaip-password:latest" \
   --set-env-vars="CCAIP_SUBDOMAIN=${CCAIP_SUBDOMAIN}" \
+  --min-instances 1 \
+  --max-instances 1 \
   --platform managed
 
 echo "Deployment complete."
