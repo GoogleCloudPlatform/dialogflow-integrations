@@ -87,6 +87,19 @@ func (c *CCAIPConnector) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		} else {
 			log.Printf("No participant registered for CCAIP chat %s", chatID)
 		}
+	} else if event.EventType == EventChatEnded || event.EventType == EventChatDismissed {
+		chatID := strconv.Itoa(event.ChatID)
+		log.Printf("Received CCAIP %s for chat %s", event.EventType, chatID)
+
+		c.participantsMu.RLock()
+		participantName := c.participants[chatID]
+		c.participantsMu.RUnlock()
+
+		if participantName != "" {
+			go c.disconnectDialogflow(context.Background(), participantName)
+		} else {
+			log.Printf("No participant registered for CCAIP chat %s (ChatID: %s)", event.EventType, chatID)
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -130,6 +143,44 @@ func (c *CCAIPConnector) relayToDialogflow(ctx context.Context, participantName,
 	}
 
 	log.Printf("Relayed message to Dialogflow: %s", text)
+}
+
+func (c *CCAIPConnector) disconnectDialogflow(ctx context.Context, participantName string) {
+	log.Printf("Sending Disconnect to Dialogflow for participant: %s", participantName)
+	stream, err := c.DialogflowClient.BidiEndpointInteract(ctx)
+	if err != nil {
+		log.Printf("ERROR disconnectDialogflow: failed to open stream: %v", err)
+		return
+	}
+	defer stream.CloseSend()
+
+	// 1. Initial Config
+	configReq := &dialogflowpb.BidiEndpointInteractRequest{
+		Request: &dialogflowpb.BidiEndpointInteractRequest_Config_{
+			Config: &dialogflowpb.BidiEndpointInteractRequest_Config{
+				Participant:  participantName,
+				EndpointId:    "webchat-proxy-send-endpoint",
+				ConnectAudio: false,
+			},
+		},
+	}
+	if err := stream.Send(configReq); err != nil {
+		log.Printf("ERROR disconnectDialogflow: failed to send config: %v", err)
+		return
+	}
+
+	// 2. Disconnect
+	disconnectReq := &dialogflowpb.BidiEndpointInteractRequest{
+		Request: &dialogflowpb.BidiEndpointInteractRequest_Disconnect_{
+			Disconnect: &dialogflowpb.BidiEndpointInteractRequest_Disconnect{},
+		},
+	}
+	if err := stream.Send(disconnectReq); err != nil {
+		log.Printf("ERROR disconnectDialogflow: failed to send disconnect: %v", err)
+		return
+	}
+
+	log.Printf("Successfully sent Disconnect to Dialogflow for %s", participantName)
 }
 
 func (c *CCAIPConnector) getAuthHeader() string {
