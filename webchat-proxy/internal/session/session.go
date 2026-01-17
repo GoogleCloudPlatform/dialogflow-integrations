@@ -46,6 +46,9 @@ func (s *Session) StartStream() {
 // Open a BidiEndpointInteract stream and proxy messages
 func (s *Session) runStream(ctx context.Context) {
 	defer close(s.Done)
+	if s.Cancel != nil {
+		defer s.Cancel()
+	}
 	log.Printf("[Session %s] runStream started for participant: %s", s.ID, s.ParticipantName)
 
 	// Open BidiEndpointInteract stream
@@ -56,6 +59,7 @@ func (s *Session) runStream(ctx context.Context) {
 		log.Printf("[Session %s] CRITICAL: Failed to open BidiEndpointInteract: %v", s.ID, err)
 		return
 	}
+	defer s.stream.CloseSend()
 	log.Printf("[Session %s] BidiEndpointInteract stream successfully opened.", s.ID)
 
 	// Send initial Config request
@@ -96,6 +100,18 @@ func (s *Session) runStream(ctx context.Context) {
 
 		// Forward any message from V2 API to the 3P
 		log.Printf("Session %s: Received response from Dialogflow: %+v", s.ID, resp)
+
+		if resp.GetSessionEnd() != nil {
+			log.Printf("Session %s: Dialogflow signaled session end. Ending CCaIP chat.", s.ID)
+			endReq := &ccaas.EndSessionRequest{
+				FinishedByUserID: s.CCAIPEndUserID,
+			}
+			if err := s.ccaas.EndSession(ctx, s.CCAIPChatID, endReq); err != nil {
+				log.Printf("Session %s: ERROR ending CCaIP session: %v", s.ID, err)
+			}
+			return
+		}
+
 		if output := resp.GetOutput(); output != nil && output.GetText() != "" {
 			if output.GetParticipant() == s.ParticipantName {
 				log.Printf("Session %s: Ignoring message from our own participant (%s).", s.ID, s.ParticipantName)

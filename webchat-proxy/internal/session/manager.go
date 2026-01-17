@@ -33,6 +33,13 @@ func (sm *SessionManager) CreateSession(id, participantName, ccaipChatID, ccaipE
  
 	s := NewSession(id, participantName, ccaipChatID, ccaipEndUserID, sm.client, sm.ccaas)
 	s.StartStream()
+	
+	// Automatically remove session when stream ends
+	go func() {
+		<-s.Done
+		sm.DeleteSession(id)
+	}()
+
 	sm.sessions[id] = s
 	return s, nil
 }
@@ -49,8 +56,5 @@ func (sm *SessionManager) DeleteSession(id string) {
 	sm.sessionsMu.Lock()
 	defer sm.sessionsMu.Unlock()
 
-	if s, exists := sm.sessions[id]; exists {
-		s.StopStream()
-		delete(sm.sessions, id)
-	}
+	delete(sm.sessions, id)
 }
