@@ -16,7 +16,7 @@
 /**
  * @fileoverview Contacts dialogflow and returns response.
  */
-const dialogflow = require('dialogflow');
+const dialogflow = require('@google-cloud/dialogflow');
 const jsonToProto = require('./json_to_proto')
 module.exports = class DialogflowSessionClient {
 
@@ -31,7 +31,7 @@ module.exports = class DialogflowSessionClient {
       queryInput: {
         text: {
           text: text,
-          languageCode: 'en'
+          languageCode: 'en-US'
         }
       },
       queryParams: {
@@ -46,7 +46,7 @@ module.exports = class DialogflowSessionClient {
       queryInput: {
         event: {
           name: eventName,
-          languageCode: 'en'
+          languageCode: 'en-US'
         },
       },
     };
@@ -60,14 +60,14 @@ module.exports = class DialogflowSessionClient {
   }
 
   async detectIntent(text, sessionId, payload) {
-    const sessionPath = this.sessionClient.sessionPath(
+    const sessionPath = this.sessionClient.projectAgentSessionPath(
         this.projectId, sessionId);
     const request = this.constructRequest(text, sessionPath, payload);
     return await this.detectIntentHelper(request);
   }
 
   async detectIntentWithEvent(eventName, sessionId) {
-    const sessionPath = this.sessionClient.sessionPath(
+    const sessionPath = this.sessionClient.projectAgentSessionPath(
         this.projectId, sessionId);
     const request = this.constructRequestWithEvent(
         eventName, sessionPath);
