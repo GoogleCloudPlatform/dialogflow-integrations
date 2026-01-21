@@ -39,12 +39,45 @@ const listener = app.listen(process.env.PORT, function() {
 
 app.post('/', async function(req, res) {
   const body = req.body;
-  const text = body.Body;
   const id = body.From;
-  const dialogflowResponse = (await sessionClient.detectIntent(
-      text, id, body)).fulfillmentText;
-  const twiml = new  MessagingResponse();
-  const message = twiml.message(dialogflowResponse);
+  let text = body.Body;
+  let mediaType = body.MediaContentType0;
+  const mediaUrl = body.MediaUrl0;
+  if (text.length === 0) {
+    // Check if location or media
+    if (body.Latitude && body.Longitude) {
+      text = 'geoLocation';
+    } else if (parseInt(body.NumMedia, 10) > 0) {
+      const media = body.MediaUrl0;
+      text = `media: ${media}`;
+    }
+  }
+
+  let dialogflowResponse = [];
+  if (mediaType && mediaType.toLowerCase() === 'audio/ogg') {
+    const response = await sessionClient.detectIntentWithAudio(mediaUrl, id, body);
+    if (response) {
+      dialogflowResponse = response.fulfillmentMessages;
+    }
+  } else {
+    dialogflowResponse = (await sessionClient.detectIntent(text, id, body)).fulfillmentMessages;
+  }
+
+  const twiml = new MessagingResponse();
+
+  if (dialogflowResponse && dialogflowResponse.length) {
+    for (let message of dialogflowResponse) {
+      const textMessage = message.text.text;
+      for (let responseText of textMessage) {
+        try {
+          twiml.message(responseText);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    }
+  }
+
   res.send(twiml.toString());
 });
 
