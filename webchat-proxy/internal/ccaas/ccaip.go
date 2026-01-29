@@ -52,9 +52,15 @@ func (c *CCAIPConnector) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sig := r.Header.Get("X-Signature")
-	log.Printf("Received CCAIP Webhook. Signature: %s, Body: %s", sig, string(body))
+	ts := r.Header.Get("X-Signature-Timestamp")
+	log.Printf("Received CCAIP Webhook. Signature: %s, Timestamp: %s", sig, ts)
 
-	// TODO: Verification logic using ccaas.VerifyCCAIPSignature
+	// Verification logic
+	if !VerifyCCAIPSignature(body, sig, ts, c.Config) {
+		log.Printf("CCAIP Webhook signature verification failed")
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
 	// Process event
 	var event MessageEvent
