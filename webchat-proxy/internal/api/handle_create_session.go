@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"webchat-proxy/internal/ccaas"
@@ -12,6 +13,7 @@ import (
 
 type CreateSessionRequest struct {
 	EscalationID string                 `json:"escalation_id"`
+	QueueID      string                 `json:"queue_id"`
 	Participant  string                 `json:"participant"`
 	Context      map[string]interface{} `json:"context"`
 }
@@ -43,9 +45,21 @@ func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {
 	// Extract Participant ID for ExternalIdentifier
 	participantID := parts[len(parts)-1]
 
+	// Convert QueueID to int
+	menuID := 0
+	if req.QueueID != "" {
+		var err error
+		menuID, err = strconv.Atoi(req.QueueID)
+		if err != nil {
+			log.Printf("Invalid queue_id format: %v, using default", err)
+			menuID = 0 // Will use default from config
+		}
+	}
+
 	// Handshake with CCAIP platform
 	chatReq := &ccaas.CreateChatRequest{
 		ExternalIdentifier: participantID,
+		MenuID:             menuID,
 		Context:            req.Context,
 	}
 
