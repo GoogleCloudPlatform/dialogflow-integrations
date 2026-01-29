@@ -11,8 +11,9 @@ import (
 )
 
 type CreateSessionRequest struct {
-	EscalationID string `json:"escalation_id"`
-	Participant  string `json:"participant"`
+	EscalationID string                 `json:"escalation_id"`
+	Participant  string                 `json:"participant"`
+	Context      map[string]interface{} `json:"context"`
 }
 
 
@@ -45,10 +46,7 @@ func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {
 	// Handshake with CCAIP platform
 	chatReq := &ccaas.CreateChatRequest{
 		ExternalIdentifier: participantID,
-		Context: map[string]interface{}{
-			"escalation_id": req.EscalationID,
-			"participant":   req.Participant,
-		},
+		Context:            req.Context,
 	}
 
 	chatSession, err := s.CCaaS.CreateChatSession(r.Context(), chatReq)
