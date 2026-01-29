@@ -45,13 +45,15 @@ func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {
 	// Extract Participant ID for ExternalIdentifier
 	participantID := parts[len(parts)-1]
 
+	log.Printf("[%s] Session: CreateSession request received (participant=%s)", conversationID, participantID)
+
 	// Convert QueueID to int
 	menuID := 0
 	if req.QueueID != "" {
 		var err error
 		menuID, err = strconv.Atoi(req.QueueID)
 		if err != nil {
-			log.Printf("Invalid queue_id format: %v, using default", err)
+			log.Printf("[%s] Session: WARNING invalid queue_id format: %v, using default", conversationID, err)
 			menuID = 0 // Will use default from config
 		}
 	}
@@ -63,9 +65,9 @@ func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {
 		Context:            req.Context,
 	}
 
-	chatSession, err := s.CCaaS.CreateChatSession(r.Context(), chatReq)
+	chatSession, err := s.CCaaS.CreateChatSession(r.Context(), conversationID, chatReq)
 	if err != nil {
-		log.Printf("Failed to create CCAIP chat session: %v", err)
+		log.Printf("[%s] Session: ERROR creating CCAIP chat session: %v", conversationID, err)
 		http.Error(w, "Failed to initialize CCaaS session", http.StatusInternalServerError)
 		return
 	}
@@ -76,12 +78,12 @@ func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {
 	// Create a local session which manages the bidi grpc stream
 	_, err = s.SessionManager.CreateSession(conversationID, req.Participant, chatSession.ID, chatSession.EndUserID)
 	if err != nil {
-		log.Printf("Failed to create local session: %v", err)
+		log.Printf("[%s] Session: ERROR creating local session: %v", conversationID, err)
 		http.Error(w, "Failed to create local session", http.StatusInternalServerError)
 		return
 	}
 
-	log.Printf("Created session: %s (CCAIP ID: %s)", conversationID, chatSession.ID)
+	log.Printf("[%s] Session: Created successfully (ccaip_chat_id=%s)", conversationID, chatSession.ID)
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
 	fmt.Fprintf(w, `{"session_id": "%s", "ccaip_chat_id": "%s"}`, conversationID, chatSession.ID)
