@@ -31,18 +31,46 @@ Use the provided script to start the server locally on port 8080. This script au
 
 ## Deployment
 
-1. **Configure Service Account**: Create a custom service account with the necessary permissions for Dialogflow interaction.
+### 1. Secret Manager Setup
 
-   ```bash
-   ./setup_sa.sh
-   ```
+Before deploying to Cloud Run, you must configure the following secrets in Google Cloud Secret Manager. These secrets are required for CCaIP authentication and webhook security.
 
-2. **Deploy to Cloud Run**: Set your CCaIP subdomain using `export` before running the script.
+| Secret Name | Description |
+| :--- | :--- |
+| `ccaip-password` | The password for CCaIP API authentication. |
+| `ccaip-primary-webhook-secret` | Primary secret for verifying CCaIP webhook signatures. |
+| `ccaip-secondary-webhook-secret` | Secondary secret for verifying CCaIP webhook signatures. |
 
-   ```bash
-   export CCAIP_SUBDOMAIN="your-subdomain"
-   ./deploy.sh
-   ```
+You can create these secrets using the following `gcloud` commands:
+
+```bash
+# Create the secrets
+gcloud secrets create ccaip-password --replication-policy="automatic"
+gcloud secrets create ccaip-primary-webhook-secret --replication-policy="automatic"
+gcloud secrets create ccaip-secondary-webhook-secret --replication-policy="automatic"
+
+# Add versions to the secrets (replace with your actual values)
+echo -n "your-password" | gcloud secrets versions add ccaip-password --data-file=-
+echo -n "your-primary-secret" | gcloud secrets versions add ccaip-primary-webhook-secret --data-file=-
+echo -n "your-secondary-secret" | gcloud secrets versions add ccaip-secondary-webhook-secret --data-file=-
+```
+
+### 2. Configure Service Account
+
+Create a custom service account with the necessary permissions for Dialogflow interaction. This script also grants the service account access to the secrets created above.
+
+```bash
+./setup_sa.sh
+```
+
+### 3. Deploy to Cloud Run
+
+Set your CCaIP subdomain using `export` before running the deployment script.
+
+```bash
+export CCAIP_SUBDOMAIN="your-subdomain"
+./deploy.sh
+```
 
 ## API Usage
 

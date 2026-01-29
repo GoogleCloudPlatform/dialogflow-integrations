@@ -44,14 +44,19 @@ func main() {
 		ccaipDefaultLang = "en"
 	}
 
+	ccaipPrimarySecret := os.Getenv("CCAIP_PRIMARY_WEBHOOK_SECRET")
+	ccaipSecondarySecret := os.Getenv("CCAIP_SECONDARY_WEBHOOK_SECRET")
+
 	ccaipCfg := &ccaas.GoogleCCAIPConfig{
 		APIBaseURL: fmt.Sprintf("https://%s.stg.ccaiplatform.com/apps/api/v1", ccaipSubdomain),
 		Auth: ccaas.Auth{
 			Username: ccaipSubdomain,
 			Password: ccaipPassword,
 		},
-		DefaultMenuID: ccaipDefaultMenuID,
-		DefaultLang:   ccaipDefaultLang,
+		PrimaryWebhookSecret:   ccaipPrimarySecret,
+		SecondaryWebhookSecret: ccaipSecondarySecret,
+		DefaultMenuID:         ccaipDefaultMenuID,
+		DefaultLang:           ccaipDefaultLang,
 	}
 	cc := ccaas.NewCCAIPConnector(ccaipCfg, client)
 

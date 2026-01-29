@@ -29,7 +29,7 @@ gcloud run deploy "$SERVICE_NAME" \
   --region "$REGION" \
   --allow-unauthenticated \
   --service-account "$SERVICE_ACCOUNT" \
-  --set-secrets="CCAIP_PASSWORD=ccaip-password:latest" \
+  --set-secrets="CCAIP_PASSWORD=ccaip-password:latest,CCAIP_PRIMARY_WEBHOOK_SECRET=ccaip-primary-webhook-secret:latest,CCAIP_SECONDARY_WEBHOOK_SECRET=ccaip-secondary-webhook-secret:latest" \
   --set-env-vars="CCAIP_SUBDOMAIN=${CCAIP_SUBDOMAIN},CCAIP_DEFAULT_MENU_ID=${CCAIP_DEFAULT_MENU_ID},CCAIP_DEFAULT_LANG=${CCAIP_DEFAULT_LANG}" \
   --min-instances 1 \
   --max-instances 1 \

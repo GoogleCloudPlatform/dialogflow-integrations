@@ -17,38 +17,69 @@ const (
 )
 
 // VerifyCCAIPSignature verifies the X-Signature header from CCAIP.
-func VerifyCCAIPSignature(payload []byte, signatureHeader string, secret string) bool {
-	if signatureHeader == "" || secret == "" {
+//
+// The signature header format is: "primary=<sig> secondary=<sig>" or just "primary=<sig>"
+// The signature is a base64 encoded HMAC-SHA256 of: timestamp + payload
+func VerifyCCAIPSignature(payload []byte, signatureHeader string, timestamp string, config *GoogleCCAIPConfig) bool {
+	// Skip verification if secrets are not configured.
+	if config.PrimaryWebhookSecret == "" && config.SecondaryWebhookSecret == "" {
+		return true
+	}
+
+	if signatureHeader == "" || timestamp == "" {
 		return false
 	}
 
-	// Extract primary signature
-	// Format: primary=SIG1secondary=SIG2
-	primaryPrefix := "primary="
-	secondarySeparator := "secondary="
-	
-	if !strings.HasPrefix(signatureHeader, primaryPrefix) {
-		return false
-	}
-	
-	endIdx := strings.Index(signatureHeader, secondarySeparator)
-	var primarySig string
-	if endIdx == -1 {
-		primarySig = signatureHeader[len(primaryPrefix):]
-	} else {
-		primarySig = signatureHeader[len(primaryPrefix):endIdx]
+	// Helper to extract signature value by key
+	extractSig := func(key string) string {
+		start := strings.Index(signatureHeader, key+"=")
+		if start == -1 {
+			return ""
+		}
+		start += len(key) + 1
+		rest := signatureHeader[start:]
+		end := strings.Index(rest, " ")
+		if end == -1 {
+			return rest
+		}
+		return rest[:end]
 	}
 
-	// Calculate HMAC-SHA256
-	mac := hmac.New(sha256.New, []byte(secret))
-	mac.Write(payload)
-	expectedMAC := mac.Sum(nil)
-	actualMAC, err := base64.StdEncoding.DecodeString(primarySig)
-	if err != nil {
-		return false
+	primarySig := extractSig("primary")
+	secondarySig := extractSig("secondary")
+
+	verify := func(secret, sig, ts string, body []byte) bool {
+		if secret == "" || sig == "" {
+			return false
+		}
+		mac := hmac.New(sha256.New, []byte(secret))
+		mac.Write([]byte(ts))
+		mac.Write(body)
+		expectedMAC := base64.StdEncoding.EncodeToString(mac.Sum(nil))
+		return hmac.Equal([]byte(sig), []byte(expectedMAC))
 	}
 
-	return hmac.Equal(actualMAC, expectedMAC)
+	// Verify against primary secret
+	if verify(config.PrimaryWebhookSecret, primarySig, timestamp, payload) {
+		return true
+	}
+
+	// Verify against secondary secret
+	if verify(config.SecondaryWebhookSecret, secondarySig, timestamp, payload) {
+		return true
+	}
+
+	// Also fallback to try secondary signature against primary secret, and vice-versa, 
+	// or whatever combination implies rotation. 
+	if verify(config.SecondaryWebhookSecret, primarySig, timestamp, payload) {
+		return true
+	}
+
+	if verify(config.PrimaryWebhookSecret, secondarySig, timestamp, payload) {
+		return true
+	}
+
+	return false
 }
 
 // BaseEvent represents common fields for all CCAIP webhook events.

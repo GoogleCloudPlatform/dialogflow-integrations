@@ -8,11 +8,12 @@ type EscalationConfig struct {
 
 // GoogleCCAIPConfig defines the configuration specific to Google CCAIP.
 type GoogleCCAIPConfig struct {
-	APIBaseURL    string `json:"api_base_url"`
-	Auth          Auth   `json:"auth"`
-	WebhookSecret string `json:"webhook_secret"`
-	DefaultMenuID int    `json:"default_menu_id"`
-	DefaultLang   string `json:"default_lang"`
+	APIBaseURL                   string `json:"api_base_url"`
+	Auth                         Auth   `json:"auth"`
+	PrimaryWebhookSecret         string `json:"primary_webhook_secret"`
+	SecondaryWebhookSecret       string `json:"secondary_webhook_secret"`
+	DefaultMenuID                int    `json:"default_menu_id"`
+	DefaultLang                  string `json:"default_lang"`
 }
 
 // Auth defines authentication credentials for the CCaaS API.
