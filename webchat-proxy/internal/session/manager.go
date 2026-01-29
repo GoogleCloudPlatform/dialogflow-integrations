@@ -2,6 +2,7 @@ package session
 
 import (
 	"fmt"
+	"log"
 	"sync"
 
 	dialogflow "cloud.google.com/go/dialogflow/apiv2beta1"
@@ -37,6 +38,7 @@ func (sm *SessionManager) CreateSession(id, participantName, ccaipChatID, ccaipE
 	// Automatically remove session when stream ends
 	go func() {
 		<-s.Done
+		log.Printf("[%s] Session: Stream ended, cleaning up", id)
 		sm.DeleteSession(id)
 	}()
 

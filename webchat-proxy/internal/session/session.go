@@ -49,18 +49,18 @@ func (s *Session) runStream(ctx context.Context) {
 	if s.Cancel != nil {
 		defer s.Cancel()
 	}
-	log.Printf("[Session %s] runStream started for participant: %s", s.ID, s.ParticipantName)
+	log.Printf("[%s] Session: Starting stream for participant %s", s.ID, s.ParticipantName)
 
 	// Open BidiEndpointInteract stream
-	log.Printf("[Session %s] Attempting to open BidiEndpointInteract stream...", s.ID)
+	log.Printf("[%s] Dialogflow → BidiEndpointInteract: Opening stream...", s.ID)
 	var err error
 	s.stream, err = s.client.BidiEndpointInteract(ctx)
 	if err != nil {
-		log.Printf("[Session %s] CRITICAL: Failed to open BidiEndpointInteract: %v", s.ID, err)
+		log.Printf("[%s] Dialogflow → BidiEndpointInteract: ERROR failed to open: %v", s.ID, err)
 		return
 	}
 	defer s.stream.CloseSend()
-	log.Printf("[Session %s] BidiEndpointInteract stream successfully opened.", s.ID)
+	log.Printf("[%s] Dialogflow → BidiEndpointInteract: Stream opened successfully", s.ID)
 
 	// Send initial Config request
 	configReq := &dialogflowpb.BidiEndpointInteractRequest{
@@ -72,62 +72,70 @@ func (s *Session) runStream(ctx context.Context) {
 			},
 		},
 	}
-	log.Printf("[Session %s] Sending initial Config request...", s.ID)
+	log.Printf("[%s] Dialogflow → BidiEndpointInteract: Sending config request", s.ID)
 	if err := s.stream.Send(configReq); err != nil {
-		log.Printf("[Session %s] ERROR: Failed to send initial config request: %v", s.ID, err)
+		log.Printf("[%s] Dialogflow → BidiEndpointInteract: ERROR sending config: %v", s.ID, err)
 		return
 	}
-	log.Printf("[Session %s] Initial Config request sent. Waiting for responses...", s.ID)
+	log.Printf("[%s] Dialogflow → BidiEndpointInteract: Config sent, waiting for responses...", s.ID)
 
 	// Keep the stream open and handle incoming messages
 	for {
 		resp, err := s.stream.Recv()
 		if err == io.EOF {
-			log.Printf("[Session %s] Stream closed by server (EOF).", s.ID)
+			log.Printf("[%s] Dialogflow ← BidiEndpointInteract: Stream closed by server (EOF)", s.ID)
 			return
 		}
 		if err != nil {
 			select {
 			case <-ctx.Done():
 				// Context cancelled, normal exit
-				log.Printf("Session %s: Context cancelled, closing stream.", s.ID)
+				log.Printf("[%s] Session: Context cancelled, closing stream", s.ID)
 				return
 			default:
-				log.Printf("Session %s: Error receiving from stream: %v", s.ID, err)
+				log.Printf("[%s] Dialogflow ← BidiEndpointInteract: ERROR receiving: %v", s.ID, err)
 				return
 			}
 		}
 
-		// Forward any message from V2 API to the 3P
-		log.Printf("Session %s: Received response from Dialogflow: %+v", s.ID, resp)
+		// Log incoming response type
+		if resp.GetOutput() != nil {
+			if resp.GetOutput().GetDisconnect() != nil {
+				log.Printf("[%s] Dialogflow ← BidiEndpointInteract: Disconnect signal received", s.ID)
+			} else if resp.GetOutput().GetText() != "" {
+				log.Printf("[%s] Dialogflow ← BidiEndpointInteract: Text response from %s: %q", 
+					s.ID, resp.GetOutput().GetParticipant(), resp.GetOutput().GetText())
+			}
+		}
 
 		// If Dialogflow signals disconnect, end the CCaIP chat and echo disconnect back to Dialogflow and close the stream.
 		if resp.GetOutput().GetDisconnect() != nil {
-			log.Printf("Session %s: Dialogflow signaled disconnect. Ending CCaIP chat.", s.ID)
+			log.Printf("[%s] Session: Dialogflow signaled disconnect, ending CCaIP chat", s.ID)
 			endReq := &ccaas.EndSessionRequest{
 				FinishedByUserID: s.CCAIPEndUserID,
 			}
-			if err := s.ccaas.EndSession(ctx, s.CCAIPChatID, endReq); err != nil {
-				log.Printf("Session %s: ERROR ending CCaIP session: %v", s.ID, err)
+			if err := s.ccaas.EndSession(ctx, s.ID, s.CCAIPChatID, endReq); err != nil {
+				log.Printf("[%s] Session: ERROR ending CCaIP session: %v", s.ID, err)
 			}
+			log.Printf("[%s] Dialogflow → BidiEndpointInteract: Echoing disconnect", s.ID)
 			if err := s.stream.Send(&dialogflowpb.BidiEndpointInteractRequest{
 				Request: &dialogflowpb.BidiEndpointInteractRequest_Disconnect_{
 					Disconnect: &dialogflowpb.BidiEndpointInteractRequest_Disconnect{},
 				},
 			}); err != nil {
-				log.Printf("Session %s: ERROR echoing disconnect: %v", s.ID, err)
+				log.Printf("[%s] Dialogflow → BidiEndpointInteract: ERROR echoing disconnect: %v", s.ID, err)
 			}
 			return
 		}
 
 		if output := resp.GetOutput(); output != nil && output.GetText() != "" {
 			if output.GetParticipant() == s.ParticipantName {
-				log.Printf("Session %s: Ignoring message from our agent participant (%s).", s.ID, s.ParticipantName)
+				log.Printf("[%s] Session: Skipping own message from %s", s.ID, s.ParticipantName)
 				continue
 			}
 
 			text := output.GetText()
-			log.Printf("Session %s: Forwarding bot message to CCaIP: %s", s.ID, text)
+			log.Printf("[%s] CCAIP → SendMessage: Forwarding bot response: %q", s.ID, text)
 
 			sendReq := &ccaas.SendMessageRequest{
 				FromUserID: s.CCAIPEndUserID, // Bot messages should be attributed to the end user for context, or a system user if applicable
@@ -136,11 +144,9 @@ func (s *Session) runStream(ctx context.Context) {
 					Content: text,
 				},
 			}
-			if err := s.ccaas.SendMessage(ctx, s.CCAIPChatID, sendReq); err != nil {
-				log.Printf("Session %s: ERROR forwarding bot message: %v", s.ID, err)
+			if err := s.ccaas.SendMessage(ctx, s.ID, s.CCAIPChatID, sendReq); err != nil {
+				log.Printf("[%s] CCAIP → SendMessage: ERROR %v", s.ID, err)
 			}
 		}
 	}
 }
-
-

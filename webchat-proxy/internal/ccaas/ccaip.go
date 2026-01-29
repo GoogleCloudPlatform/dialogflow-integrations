@@ -43,21 +43,46 @@ func (c *CCAIPConnector) RegisterParticipant(chatID, participantName string) {
 	c.participants[chatID] = participantName
 }
 
+// getConversationIDFromParticipant extracts conversation ID from participant name.
+// Format: projects/<Project>/locations/<Location>/conversations/<ConversationID>/participants/<ParticipantID>
+func getConversationIDFromParticipant(participantName string) string {
+	parts := make([]string, 0)
+	current := ""
+	for _, ch := range participantName {
+		if ch == '/' {
+			if current != "" {
+				parts = append(parts, current)
+			}
+			current = ""
+		} else {
+			current += string(ch)
+		}
+	}
+	if current != "" {
+		parts = append(parts, current)
+	}
+	for i, part := range parts {
+		if part == "conversations" && i+1 < len(parts) {
+			return parts[i+1]
+		}
+	}
+	return "unknown"
+}
+
 func (c *CCAIPConnector) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Printf("Error reading CCAIP webhook body: %v", err)
+		log.Printf("[unknown] CCAIP ← Webhook: ERROR reading body: %v", err)
 		http.Error(w, "Error reading body", http.StatusInternalServerError)
 		return
 	}
 
 	sig := r.Header.Get("X-Signature")
 	ts := r.Header.Get("X-Signature-Timestamp")
-	log.Printf("Received CCAIP Webhook. Signature: %s, Timestamp: %s", sig, ts)
 
 	// Verification logic
 	if !VerifyCCAIPSignature(body, sig, ts, c.Config) {
-		log.Printf("CCAIP Webhook signature verification failed")
+		log.Printf("[unknown] CCAIP ← Webhook: ERROR signature verification failed (sig=%s, ts=%s)", sig, ts)
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -65,57 +90,57 @@ func (c *CCAIPConnector) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	// Process event
 	var event MessageEvent
 	if err := json.Unmarshal(body, &event); err != nil {
-		log.Printf("Error unmarshaling CCAIP webhook: %v", err)
+		log.Printf("[unknown] CCAIP ← Webhook: ERROR parsing JSON: %v", err)
 		http.Error(w, "Error parsing body", http.StatusBadRequest)
 		return
 	}
 
+	chatID := strconv.Itoa(event.ChatID)
+	c.participantsMu.RLock()
+	participantName := c.participants[chatID]
+	c.participantsMu.RUnlock()
+
+	convID := getConversationIDFromParticipant(participantName)
+	if convID == "unknown" {
+		convID = fmt.Sprintf("chat-%s", chatID)
+	}
+
 	if event.EventType == EventMessageReceived {
-		log.Printf("Received CCAIP %s from %s: %s", event.EventType, event.Body.Sender.Type, string(body))
+		log.Printf("[%s] CCAIP ← Webhook: %s from %s: %s", convID, event.EventType, event.Body.Sender.Type, event.Body.Message.Content)
 		
 		// Only relay messages FROM agents/bots TO Dialogflow end-users (or system logic).
 		// We ignore messages from "end_user" because those are the ones we are proxying FOR.
 		if event.Body.Sender.Type != "agent" && event.Body.Sender.Type != "virtual_agent" {
-			log.Printf("Ignoring message from sender type: %s", event.Body.Sender.Type)
+			log.Printf("[%s] CCAIP ← Webhook: Ignoring message from sender type: %s", convID, event.Body.Sender.Type)
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 
-		chatID := strconv.Itoa(event.ChatID)
 		text := event.Body.Message.Content
-		
-		c.participantsMu.RLock()
-		participantName := c.participants[chatID]
-		c.participantsMu.RUnlock()
 
 		if participantName != "" {
-			go c.relayToDialogflow(context.Background(), participantName, text)
+			go c.relayToDialogflow(context.Background(), convID, participantName, text)
 		} else {
-			log.Printf("No participant registered for CCAIP chat %s", chatID)
+			log.Printf("[%s] CCAIP ← Webhook: WARNING no participant registered for chat", convID)
 		}
 	} else if event.EventType == EventChatEnded || event.EventType == EventChatDismissed {
-		chatID := strconv.Itoa(event.ChatID)
-		log.Printf("Received CCAIP %s for chat %s", event.EventType, chatID)
-
-		c.participantsMu.RLock()
-		participantName := c.participants[chatID]
-		c.participantsMu.RUnlock()
+		log.Printf("[%s] CCAIP ← Webhook: %s received", convID, event.EventType)
 
 		if participantName != "" {
-			go c.disconnectDialogflow(context.Background(), participantName)
+			go c.disconnectDialogflow(context.Background(), convID, participantName)
 		} else {
-			log.Printf("No participant registered for CCAIP chat %s (ChatID: %s)", event.EventType, chatID)
+			log.Printf("[%s] CCAIP ← Webhook: WARNING no participant registered for %s event", convID, event.EventType)
 		}
 	}
 
 	w.WriteHeader(http.StatusOK)
 }
 
-func (c *CCAIPConnector) relayToDialogflow(ctx context.Context, participantName, text string) {
-	log.Printf("Relaying message to Dialogflow: %s", text)
+func (c *CCAIPConnector) relayToDialogflow(ctx context.Context, convID, participantName, text string) {
+	log.Printf("[%s] Dialogflow → BidiEndpointInteract: Relaying text input: %q", convID, text)
 	stream, err := c.DialogflowClient.BidiEndpointInteract(ctx)
 	if err != nil {
-		log.Printf("ERROR relayToDialogflow: failed to open stream: %v", err)
+		log.Printf("[%s] Dialogflow → BidiEndpointInteract: ERROR opening stream: %v", convID, err)
 		return
 	}
 	defer stream.CloseSend()
@@ -131,7 +156,7 @@ func (c *CCAIPConnector) relayToDialogflow(ctx context.Context, participantName,
 		},
 	}
 	if err := stream.Send(configReq); err != nil {
-		log.Printf("ERROR relayToDialogflow: failed to send config: %v", err)
+		log.Printf("[%s] Dialogflow → BidiEndpointInteract: ERROR sending config: %v", convID, err)
 		return
 	}
 
@@ -144,18 +169,18 @@ func (c *CCAIPConnector) relayToDialogflow(ctx context.Context, participantName,
 		},
 	}
 	if err := stream.Send(inputReq); err != nil {
-		log.Printf("ERROR relayToDialogflow: failed to send input: %v", err)
+		log.Printf("[%s] Dialogflow → BidiEndpointInteract: ERROR sending input: %v", convID, err)
 		return
 	}
 
-	log.Printf("Relayed message to Dialogflow: %s", text)
+	log.Printf("[%s] Dialogflow → BidiEndpointInteract: Successfully relayed text: %q", convID, text)
 }
 
-func (c *CCAIPConnector) disconnectDialogflow(ctx context.Context, participantName string) {
-	log.Printf("Sending Disconnect to Dialogflow for participant: %s", participantName)
+func (c *CCAIPConnector) disconnectDialogflow(ctx context.Context, convID, participantName string) {
+	log.Printf("[%s] Dialogflow → BidiEndpointInteract: Sending Disconnect", convID)
 	stream, err := c.DialogflowClient.BidiEndpointInteract(ctx)
 	if err != nil {
-		log.Printf("ERROR disconnectDialogflow: failed to open stream: %v", err)
+		log.Printf("[%s] Dialogflow → BidiEndpointInteract: ERROR opening stream for disconnect: %v", convID, err)
 		return
 	}
 	defer stream.CloseSend()
@@ -171,7 +196,7 @@ func (c *CCAIPConnector) disconnectDialogflow(ctx context.Context, participantNa
 		},
 	}
 	if err := stream.Send(configReq); err != nil {
-		log.Printf("ERROR disconnectDialogflow: failed to send config: %v", err)
+		log.Printf("[%s] Dialogflow → BidiEndpointInteract: ERROR sending config for disconnect: %v", convID, err)
 		return
 	}
 
@@ -182,11 +207,11 @@ func (c *CCAIPConnector) disconnectDialogflow(ctx context.Context, participantNa
 		},
 	}
 	if err := stream.Send(disconnectReq); err != nil {
-		log.Printf("ERROR disconnectDialogflow: failed to send disconnect: %v", err)
+		log.Printf("[%s] Dialogflow → BidiEndpointInteract: ERROR sending disconnect: %v", convID, err)
 		return
 	}
 
-	log.Printf("Successfully sent Disconnect to Dialogflow for %s", participantName)
+	log.Printf("[%s] Dialogflow → BidiEndpointInteract: Disconnect sent successfully", convID)
 }
 
 func (c *CCAIPConnector) getAuthHeader() string {
@@ -194,14 +219,14 @@ func (c *CCAIPConnector) getAuthHeader() string {
 	return "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
 }
 
-func (c *CCAIPConnector) upsertEndUser(ctx context.Context, identifier string) (int, error) {
+func (c *CCAIPConnector) upsertEndUser(ctx context.Context, convID, identifier string) (int, error) {
 	url := fmt.Sprintf("%s/end_users", c.Config.APIBaseURL)
 	payload := map[string]string{
 		"identifier": identifier,
 	}
 	body, _ := json.Marshal(payload)
 
-	log.Printf("CCAIP REQUEST: POST %s | Body: %s", url, string(body))
+	log.Printf("[%s] CCAIP → POST %s (upsertEndUser)", convID, url)
 
 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(body))
 	if err != nil {
@@ -213,13 +238,13 @@ func (c *CCAIPConnector) upsertEndUser(ctx context.Context, identifier string) (
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		log.Printf("CCAIP ERROR: POST %s | Error: %v", url, err)
+		log.Printf("[%s] CCAIP ← POST %s: ERROR %v", convID, url, err)
 		return 0, err
 	}
 	defer resp.Body.Close()
 
 	respBody, _ := io.ReadAll(resp.Body)
-	log.Printf("CCAIP RESPONSE: POST %s | Status: %d | Body: %s", url, resp.StatusCode, string(respBody))
+	log.Printf("[%s] CCAIP ← POST %s: Status=%d", convID, url, resp.StatusCode)
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return 0, fmt.Errorf("unexpected status code from upsertEndUser: %d", resp.StatusCode)
@@ -235,9 +260,9 @@ func (c *CCAIPConnector) upsertEndUser(ctx context.Context, identifier string) (
 	return result.ID, nil
 }
 
-func (c *CCAIPConnector) CreateChatSession(ctx context.Context, req *CreateChatRequest) (*ChatSession, error) {
+func (c *CCAIPConnector) CreateChatSession(ctx context.Context, convID string, req *CreateChatRequest) (*ChatSession, error) {
 	// 1. Upsert End User
-	ccaipEndUserID, err := c.upsertEndUser(ctx, req.ExternalIdentifier)
+	ccaipEndUserID, err := c.upsertEndUser(ctx, convID, req.ExternalIdentifier)
 	if err != nil {
 		return nil, fmt.Errorf("failed to upsert end user: %w", err)
 	}
@@ -271,7 +296,7 @@ func (c *CCAIPConnector) CreateChatSession(ctx context.Context, req *CreateChatR
 	}
 
 	body, _ := json.Marshal(ccaipReq)
-	log.Printf("CCAIP REQUEST: POST %s | Body: %s", url, string(body))
+	log.Printf("[%s] CCAIP → POST %s (createChat): menu_id=%d, lang=%s", convID, url, menuID, lang)
 
 	hReq, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(body))
 	if err != nil {
@@ -284,13 +309,13 @@ func (c *CCAIPConnector) CreateChatSession(ctx context.Context, req *CreateChatR
 
 	resp, err := c.HTTPClient.Do(hReq)
 	if err != nil {
-		log.Printf("CCAIP ERROR: POST %s | Error: %v", url, err)
+		log.Printf("[%s] CCAIP ← POST %s: ERROR %v", convID, url, err)
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	respBody, _ := io.ReadAll(resp.Body)
-	log.Printf("CCAIP RESPONSE: POST %s | Status: %d | Body: %s", url, resp.StatusCode, string(respBody))
+	log.Printf("[%s] CCAIP ← POST %s: Status=%d", convID, url, resp.StatusCode)
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("failed to create chat: status=%d body=%s", resp.StatusCode, string(respBody))
@@ -303,13 +328,15 @@ func (c *CCAIPConnector) CreateChatSession(ctx context.Context, req *CreateChatR
 		return nil, err
 	}
 
+	log.Printf("[%s] CCAIP: Chat session created (ccaip_chat_id=%d)", convID, result.ID)
+
 	return &ChatSession{
 		ID:        strconv.Itoa(result.ID),
 		EndUserID: strconv.Itoa(ccaipEndUserID),
 	}, nil
 }
 
-func (c *CCAIPConnector) SendMessage(ctx context.Context, chatID string, req *SendMessageRequest) error {
+func (c *CCAIPConnector) SendMessage(ctx context.Context, convID, chatID string, req *SendMessageRequest) error {
 	url := fmt.Sprintf("%s/chats/%s/message", c.Config.APIBaseURL, chatID)
 	
 	endUserID, _ := strconv.Atoi(req.FromUserID)
@@ -322,7 +349,7 @@ func (c *CCAIPConnector) SendMessage(ctx context.Context, chatID string, req *Se
 	}
 
 	body, _ := json.Marshal(ccaipReq)
-	log.Printf("CCAIP REQUEST: POST %s | Body: %s", url, string(body))
+	log.Printf("[%s] CCAIP → POST %s (sendMessage): %q", convID, url, req.Message.Content)
 
 	hReq, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(body))
 	if err != nil {
@@ -335,13 +362,13 @@ func (c *CCAIPConnector) SendMessage(ctx context.Context, chatID string, req *Se
 
 	resp, err := c.HTTPClient.Do(hReq)
 	if err != nil {
-		log.Printf("CCAIP ERROR: POST %s | Error: %v", url, err)
+		log.Printf("[%s] CCAIP ← POST %s: ERROR %v", convID, url, err)
 		return err
 	}
 	defer resp.Body.Close()
 
 	respBody, _ := io.ReadAll(resp.Body)
-	log.Printf("CCAIP RESPONSE: POST %s | Status: %d | Body: %s", url, resp.StatusCode, string(respBody))
+	log.Printf("[%s] CCAIP ← POST %s: Status=%d", convID, url, resp.StatusCode)
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to send message: status=%d body=%s", resp.StatusCode, string(respBody))
@@ -350,7 +377,7 @@ func (c *CCAIPConnector) SendMessage(ctx context.Context, chatID string, req *Se
 	return nil
 }
 
-func (c *CCAIPConnector) EndSession(ctx context.Context, chatID string, req *EndSessionRequest) error {
+func (c *CCAIPConnector) EndSession(ctx context.Context, convID, chatID string, req *EndSessionRequest) error {
 	url := fmt.Sprintf("%s/chats/%s", c.Config.APIBaseURL, chatID)
 	
 	endUserID, _ := strconv.Atoi(req.FinishedByUserID)
@@ -362,7 +389,7 @@ func (c *CCAIPConnector) EndSession(ctx context.Context, chatID string, req *End
 	}
 
 	body, _ := json.Marshal(ccaipReq)
-	log.Printf("CCAIP REQUEST: PATCH %s | Body: %s", url, string(body))
+	log.Printf("[%s] CCAIP → PATCH %s (endSession)", convID, url)
 
 	hReq, err := http.NewRequestWithContext(ctx, "PATCH", url, bytes.NewBuffer(body))
 	if err != nil {
@@ -375,18 +402,19 @@ func (c *CCAIPConnector) EndSession(ctx context.Context, chatID string, req *End
 
 	resp, err := c.HTTPClient.Do(hReq)
 	if err != nil {
-		log.Printf("CCAIP ERROR: PATCH %s | Error: %v", url, err)
+		log.Printf("[%s] CCAIP ← PATCH %s: ERROR %v", convID, url, err)
 		return err
 	}
 	defer resp.Body.Close()
 
 	respBody, _ := io.ReadAll(resp.Body)
-	log.Printf("CCAIP RESPONSE: PATCH %s | Status: %d | Body: %s", url, resp.StatusCode, string(respBody))
+	log.Printf("[%s] CCAIP ← PATCH %s: Status=%d", convID, url, resp.StatusCode)
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to end session: status=%d body=%s", resp.StatusCode, string(respBody))
 	}
 
+	log.Printf("[%s] CCAIP: Session ended", convID)
 	return nil
 }
 
