@@ -254,9 +254,9 @@ func (c *CCAIPConnector) CreateChatSession(ctx context.Context, req *CreateChatR
 			"menu_id":     menuID,
 			"end_user_id": ccaipEndUserID,
 			"lang":        lang,
-			// "context": map[string]interface{}{
-			// 	"value": req.Context,
-			// },
+			"context": map[string]interface{}{
+				"value": req.Context,
+			},
 		},
 	}
 
