@@ -15,6 +15,7 @@ import (
 	"webchat-proxy/internal/ccaas"
 	dialogflow "cloud.google.com/go/dialogflow/apiv2beta1"
 	"google.golang.org/api/option"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -26,6 +27,14 @@ func main() {
 		log.Fatalf("Failed to create ParticipantsClient: %v", err)
 	}
 	defer client.Close()
+
+	redisAddr := os.Getenv("REDIS_ADDRESS")
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     redisAddr,
+		Password: "", // No password by default unless you've enabled Redis AUTH
+		DB:       0,  // Default DB
+	})
+	defer redisClient.Close()
 
 	// Initialize CCaaS Connector
 	ccaipPassword := os.Getenv("CCAIP_PASSWORD")
@@ -58,7 +67,7 @@ func main() {
 		DefaultMenuID:         ccaipDefaultMenuID,
 		DefaultLang:           ccaipDefaultLang,
 	}
-	cc := ccaas.NewCCAIPConnector(ccaipCfg, client)
+	cc := ccaas.NewCCAIPConnector(ccaipCfg, client, redisClient)
 
 	// Initialize API Server
 	srv := api.NewServer(client, cc)

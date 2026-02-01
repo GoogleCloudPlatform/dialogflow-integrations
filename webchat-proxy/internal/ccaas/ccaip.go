@@ -10,10 +10,10 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"sync"
 
 	dialogflow "cloud.google.com/go/dialogflow/apiv2beta1"
 	"cloud.google.com/go/dialogflow/apiv2beta1/dialogflowpb"
+	"github.com/redis/go-redis/v9"
 )
 
 // CCAIPConnector handles interactions with Google CCAIP.
@@ -22,25 +22,23 @@ type CCAIPConnector struct {
 	HTTPClient *http.Client
 
 	DialogflowClient *dialogflow.ParticipantsClient
-	
-	// Map of CCAIP ChatID to Dialogflow ParticipantName
-	participants   map[string]string
-	participantsMu sync.RWMutex
+	RedisClient      *redis.Client
 }
 
-func NewCCAIPConnector(config *GoogleCCAIPConfig, client *dialogflow.ParticipantsClient) *CCAIPConnector {
+func NewCCAIPConnector(config *GoogleCCAIPConfig, client *dialogflow.ParticipantsClient, redisClient *redis.Client) *CCAIPConnector {
 	return &CCAIPConnector{
 		Config:           config,
 		HTTPClient:       &http.Client{},
 		DialogflowClient: client,
-		participants:     make(map[string]string),
+		RedisClient:      redisClient,
 	}
 }
 
 func (c *CCAIPConnector) RegisterParticipant(chatID, participantName string) {
-	c.participantsMu.Lock()
-	defer c.participantsMu.Unlock()
-	c.participants[chatID] = participantName
+	err := c.RedisClient.Set(context.Background(), chatID, participantName, 0).Err()
+	if err != nil {
+		log.Printf("Could not set value in Redis: %v", err)
+	}
 }
 
 // getConversationIDFromParticipant extracts conversation ID from participant name.
@@ -96,9 +94,10 @@ func (c *CCAIPConnector) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	chatID := strconv.Itoa(event.ChatID)
-	c.participantsMu.RLock()
-	participantName := c.participants[chatID]
-	c.participantsMu.RUnlock()
+	participantName, err := c.RedisClient.Get(context.Background(), chatID).Result()
+	if err != nil {
+		log.Printf("Could not get value from Redis: %v", err)
+	}
 
 	convID := getConversationIDFromParticipant(participantName)
 	if convID == "unknown" {
