@@ -19,6 +19,7 @@ export CCAIP_SUBDOMAIN="your-subdomain"
 export CCAIP_PASSWORD="your-password"
 export CCAIP_DEFAULT_MENU_ID="1"
 export CCAIP_DEFAULT_LANG="en"
+export REDIS_ADDRESS="10.0.0.1:6379"
 ```
 
 ## Running Locally
