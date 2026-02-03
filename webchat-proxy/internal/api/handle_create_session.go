@@ -62,7 +62,6 @@ func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {
 	chatReq := &ccaas.CreateChatRequest{
 		ExternalIdentifier: participantID,
 		MenuID:             menuID,
-		Context:            req.Context,
 	}
 
 	chatSession, err := s.CCaaS.CreateChatSession(r.Context(), conversationID, chatReq)
@@ -74,6 +73,27 @@ func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {
 
 	// Register participant name for webhook relay
 	s.CCaaS.RegisterParticipant(chatSession.ID, req.Participant)
+
+	// Send custom data if context is provided
+	if len(req.Context) > 0 {
+		customData := make(map[string]ccaas.CustomDataItem)
+		for key, value := range req.Context {
+			// Convert value to string representation
+			valueStr := fmt.Sprintf("%v", value)
+			customData[key] = ccaas.CustomDataItem{
+				Label: key,
+				Value: valueStr,
+			}
+		}
+		
+		err = s.CCaaS.SendCustomData(r.Context(), conversationID, chatSession.ID, customData)
+		if err != nil {
+			log.Printf("[%s] Session: WARNING failed to send custom data: %v", conversationID, err)
+			// Continue even if custom data fails - this is not critical
+		} else {
+			log.Printf("[%s] Session: Custom data sent successfully (%d items)", conversationID, len(customData))
+		}
+	}
 
 	// Create a local session which manages the bidi grpc stream
 	_, err = s.SessionManager.CreateSession(conversationID, req.Participant, chatSession.ID, chatSession.EndUserID)

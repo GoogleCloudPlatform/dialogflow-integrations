@@ -284,9 +284,6 @@ func (c *CCAIPConnector) CreateChatSession(ctx context.Context, convID string, r
 			"menu_id":     menuID,
 			"end_user_id": ccaipEndUserID,
 			"lang":        lang,
-			"context": map[string]interface{}{
-				"value": req.Context,
-			},
 		},
 	}
 
@@ -371,6 +368,45 @@ func (c *CCAIPConnector) SendMessage(ctx context.Context, convID, chatID string,
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("failed to send message: status=%d body=%s", resp.StatusCode, string(respBody))
+	}
+
+	return nil
+}
+
+// SendCustomData sends custom data (key/value pairs) to the CCAIP platform.
+// This should be called after CreateChatSession but before SendMessage.
+func (c *CCAIPConnector) SendCustomData(ctx context.Context, convID, chatID string, customData map[string]CustomDataItem) error {
+	url := fmt.Sprintf("%s/chats/%s/custom_data", c.Config.APIBaseURL, chatID)
+	
+	ccaipReq := map[string]interface{}{
+		"signed": false,
+		"data":   customData,
+	}
+
+	body, _ := json.Marshal(ccaipReq)
+	log.Printf("[%s] CCAIP → POST %s (sendCustomData): %d items", convID, url, len(customData))
+
+	hReq, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+
+	hReq.Header.Set("Content-Type", "application/json")
+	hReq.Header.Set("Accept", "application/json")
+	hReq.Header.Set("Authorization", c.getAuthHeader())
+
+	resp, err := c.HTTPClient.Do(hReq)
+	if err != nil {
+		log.Printf("[%s] CCAIP ← POST %s: ERROR %v", convID, url, err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+	log.Printf("[%s] CCAIP ← POST %s: Status=%d", convID, url, resp.StatusCode)
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		return fmt.Errorf("failed to send custom data: status=%d body=%s", resp.StatusCode, string(respBody))
 	}
 
 	return nil
@@ -463,3 +499,10 @@ type MessageBlock struct {
 type EndSessionRequest struct {
 	FinishedByUserID string `json:"finished_by_user_id"`
 }
+
+// CustomDataItem represents a single custom data item with label and value.
+type CustomDataItem struct {
+	Label string `json:"label"`
+	Value string `json:"value"`
+}
+
