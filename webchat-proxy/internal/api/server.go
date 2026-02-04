@@ -12,14 +12,16 @@ type Server struct {
 	SessionManager *session.SessionManager
 	Mux            *http.ServeMux
 	CCaaS          *ccaas.CCAIPConnector
+	APIKey         string
 }
 
-func NewServer(client *dialogflow.ParticipantsClient, cc *ccaas.CCAIPConnector) *Server {
+func NewServer(client *dialogflow.ParticipantsClient, cc *ccaas.CCAIPConnector, apiKey string) *Server {
 	sm := session.NewSessionManager(client, cc)
 	s := &Server{
 		SessionManager: sm,
 		Mux:            http.NewServeMux(),
 		CCaaS:          cc,
+		APIKey:         apiKey,
 	}
 	s.registerRoutes()
 	return s

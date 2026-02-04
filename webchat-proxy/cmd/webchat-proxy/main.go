@@ -69,8 +69,14 @@ func main() {
 	}
 	cc := ccaas.NewCCAIPConnector(ccaipCfg, client, redisClient)
 
+	// Read API Key for authentication
+	apiKey := os.Getenv("API_KEY")
+	if apiKey == "" {
+		log.Println("WARNING: API_KEY environment variable not set. API authentication will be disabled.")
+	}
+
 	// Initialize API Server
-	srv := api.NewServer(client, cc)
+	srv := api.NewServer(client, cc, apiKey)
 
 	// Server Configuration
 	port := os.Getenv("PORT")
