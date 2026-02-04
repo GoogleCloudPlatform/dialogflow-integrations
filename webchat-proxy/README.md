@@ -20,6 +20,7 @@ export CCAIP_PASSWORD="your-password"
 export CCAIP_DEFAULT_MENU_ID="1"
 export CCAIP_DEFAULT_LANG="en"
 export REDIS_ADDRESS="10.0.0.1:6379"
+export API_KEY="your-api-key"
 ```
 
 ## Running Locally
@@ -41,6 +42,7 @@ Before deploying to Cloud Run, you must configure the following secrets in Googl
 | `ccaip-password` | The password for CCaIP API authentication. |
 | `ccaip-primary-webhook-secret` | Primary secret for verifying CCaIP webhook signatures. |
 | `ccaip-secondary-webhook-secret` | Secondary secret for verifying CCaIP webhook signatures. |
+| `webchat-proxy-api-key` | API key required for creating sessions via the proxy. |
 
 You can create these secrets using the following `gcloud` commands:
 
@@ -49,11 +51,13 @@ You can create these secrets using the following `gcloud` commands:
 gcloud secrets create ccaip-password --replication-policy="automatic"
 gcloud secrets create ccaip-primary-webhook-secret --replication-policy="automatic"
 gcloud secrets create ccaip-secondary-webhook-secret --replication-policy="automatic"
+gcloud secrets create webchat-proxy-api-key --replication-policy="automatic"
 
 # Add versions to the secrets (replace with your actual values)
 echo -n "your-password" | gcloud secrets versions add ccaip-password --data-file=-
 echo -n "your-primary-secret" | gcloud secrets versions add ccaip-primary-webhook-secret --data-file=-
 echo -n "your-secondary-secret" | gcloud secrets versions add ccaip-secondary-webhook-secret --data-file=-
+echo -n "your-api-key" | gcloud secrets versions add webchat-proxy-api-key --data-file=-
 ```
 
 ### 2. Configure Service Account
@@ -93,6 +97,7 @@ Create a new session by sending a POST request.
 ```bash
 curl -X POST http://localhost:8080/sessions \
   -H "Content-Type: application/json" \
+  -H "x-goog-api-key: your-api-key" \
   -d '{
     "escalation_id": "test-escalation",
     "participant": "projects/test-project/locations/us-central1/conversations/conv-123/participants/part-456"

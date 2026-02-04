@@ -20,6 +20,21 @@ type CreateSessionRequest struct {
 
 
 func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {
+	// Verify API key if configured
+	if s.APIKey != "" {
+		providedKey := r.Header.Get("x-goog-api-key")
+		if providedKey == "" {
+			log.Printf("[unknown] Session: ERROR API key missing in request")
+			http.Error(w, "Unauthorized: API key required", http.StatusUnauthorized)
+			return
+		}
+		if providedKey != s.APIKey {
+			log.Printf("[unknown] Session: ERROR invalid API key provided")
+			http.Error(w, "Unauthorized: Invalid API key", http.StatusUnauthorized)
+			return
+		}
+	}
+
 	var req CreateSessionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
