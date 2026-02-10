@@ -39,13 +39,13 @@
   "dependencies": {
     "@google-cloud/dialogflow": "^5.9.0",
     "@google-cloud/dialogflow-cx": "^3.8.0",
-    "@slack/bolt": "^3.13.2",
-    "axios": "^1.4.0",
+    "@slack/bolt": "^3.22.0",
+    "axios": "^1.13.5",
     "body-parser": "^1.20.2",
     "express": "^4.18.2",
     "parse-duration": "^1.1.0",
     "ts-dotenv": "^0.9.1",
-    "twilio": "^4.14.1",
+    "twilio": "^4.23.0",
     "viber-bot": "^1.0.18",
     "winston": "^3.10.0"
   }
