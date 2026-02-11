@@ -21,6 +21,9 @@ export CCAIP_DEFAULT_MENU_ID="1"
 export CCAIP_DEFAULT_LANG="en"
 export REDIS_ADDRESS="10.0.0.1:6379"
 export API_KEY="your-api-key"
+
+# (Optional) Export Dialogflow endpoint to use if you use a regional dialogflow
+export DIALOGFLOW_ENDPOINT="dialogflow.googleapis.com:443"
 ```
 
 ## Running Locally

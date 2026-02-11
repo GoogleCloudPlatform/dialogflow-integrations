@@ -14,6 +14,7 @@ fi
 # Service Account to run the service
 SA_NAME="webchat-proxy-sa"
 SERVICE_ACCOUNT=${SERVICE_ACCOUNT:-"${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"}
+DIALOGFLOW_ENDPOINT=${DIALOGFLOW_ENDPOINT:-"dialogflow.googleapis.com:443"}
 
 # CCaIP Configuration
 CCAIP_SUBDOMAIN=${CCAIP_SUBDOMAIN:-"default-subdomain"}
@@ -33,7 +34,7 @@ gcloud run deploy "$SERVICE_NAME" \
   --allow-unauthenticated \
   --service-account "$SERVICE_ACCOUNT" \
   --set-secrets="CCAIP_PASSWORD=ccaip-password:latest,CCAIP_PRIMARY_WEBHOOK_SECRET=ccaip-primary-webhook-secret:latest,CCAIP_SECONDARY_WEBHOOK_SECRET=ccaip-secondary-webhook-secret:latest,API_KEY=webchat-proxy-api-key:latest" \
-  --set-env-vars="CCAIP_SUBDOMAIN=${CCAIP_SUBDOMAIN},CCAIP_DEFAULT_MENU_ID=${CCAIP_DEFAULT_MENU_ID},CCAIP_DEFAULT_LANG=${CCAIP_DEFAULT_LANG},REDIS_ADDRESS=${REDIS_ADDRESS}" \
+  --set-env-vars="CCAIP_SUBDOMAIN=${CCAIP_SUBDOMAIN},CCAIP_DEFAULT_MENU_ID=${CCAIP_DEFAULT_MENU_ID},CCAIP_DEFAULT_LANG=${CCAIP_DEFAULT_LANG},REDIS_ADDRESS=${REDIS_ADDRESS},DIALOGFLOW_ENDPOINT=${DIALOGFLOW_ENDPOINT}" \
   --min-instances 1 \
   --max-instances 1 \
   --platform managed
