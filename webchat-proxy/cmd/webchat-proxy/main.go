@@ -22,7 +22,7 @@ func main() {
 	ctx := context.Background()
 
 	// Initialize Dialogflow Client
-	client, err := dialogflow.NewParticipantsClient(ctx, option.WithEndpoint("test-dialogflow.sandbox.googleapis.com:443"))
+	client, err := dialogflow.NewParticipantsClient(ctx, option.WithEndpoint(os.Getenv("DIALOGFLOW_ENDPOINT")))
 	if err != nil {
 		log.Fatalf("Failed to create ParticipantsClient: %v", err)
 	}
