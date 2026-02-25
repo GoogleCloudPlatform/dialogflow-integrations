@@ -7,9 +7,10 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "dialogflow": "^0.9.1",
     "express": "^4.16.4",
+    "follow-redirects": "^1.14.5",
     "request": "^2.88.0",
-    "dialogflow": "0.9.1",
     "twilio": "3.33.0"
   },
   "engines": {
