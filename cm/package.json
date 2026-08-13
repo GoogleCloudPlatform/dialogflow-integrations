@@ -16,7 +16,7 @@
     "node": "8.x"
   },
   "repository": {
-    "url": "https://github.com/CMTelecom/dialogflow-integrations"
+    "url": "https://github.com/cmdotcom-plugins/dialogflow-integrations"
   },
   "license": "Apache-2.0"
 }
