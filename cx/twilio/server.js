@@ -45,7 +45,9 @@ const listener = app.listen(process.env.PORT, () => {
 *  @return {JSON} 
 */
 const twilioToDetectIntent = (twilioReq) => {
-    const sessionId = twilioReq.body.To;
+    // One session per sender. The request has passed requireTwilioSignature,
+    // so From is the number that Twilio received the message from.
+    const sessionId = twilioReq.body.From;
     const sessionPath = sessionClient.projectLocationAgentSessionPath (
         process.env.PROJECT_ID,
         process.env.LOCATION,

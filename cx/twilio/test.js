@@ -97,6 +97,39 @@ const post = (server, params, headers = {}, path = '/') => {
     });
 };
 
+/*
+*  Runs fn with the given environment variables set (or unset, for undefined
+*  values) and restores the previous values afterwards.
+*/
+const withEnv = async (env, fn) => {
+    const saved = {};
+    for (const name of Object.keys(env)) {
+        saved[name] = process.env[name];
+        if (env[name] === undefined) {
+            delete process.env[name];
+        } else {
+            process.env[name] = env[name];
+        }
+    }
+    try {
+        return await fn();
+    } finally {
+        for (const name of Object.keys(saved)) {
+            if (saved[name] === undefined) {
+                delete process.env[name];
+            } else {
+                process.env[name] = saved[name];
+            }
+        }
+    }
+};
+
+const agentEnv = {
+    PROJECT_ID: 'test-project',
+    LOCATION: 'us-central1',
+    AGENT_ID: 'test-agent'
+};
+
 const listen = (expressApp) => new Promise((resolve) => {
     const server = expressApp.listen(0, '127.0.0.1', () => resolve(server));
 });
@@ -111,6 +144,16 @@ describe('Dialogflow Twilio integration', () => {
     describe('twilioToDetectIntent', () => {
         it('should convert twilio request to detectIntent response', () => {
             assert.equal(twilioToDetectIntent(sampleTwilioRequest).queryInput.text.text, message2);
+        });
+
+        it('should use a separate Dialogflow session for each sender', async () => {
+            await withEnv(agentEnv, () => {
+                const sessionFor = (from) => twilioToDetectIntent({
+                    body: Object.assign({}, sampleTwilioParams, {From: from})
+                }).session;
+                assert.ok(sessionFor('+15550001111').endsWith('/sessions/+15550001111'));
+                assert.notEqual(sessionFor('+15550001111'), sessionFor('+15550003333'));
+            });
         });
     });
 
@@ -245,22 +288,10 @@ describe('Dialogflow Twilio integration', () => {
         });
 
         it('should answer a request signed by Twilio', async () => {
-            const env = {
+            const env = Object.assign({
                 TWILIO_AUTH_TOKEN: AUTH_TOKEN,
-                TWILIO_WEBHOOK_URL: undefined,
-                PROJECT_ID: 'test-project',
-                LOCATION: 'us-central1',
-                AGENT_ID: 'test-agent'
-            };
-            const savedEnv = {};
-            for (const name of Object.keys(env)) {
-                savedEnv[name] = process.env[name];
-                if (env[name] === undefined) {
-                    delete process.env[name];
-                } else {
-                    process.env[name] = env[name];
-                }
-            }
+                TWILIO_WEBHOOK_URL: undefined
+            }, agentEnv);
             const detectIntent = sessionClient.detectIntent;
             const requests = [];
             sessionClient.detectIntent = async (request) => {
@@ -268,22 +299,19 @@ describe('Dialogflow Twilio integration', () => {
                 return [sampleDialogflowResponse];
             };
             try {
-                const signature = sign(AUTH_TOKEN, WEBHOOK_URL, sampleTwilioParams);
-                const res = await post(server, sampleTwilioParams,
-                    {'X-Twilio-Signature': signature});
-                assert.equal(res.status, 200);
-                assert.equal(res.body, sampleTwiml.toString());
-                assert.equal(requests.length, 1);
-                assert.equal(requests[0].queryInput.text.text, message2);
+                await withEnv(env, async () => {
+                    const signature = sign(AUTH_TOKEN, WEBHOOK_URL, sampleTwilioParams);
+                    const res = await post(server, sampleTwilioParams,
+                        {'X-Twilio-Signature': signature});
+                    assert.equal(res.status, 200);
+                    assert.equal(res.body, sampleTwiml.toString());
+                    assert.equal(requests.length, 1);
+                    assert.equal(requests[0].queryInput.text.text, message2);
+                    assert.ok(requests[0].session.endsWith(
+                        '/sessions/' + sampleTwilioParams.From));
+                });
             } finally {
                 sessionClient.detectIntent = detectIntent;
-                for (const name of Object.keys(savedEnv)) {
-                    if (savedEnv[name] === undefined) {
-                        delete process.env[name];
-                    } else {
-                        process.env[name] = savedEnv[name];
-                    }
-                }
             }
         });
     });
