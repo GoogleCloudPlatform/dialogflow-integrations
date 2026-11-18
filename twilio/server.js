@@ -33,10 +33,15 @@ const projectId = 'Place your dialogflow projectId here';
 const phoneNumber = "Place your twilio phone number here";
 const accountSid = 'Place your accountSid here';
 const authToken = 'Place your authToken here';
-// Optional: the exact webhook URL configured in the Twilio console. Only
-// needed when it cannot be derived from the incoming request, for example
-// behind a proxy that rewrites the Host header.
+// Optional: the exact webhook URL configured in the Twilio console. When set,
+// only requests that Twilio signed for this URL are accepted. It is required
+// when the URL cannot be derived from the incoming request, for example behind
+// a proxy that rewrites the Host header.
 const webhookUrl = process.env.TWILIO_WEBHOOK_URL;
+// The placeholder value of authToken above is public, so it must never be
+// accepted as a signing key.
+const authTokenConfigured =
+    Boolean(authToken) && authToken !== 'Place your authToken here';
 
 const client = require('twilio')(accountSid, authToken);
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
@@ -56,11 +61,17 @@ const listener = app.listen(process.env.PORT, function() {
 function requireTwilioSignature(req, res, next) {
   let valid = false;
   try {
-    // Without a configured webhookUrl, the signed URL is derived from the
-    // request's protocol, Host header and path.
-    valid = Boolean(authToken) &&
+    // The URL that Twilio signed: the configured webhookUrl, or else the URL
+    // at which this request was received.
+    const url = webhookUrl ||
+        req.protocol + '://' + req.get('host') + req.originalUrl;
+    // Messaging webhooks are signed over their POST parameters. A URL with
+    // bodySHA256 selects the validator's JSON body mode, which does not cover
+    // req.body, so such a URL is never accepted here.
+    valid = authTokenConfigured &&
         Boolean(req.header('X-Twilio-Signature')) &&
-        twilio.validateExpressRequest(req, authToken, {url: webhookUrl});
+        !url.includes('bodySHA256') &&
+        twilio.validateExpressRequest(req, authToken, {url: url});
   } catch (err) {
     // The validator throws on some malformed requests. Treat those as invalid.
     valid = false;

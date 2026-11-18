@@ -108,16 +108,20 @@ const getResponseMessage = async (req) => {
 */
 const requireTwilioSignature = (req, res, next) => {
     const authToken = process.env.TWILIO_AUTH_TOKEN;
-    // Optional: the exact webhook URL configured in the Twilio console. Only
-    // needed when it cannot be derived from the incoming request's protocol,
-    // Host header and path, for example behind a proxy that rewrites the Host
-    // header.
-    const webhookUrl = process.env.TWILIO_WEBHOOK_URL;
     let valid = false;
     try {
+        // The URL that Twilio signed. TWILIO_WEBHOOK_URL is optional: it is the
+        // exact webhook URL configured in the Twilio console. Without it, the
+        // URL at which this request was received is used.
+        const url = process.env.TWILIO_WEBHOOK_URL ||
+            req.protocol + '://' + req.get('host') + req.originalUrl;
+        // Messaging webhooks are signed over their POST parameters. A URL with
+        // bodySHA256 selects the validator's JSON body mode, which does not
+        // cover req.body, so such a URL is never accepted here.
         valid = Boolean(authToken) &&
             Boolean(req.header('X-Twilio-Signature')) &&
-            twilio.validateExpressRequest(req, authToken, {url: webhookUrl});
+            !url.includes('bodySHA256') &&
+            twilio.validateExpressRequest(req, authToken, {url});
     } catch (err) {
         // The validator throws on some malformed requests. Treat those as invalid.
         valid = false;
@@ -145,6 +149,7 @@ process.on('SIGTERM', () => {
 
 module.exports = {
     app,
+    sessionClient,
     twilioToDetectIntent,
     detectIntentToTwilio,
     requireTwilioSignature

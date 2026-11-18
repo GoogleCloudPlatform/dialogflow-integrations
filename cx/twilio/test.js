@@ -5,6 +5,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const {
     app,
+    sessionClient,
     twilioToDetectIntent,
     detectIntentToTwilio,
     requireTwilioSignature
@@ -68,17 +69,17 @@ const sign = (authToken, url, params) => {
 };
 
 /*
-*  Sends a form-encoded POST to "/" on a locally listening server, as if it
-*  had arrived through an HTTPS proxy for HOST.
+*  Sends a form-encoded POST to a locally listening server, as if it had
+*  arrived through an HTTPS proxy for HOST.
 */
-const post = (server, params, headers = {}) => {
+const post = (server, params, headers = {}, path = '/') => {
     const body = new URLSearchParams(params).toString();
     return new Promise((resolve, reject) => {
         const req = http.request({
             host: '127.0.0.1',
             port: server.address().port,
             method: 'POST',
-            path: '/',
+            path,
             agent: false,
             headers: Object.assign({
                 'Host': HOST,
@@ -203,6 +204,27 @@ describe('Dialogflow Twilio integration', () => {
             assert.equal(res.status, 403);
             assert.equal(handled, 0);
         });
+
+        it('should reject a request signed with an empty auth token', async () => {
+            process.env.TWILIO_AUTH_TOKEN = '';
+            const signature = sign('', WEBHOOK_URL, sampleTwilioParams);
+            const res = await post(server, sampleTwilioParams,
+                {'X-Twilio-Signature': signature});
+            assert.equal(res.status, 403);
+            assert.equal(handled, 0);
+        });
+
+        it('should reject a URL that asks for body hash validation', async () => {
+            // Signed like a JSON webhook: over the URL only, with the hash of
+            // an empty JSON object, so the form body would not be covered.
+            const hash = crypto.createHash('sha256').update('{}').digest('hex');
+            const path = '/?bodySHA256=' + hash;
+            const signature = sign(AUTH_TOKEN, 'https://' + HOST + path, {});
+            const res = await post(server, sampleTwilioParams,
+                {'X-Twilio-Signature': signature}, path);
+            assert.equal(res.status, 403);
+            assert.equal(handled, 0);
+        });
     });
 
     describe('POST /', () => {
@@ -220,6 +242,49 @@ describe('Dialogflow Twilio integration', () => {
             const res = await post(server, sampleTwilioParams);
             assert.equal(res.status, 403);
             assert.ok(!res.body.includes('<Response>'));
+        });
+
+        it('should answer a request signed by Twilio', async () => {
+            const env = {
+                TWILIO_AUTH_TOKEN: AUTH_TOKEN,
+                TWILIO_WEBHOOK_URL: undefined,
+                PROJECT_ID: 'test-project',
+                LOCATION: 'us-central1',
+                AGENT_ID: 'test-agent'
+            };
+            const savedEnv = {};
+            for (const name of Object.keys(env)) {
+                savedEnv[name] = process.env[name];
+                if (env[name] === undefined) {
+                    delete process.env[name];
+                } else {
+                    process.env[name] = env[name];
+                }
+            }
+            const detectIntent = sessionClient.detectIntent;
+            const requests = [];
+            sessionClient.detectIntent = async (request) => {
+                requests.push(request);
+                return [sampleDialogflowResponse];
+            };
+            try {
+                const signature = sign(AUTH_TOKEN, WEBHOOK_URL, sampleTwilioParams);
+                const res = await post(server, sampleTwilioParams,
+                    {'X-Twilio-Signature': signature});
+                assert.equal(res.status, 200);
+                assert.equal(res.body, sampleTwiml.toString());
+                assert.equal(requests.length, 1);
+                assert.equal(requests[0].queryInput.text.text, message2);
+            } finally {
+                sessionClient.detectIntent = detectIntent;
+                for (const name of Object.keys(savedEnv)) {
+                    if (savedEnv[name] === undefined) {
+                        delete process.env[name];
+                    } else {
+                        process.env[name] = savedEnv[name];
+                    }
+                }
+            }
         });
     });
 
