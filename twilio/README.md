@@ -62,6 +62,14 @@ You can view a list of your active integration deployments under [Cloud Run](htt
 
 ![alt text](images/twilio-setup-phone-number.png)
 
+### Request Validation
+
+The integration only accepts requests that carry a valid [X-Twilio-Signature](https://www.twilio.com/docs/usage/security#validating-requests) for your __Auth Token__, and answers every other request with a `403`. Make sure that __authToken__ in the server.js file is set to your __Auth Token__, otherwise all messages are rejected.
+
+The signature covers the webhook URL, so the URL entered in the Twilio console must be the URL at which the integration is reached, for example the Cloud Run URL from the deployment step. Enter it with a trailing slash, for example `https://dialogflow-twilio-abc123-uc.a.run.app/`.
+
+It is recommended to also set the `TWILIO_WEBHOOK_URL` environment variable of the deployment to the exact URL that is entered in the Twilio console. The integration then only accepts requests that Twilio signed for that URL. This is required if the integration is reached through a custom domain or a proxy that rewrites the `Host` header.
+
 ### WhatsApp Setup
 
 This integration can be used as a webhook with Twilio to send WhatsApp messages.
