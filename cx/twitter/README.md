@@ -73,6 +73,14 @@ More information can be found in Cloud Run
 
 You can view a list of your active integration deployments under [Cloud Run](https://console.cloud.google.com/run) in the GCP Console.
 
+### Request Validation
+
+The integration only accepts webhook requests that carry a valid `X-Twitter-Webhooks-Signature` header for your __API secret key__, and answers every other request with a `403`. Make sure that __twitterSecretAPIKey__ in the __server.js__ file is set to your __API secret key__, otherwise all webhook requests are rejected and the challenge-response check (CRC) fails.
+
+The CRC endpoint (`GET /?crc_token=...`) only answers tokens that look like the ones Twitter sends, and webhook bodies must be UTF-8 JSON.
+
+If you deployed this integration before request validation was added, redeploy it to pick up the change.
+
 ## Potential Issues
 
 ### Duplicate Tweets
