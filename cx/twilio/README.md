@@ -71,6 +71,12 @@ You can view a list of your active integration deployments under [Cloud Run](htt
 
 ![Number Configuration](images/number-config.png)
 
+### Request Validation
+
+The integration only accepts requests that carry a valid [X-Twilio-Signature](https://www.twilio.com/docs/usage/security#validating-requests) for your __Auth Token__, and answers every other request with a `403`. Make sure that __TWILIO_AUTH_TOKEN__ in the __.env__ file is set, otherwise all messages are rejected.
+
+The signature covers the webhook URL, so the URL entered in the Twilio console must be the URL at which the integration is reached, for example the Cloud Run URL from the deployment step. If the integration is reached through a custom domain or a proxy that rewrites the `Host` header, add `TWILIO_WEBHOOK_URL` to the __.env__ file and set it to the exact URL that is entered in the Twilio console.
+
 ### Complete
 
 Now simply text the Twilio phone number you registered and your agent will respond. 

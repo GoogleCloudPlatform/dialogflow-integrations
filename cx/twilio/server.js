@@ -13,6 +13,7 @@
 
 const express = require('express');
 const {SessionsClient} = require('@google-cloud/dialogflow-cx');
+const twilio = require('twilio');
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const path = require('path')
 const bodyParser = require('body-parser');
@@ -24,6 +25,11 @@ const sessionClient = new SessionsClient(
 );
 
 const app = express();
+
+// Cloud Run (and tunnels such as ngrok) terminate TLS in front of this server.
+// Trust X-Forwarded-Proto so that req.protocol is the scheme Twilio called,
+// which is part of the URL that Twilio signs.
+app.set('trust proxy', true);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -94,7 +100,37 @@ const getResponseMessage = async (req) => {
     return twiml.toString();
 };
 
-app.post('/', async (req, res) => {
+/*
+*  Express middleware that rejects every request that was not signed by Twilio
+*  with this account's auth token. This endpoint is publicly reachable, so
+*  without this check anyone could send messages on behalf of any phone number.
+*  https://www.twilio.com/docs/usage/security#validating-requests
+*/
+const requireTwilioSignature = (req, res, next) => {
+    const authToken = process.env.TWILIO_AUTH_TOKEN;
+    // Optional: the exact webhook URL configured in the Twilio console. Only
+    // needed when it cannot be derived from the incoming request's protocol,
+    // Host header and path, for example behind a proxy that rewrites the Host
+    // header.
+    const webhookUrl = process.env.TWILIO_WEBHOOK_URL;
+    let valid = false;
+    try {
+        valid = Boolean(authToken) &&
+            Boolean(req.header('X-Twilio-Signature')) &&
+            twilio.validateExpressRequest(req, authToken, {url: webhookUrl});
+    } catch (err) {
+        // The validator throws on some malformed requests. Treat those as invalid.
+        valid = false;
+    }
+    if (!valid) {
+        res.status(403).type('text/plain')
+            .send('Twilio request validation failed.');
+        return;
+    }
+    next();
+};
+
+app.post('/', requireTwilioSignature, async (req, res) => {
     const message = await getResponseMessage(req);
     console.log("MESSAGE: " + message);
     res.send(message);
@@ -107,4 +143,9 @@ process.on('SIGTERM', () => {
     });
   });
 
-module.exports = {twilioToDetectIntent, detectIntentToTwilio};
+module.exports = {
+    app,
+    twilioToDetectIntent,
+    detectIntentToTwilio,
+    requireTwilioSignature
+};
