@@ -18,48 +18,100 @@
 const cmProductToken = 'YOUR_CM_PRODUCT_TOKEN';
 const projectId = 'YOUR_PROJECT_ID';
 
+const crypto = require('crypto');
 const express = require('express');
-const request = require('request');
-const messagingApi = require('@cmdotcom/text-sdk');
-const app = express();
-const dialogflowSessionClient = require('../botlib/dialogflow_session_client');
 
-app.use(express.json());
+// The webhook secret is part of the URL registered at CM.com, so it is
+// restricted to characters that need no URL encoding.
+const WEBHOOK_SECRET_PATTERN = /^[A-Za-z0-9_-]{32,}$/;
 
-const cmMessagingApi = new messagingApi.MessageApiClient(cmProductToken);
-const sessionClient = new dialogflowSessionClient(projectId);
+/**
+ * Throws unless the secret is usable. There is deliberately no default value:
+ * without a secret anyone who knows the service URL could send messages that
+ * are billed to the owner of the CM.com product token.
+ */
+function validateWebhookSecret(webhookSecret) {
+  if (typeof webhookSecret !== 'string' ||
+      !WEBHOOK_SECRET_PATTERN.test(webhookSecret)) {
+    throw new Error(
+        'CM_WEBHOOK_SECRET must be set to a random value of at least 32 ' +
+        'characters from [A-Za-z0-9_-]. See the README for details.');
+  }
+}
 
-const listener = app.listen(process.env.PORT, function () {
-  console.log('Your CM integration server is listening on port '
-    + listener.address().port);
-});
+/** Parses the optional comma separated CM_ALLOWED_SENDERS value. */
+function parseAllowedSenders(value) {
+  return (value || '').split(',').map((s) => s.trim()).filter(Boolean);
+}
 
-app.post('/', async function (req, res) {
-  const body = req.body;
-  const text = body.message.text ||
-    (!!body.message.media.mediaUri
-      ? (body.message.media.title + '\n media:' + body.message.media.mediaUri)
-      : "unsupported content"
-    );
-  const dialogflowResponse = (await sessionClient.detectIntent(text, body.from.number, body));
-  const response = await sendMessage(dialogflowResponse, body);
-  console.log("response", JSON.stringify(response));
-  return res.send(response);
-});
+function sha256(value) {
+  return crypto.createHash('sha256').update(String(value)).digest();
+}
 
-app.post('/dialog', async function (req, res) {
-  const body = req.body;
-  return res.send();
-});
+/**
+ * Creates the express app.
+ *
+ * @param {object} options
+ * @param {object} options.sessionClient Dialogflow session client.
+ * @param {object} options.messagingApi CM.com MessageApiClient.
+ * @param {string} options.webhookSecret Secret expected in the webhook URL.
+ * @param {string[]=} options.allowedSenders When not empty, only messages
+ *     addressed to one of these numbers are answered.
+ */
+function createApp({sessionClient, messagingApi, webhookSecret,
+    allowedSenders = []}) {
+  validateWebhookSecret(webhookSecret);
+  const expectedSecretHash = sha256(webhookSecret);
+  const app = express();
 
-process.on('SIGTERM', () => {
-  listener.close(async () => {
-    console.log('Closing http server.');
-    process.exit(0);
+  // Runs before the request body is parsed. Both values are hashed so that
+  // the comparison is constant time regardless of the length of the input.
+  const authenticate = (req, res, next) => {
+    if (!crypto.timingSafeEqual(
+        sha256(req.params.token), expectedSecretHash)) {
+      return res.sendStatus(401);
+    }
+    return next();
+  };
+
+  app.post('/webhook/:token', authenticate, express.json(),
+      async function (req, res) {
+    const body = req.body || {};
+    const from = body.from && body.from.number;
+    const to = body.to && body.to.number;
+    if (typeof from !== 'string' || typeof to !== 'string' || !body.message ||
+        (allowedSenders.length > 0 && !allowedSenders.includes(to))) {
+      // CM.com retries every response other than 200 for up to 7 days, so
+      // payloads that can never be handled are acknowledged and dropped.
+      console.warn('Dropping unsupported CM.com webhook payload.');
+      return res.sendStatus(200);
+    }
+    const media = body.message.media || {};
+    const text = body.message.text ||
+      (!!media.mediaUri
+        ? (media.title + '\n media:' + media.mediaUri)
+        : "unsupported content"
+      );
+    try {
+      const dialogflowResponse =
+          await sessionClient.detectIntent(text, from, body);
+      const response = await sendMessage(messagingApi, dialogflowResponse, body);
+      console.log("response", JSON.stringify(response));
+    } catch (error) {
+      console.error(error);
+      return res.sendStatus(500);
+    }
+    return res.sendStatus(200);
   });
-});
 
-function sendMessage(intent, source) {
+  app.post('/dialog', express.json(), async function (req, res) {
+    return res.send();
+  });
+
+  return app;
+}
+
+function sendMessage(messagingApi, intent, source) {
   var content = [];
   intent.fulfillmentMessages.forEach(r => {
     if (!!r.text) {
@@ -77,12 +129,48 @@ function sendMessage(intent, source) {
     }
   });
 
-  const response = cmMessagingApi.createMessage()
+  // The reply goes to the number the message came from, using the number it
+  // was sent to as the sender.
+  const response = messagingApi.createMessage()
     .setMessage([source.from.number], source.to.number, intent.fulfillmentText)
     .setAllowedChannels([source.channel])
     .setConversation(content)
     .send()
-    .then((response) => response.body)
-    .catch((error) => console.error(error));
+    .then((response) => response.body);
   return response;
 }
+
+if (require.main === module) {
+  const webhookSecret = process.env.CM_WEBHOOK_SECRET;
+  try {
+    validateWebhookSecret(webhookSecret);
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
+  }
+
+  const cmMessagingApi = require('@cmdotcom/text-sdk');
+  const dialogflowSessionClient =
+      require('../botlib/dialogflow_session_client');
+
+  const app = createApp({
+    sessionClient: new dialogflowSessionClient(projectId),
+    messagingApi: new cmMessagingApi.MessageApiClient(cmProductToken),
+    webhookSecret: webhookSecret,
+    allowedSenders: parseAllowedSenders(process.env.CM_ALLOWED_SENDERS),
+  });
+
+  const listener = app.listen(process.env.PORT, function () {
+    console.log('Your CM integration server is listening on port '
+      + listener.address().port);
+  });
+
+  process.on('SIGTERM', () => {
+    listener.close(async () => {
+      console.log('Closing http server.');
+      process.exit(0);
+    });
+  });
+}
+
+module.exports = {createApp, parseAllowedSenders, validateWebhookSecret};
