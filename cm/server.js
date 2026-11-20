@@ -136,8 +136,7 @@ function sendMessage(messagingApi, intent, source) {
     .setAllowedChannels([source.channel])
     .setConversation(content)
     .send()
-    .then((response) => response.body)
-    .catch((error) => console.error(error));
+    .then((response) => response.body);
   return response;
 }
 

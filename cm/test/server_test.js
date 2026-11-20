@@ -230,6 +230,26 @@ describe('CM.com webhook', function () {
     assert.strictEqual(response.status, 500);
     assert.strictEqual(calls.sent.length, 0);
   });
+
+  it('returns 500 when CM.com send fails', async function () {
+    await start({
+      messagingApi: {
+        createMessage: () => {
+          const builder = {
+            setMessage: () => builder,
+            setAllowedChannels: () => builder,
+            setConversation: () => builder,
+            send: async () => {
+              throw new Error('cm send failed');
+            },
+          };
+          return builder;
+        },
+      },
+    });
+    const response = await post('/webhook/' + SECRET, inboundMessage());
+    assert.strictEqual(response.status, 500);
+  });
 });
 
 describe('createApp()', function () {
