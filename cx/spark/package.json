@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "mocha"
+    "test": "mocha --exit"
   },
   "dependencies": {
     "@google-cloud/dialogflow-cx": "2.7.0",
