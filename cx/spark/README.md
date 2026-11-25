@@ -16,6 +16,7 @@
 ![alt text](images/spark-create-the-spark-bot.png)
 
 - On the next screen, take the value for your bot’s __access Token__ and replace the value for __sparkAccessToken__ in the [server.js file](https://github.com/GoogleCloudPlatform/dialogflow-integrations/blob/9df026cdb76aeb2d664767ca36f5f84ca4cb71b6/cx/spark/server.js#L17).
+- Generate a random webhook secret (for example with `openssl rand -hex 32`) and set __sparkWebhookSecret__ in `server.js` (or configure the `SPARK_WEBHOOK_SECRET` environment variable on Cloud Run).
 
 ### Deploying the Integration Using Cloud Run
 
@@ -48,6 +49,12 @@ More information can be found in Cloud Run
 [documentation](https://cloud.google.com/run/docs/deploying).
 
 You can view a list of your active integration deployments under [Cloud Run](https://console.cloud.google.com/run) in the GCP Console.
+
+### Request Validation
+
+The integration registers its Webex webhook with __sparkWebhookSecret__ and only accepts UTF-8 JSON webhook requests that carry a valid `X-Spark-Signature` header (`HMAC-SHA1` of the raw request body), answering every other request with a `403`. Make sure that __sparkWebhookSecret__ in `server.js` (or the `SPARK_WEBHOOK_SECRET` environment variable) is set to a non-empty secret value rather than the placeholder, otherwise webhook registration is skipped and all incoming webhook requests are rejected.
+
+If you deployed this integration before request validation was added, set __sparkWebhookSecret__ (or `SPARK_WEBHOOK_SECRET`) and redeploy so the server replaces the previous unsigned Webex webhook.
 
 ### Testing
 
