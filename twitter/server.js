@@ -21,7 +21,20 @@ const dialogflowSessionClient =
 const crypto = require('crypto');
 const twitterText = require('twitter-text');
 
-app.use(express.json());
+// Keep the raw request bytes so that the X-Twitter-Webhooks-Signature header,
+// which Twitter computes over the exact body it sent, can be verified. Only
+// UTF-8 is accepted (what Twitter sends): with any other charset the parsed
+// body would differ from the signed bytes.
+app.use(express.json({
+  verify: (req, res, buf, encoding) => {
+    if (encoding !== 'utf-8') {
+      const err = new Error('unsupported charset');
+      err.status = 415;
+      throw err;
+    }
+    req.rawBody = buf;
+  }
+}));
 
 //Upon start a webhook is registered with twitter
 //Upon closure the webhook is removed from twitter
@@ -204,7 +217,57 @@ function deleteSubscription() {
   });
 }
 
-app.post('/', async function(req, res) {
+// Twitter CRC tokens are short opaque strings. Only signing values from this
+// alphabet keeps GET / from acting as a signing oracle: the CRC response and
+// X-Twitter-Webhooks-Signature share the same key and format, and every
+// webhook body accepted by express.json() starts with '{' or '['.
+const CRC_TOKEN_PATTERN = /^[A-Za-z0-9+/=_-]{1,256}$/;
+
+// Refuse to sign or verify anything until a real consumer secret is set. The
+// placeholder below is public, and an empty or missing key must not be used.
+const TWITTER_SECRET_PLACEHOLDER = 'Place you secret consumer key here';
+
+function hasTwitterSecret() {
+  return typeof twitterSecretAPIKey === 'string' &&
+      twitterSecretAPIKey.length > 0 &&
+      twitterSecretAPIKey !== TWITTER_SECRET_PLACEHOLDER;
+}
+
+function computeTwitterSignature(data) {
+  return 'sha256=' +
+      crypto.createHmac('sha256', twitterSecretAPIKey)
+          .update(data)
+          .digest('base64');
+}
+
+function isValidTwitterSignature(req) {
+  const signature = req.get('x-twitter-webhooks-signature');
+  if (!hasTwitterSecret() || typeof signature !== 'string' || !req.rawBody) {
+    return false;
+  }
+  const expected = Buffer.from(computeTwitterSignature(req.rawBody));
+  const actual = Buffer.from(signature);
+  return actual.length === expected.length &&
+      crypto.timingSafeEqual(actual, expected);
+}
+
+/**
+ * Express middleware that rejects every webhook request that was not signed by
+ * Twitter with this app's consumer secret. This endpoint is publicly
+ * reachable, so without this check anyone could send forged events.
+ * It is not async, so any unexpected error is passed to the error handler
+ * instead of becoming an unhandled promise rejection.
+ */
+function requireTwitterSignature(req, res, next) {
+  if (!isValidTwitterSignature(req)) {
+    res.status(403).type('text/plain')
+        .send('Twitter request validation failed.');
+    return;
+  }
+  next();
+}
+
+app.post('/', requireTwitterSignature, async function(req, res) {
   if (Array.isArray(req.body.direct_message_events) &&
       req.body.direct_message_events.length>0) {
     const message = req.body.direct_message_events[0];
@@ -232,11 +295,21 @@ app.post('/', async function(req, res) {
 });
 
 //responds to challenge response check verification requests
-app.get('/',function(req, res) {
+app.get('/', function(req, res) {
+  if (!hasTwitterSecret()) {
+    res.status(500).json({error: 'twitter consumer secret not configured'});
+    return;
+  }
   const crc = req.query.crc_token;
-  const hmac = "sha256="+crypto.createHmac('sha256', twitterSecretAPIKey)
-      .update(crc).digest('base64');
-  res.json({
-    "response_token": hmac
-  });
+  if (typeof crc !== 'string' || !CRC_TOKEN_PATTERN.test(crc)) {
+    res.status(400).json({error: 'invalid crc_token'});
+    return;
+  }
+  res.json({'response_token': computeTwitterSignature(crc)});
+});
+
+// Respond to errors (e.g. malformed or rejected request bodies) with just the
+// status code, so stack traces and file paths are never sent to callers.
+app.use(function(err, req, res, next) {
+  res.sendStatus(err.status || err.statusCode || 500);
 });
